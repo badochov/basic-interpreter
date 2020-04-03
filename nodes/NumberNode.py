@@ -1,8 +1,8 @@
+from Context import Context
+from RuntimeResult import RuntimeResult
+from Token import Token
 from nodes.Node import Node
 from types_.Number import Number
-from Token import Token
-from RuntimeResult import RuntimeResult
-from Context import Context
 
 
 class NumberNode(Node):
@@ -10,10 +10,10 @@ class NumberNode(Node):
         super().__init__(token.pos_start, token.pos_end)
         self.token = token
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.token}"
 
-    def visit(self, context: Context):
+    def visit(self, context: Context) -> RuntimeResult:
         return RuntimeResult().success(
             Number(self.token.value)
             .set_context(context)

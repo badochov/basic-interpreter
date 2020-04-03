@@ -1,41 +1,47 @@
-from token_types import *
-from Token import Token
 import re
-from errors.IllegalCharacterError import IllegalCharacterError
+from typing import Optional, List, Tuple
+
 from Position import Position
+from Token import Token
+from errors.Error import Error
+from errors.IllegalCharacterError import IllegalCharacterError
+from token_types import *
 
 
 class Lexer:
-    def __init__(self, text, file_name):
-        print(text)
+    def __init__(self, text: str, file_name: str):
         self.text = text
         self.pos = Position(-1, 0, -1, file_name, text)
-        self.current_char = None
+        self.current_char: Optional[str] = None
 
-    def advance(self):
+    def advance(self) -> None:
         self.pos.advance(self.current_char)
-        self.current_char = self.text[self.pos.index] if self.pos.index < len(self.text) else None
+        self.current_char = (
+            self.text[self.pos.index] if self.pos.index < len(self.text) else None
+        )
 
     @staticmethod
-    def is_digit(char):
-        return re.match(r'\d', char) is not None
+    def is_digit(char: str) -> bool:
+        return re.match(r"\d", char) is not None
 
-    def make_tokens(self):
+    def make_tokens(self) -> Tuple[List[Token], Optional[Error]]:
         tokens = []
 
         self.advance()
         while self.current_char is not None:
-            if self.current_char == '+':
+            if self.current_char == "+":
                 tokens.append(Token(TT_PLUS, pos_start=self.pos))
-            elif self.current_char == '-':
+            elif self.current_char == "-":
                 tokens.append(Token(TT_MINUS, pos_start=self.pos))
-            elif self.current_char == '*':
+            elif self.current_char == "*":
                 tokens.append(Token(TT_MUL, pos_start=self.pos))
-            elif self.current_char == '/':
+            elif self.current_char == "^":
+                tokens.append(Token(TT_POW, pos_start=self.pos))
+            elif self.current_char == "/":
                 tokens.append(Token(TT_DIV, pos_start=self.pos))
-            elif self.current_char == '(':
+            elif self.current_char == "(":
                 tokens.append(Token(TT_LPAREN, pos_start=self.pos))
-            elif self.current_char == ')':
+            elif self.current_char == ")":
                 tokens.append(Token(TT_RPAREN, pos_start=self.pos))
             elif Lexer.is_digit(self.current_char):
                 tokens.append(self.make_number())
@@ -49,8 +55,8 @@ class Lexer:
         tokens.append(Token(TT_EOF, pos_start=self.pos))
         return tokens, None
 
-    def make_number(self):
-        num = ''
+    def make_number(self) -> Token:
+        num = ""
         dot_count = 0
         pos_start = self.pos.copy()
 
@@ -60,7 +66,7 @@ class Lexer:
             elif self.current_char == ".":
                 if dot_count == 0:
                     dot_count += 1
-                    num += '.'
+                    num += "."
                 else:
                     break
             else:

@@ -1,9 +1,9 @@
+from Context import Context
+from RuntimeResult import RuntimeResult
+from Token import Token
 from nodes.Node import Node
 from token_types import *
 from types_.Number import Number
-from Token import Token
-from RuntimeResult import RuntimeResult
-from Context import Context
 
 
 class UnaryOperationNode(Node):
@@ -12,10 +12,10 @@ class UnaryOperationNode(Node):
         self.operation_token = operation_token
         self.node = node
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"({self.operation_token} {self.node})"
 
-    def visit(self, context: Context):
+    def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         result = res.register(self.node.visit(context))
         if res.error:

@@ -1,6 +1,8 @@
-from errors.Error import Error
+from typing import Optional
+
 from Context import Context
 from Position import Position
+from errors.Error import Error
 from errors.string_with_arrows import string_with_arrows
 
 
@@ -11,7 +13,7 @@ class RTError(Error):
         super().__init__(pos_start, pos_end, "Runtime Error", details)
         self.context = context
 
-    def __str__(self):
+    def __str__(self) -> str:
         result = self.generate_traceback()
         result += f"{self.error_name}: {self.details}"
         result += "\n\n" + string_with_arrows(
@@ -19,10 +21,10 @@ class RTError(Error):
         )
         return result
 
-    def generate_traceback(self):
+    def generate_traceback(self) -> str:
         result = ""
         pos = self.pos_start
-        ctx = self.context
+        ctx: Optional[Context] = self.context
 
         while ctx:
             result = (

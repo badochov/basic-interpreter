@@ -1,5 +1,7 @@
 from Context import Context
 from Position import Position
+from RuntimeResult import RuntimeResult
+from errors.NotImplError import NotImplError
 
 
 class Node:
@@ -7,5 +9,7 @@ class Node:
         self.pos_start = pos_start
         self.pos_end = pos_end
 
-    def visit(self, context: Context):
-        raise NotImplementedError(f'No visit method for node type: {type(self)}')
+    def visit(self, context: Context) -> RuntimeResult:
+        return RuntimeResult().failure(
+            NotImplError(self.pos_start, self.pos_end, "Visit")
+        )

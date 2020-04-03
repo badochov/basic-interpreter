@@ -1,8 +1,8 @@
+from Context import Context
+from RuntimeResult import RuntimeResult
+from Token import Token
 from nodes.Node import Node
 from token_types import *
-from Token import Token
-from RuntimeResult import RuntimeResult
-from Context import Context
 
 
 class BinaryOperationNode(Node):
@@ -12,10 +12,10 @@ class BinaryOperationNode(Node):
         self.operation_token = operation_token
         self.right_node = right_node
 
-    def __repr__(self):
-        return f'({self.left_node}, {self.operation_token}, {self.right_node})'
+    def __repr__(self) -> str:
+        return f"({self.left_node}, {self.operation_token}, {self.right_node})"
 
-    def visit(self, context: Context):
+    def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         left = res.register(self.left_node.visit(context))
         if res.error:
@@ -34,9 +34,11 @@ class BinaryOperationNode(Node):
             result, error = left.multiplied_by(right)
         elif self.operation_token.type == TT_DIV:
             result, error = left.divided_by(right)
+        elif self.operation_token.type == TT_POW:
+            result, error = left.raised_to_power_by(right)
         else:
-            error = RuntimeError(f'Operation not found {self.operation_token.type}')
+            error = RuntimeError(f"Operation not found {self.operation_token.type}")
 
-        if error:
+        if error or result is None:
             return res.failure(error)
         return res.success(result.set_pos(self.pos_start, self.pos_end))

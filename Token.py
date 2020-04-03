@@ -1,10 +1,16 @@
-from Position import Position
 from typing import Union
+
+from Position import Position
 
 
 class Token:
-    def __init__(self, type_: str, value: Union[str, float] = None, pos_start: Position = None,
-                 pos_end: Position = None):
+    def __init__(
+        self,
+        type_: str,
+        value: Union[str, float] = None,
+        pos_start: Position = None,
+        pos_end: Position = None,
+    ):
         self.type = type_
         self.value = value
         if pos_start:
@@ -13,7 +19,7 @@ class Token:
         if pos_end:
             self.pos_end = pos_end.copy()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.value:
             return f"{self.type}:{self.value}"
         return f"{self.type}"

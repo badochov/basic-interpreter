@@ -1,8 +1,9 @@
+from typing import Tuple, Any
+
+from Context import Context
+from Interpreter import Interpreter
 from Lexer import Lexer
 from Parser import Parser
-from Interpreter import Interpreter
-from Context import Context
-from typing import Tuple, Any
 from errors.Error import Error
 
 
