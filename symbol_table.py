@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional, Union, Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from types_.Type import Type
+    from types_.type import Type
 
     Value = Type
 

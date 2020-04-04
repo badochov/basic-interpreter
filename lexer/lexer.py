@@ -3,14 +3,14 @@ from __future__ import annotations
 import re
 from typing import Optional, List, Tuple, TYPE_CHECKING
 
-from Position import Position
-from Token import Token
-from errors.IllegalCharacterError import IllegalCharacterError
+from position import Position
+from token import Token
+from errors.illegal_character_error import IllegalCharacterError
 from keywords import KEYWORDS
 from token_types import *
 
 if TYPE_CHECKING:
-    from errors.Error import Error
+    from errors.error import Error
 
 
 class Lexer:

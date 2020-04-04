@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from typing import List, Callable, TYPE_CHECKING
 
-from errors.InvalidSyntaxError import InvalidSyntaxError
+from errors.invalid_syntax_error import InvalidSyntaxError
 from keywords import VARIABLE_DECLARATION_KEYWORD
-from nodes.BinaryOperationNode import BinaryOperationNode
-from nodes.NumberNode import NumberNode
-from nodes.UnaryOperationNode import UnaryOperationNode
-from nodes.VariableAccessNode import VariableAccessNode
-from nodes.VariableAssignementNode import VariableAssignmentNode
-from parser.ParseResult import ParseResult
+from nodes.binary_operation_node import BinaryOperationNode
+from nodes.number_node import NumberNode
+from nodes.unary_operation_node import UnaryOperationNode
+from nodes.variable_access_node import VariableAccessNode
+from nodes.variable_assignment_node import VariableAssignmentNode
+from parser.parse_result import ParseResult
 from token_types import *
 
 if TYPE_CHECKING:
-    from Token import Token
+    from token import Token
 
 
 class Parser:

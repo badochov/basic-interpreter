@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from interpreter.RuntimeResult import RuntimeResult
-from nodes.Node import Node
-from types_.Number import Number
+from interpreter.runtime_result import RuntimeResult
+from nodes.node import Node
+from types_.number import Number
 
 if TYPE_CHECKING:
-    from Context import Context
-    from Token import Token
+    from context import Context
+    from token import Token
 
 
 class NumberNode(Node):

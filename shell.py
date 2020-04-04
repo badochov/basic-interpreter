@@ -1,4 +1,4 @@
-from Basic import Basic
+from basic import Basic
 
 while True:
     text = input("basic > ")

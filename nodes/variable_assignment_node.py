@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from interpreter.RuntimeResult import RuntimeResult
-from nodes.Node import Node
+from interpreter.runtime_result import RuntimeResult
+from nodes.node import Node
 
 if TYPE_CHECKING:
-    from Context import Context
-    from Token import Token
+    from context import Context
+    from token import Token
 
 
 class VariableAssignmentNode(Node):

@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Context import Context
-    from nodes.Node import Node
-    from interpreter.RuntimeResult import RuntimeResult
+    from context import Context
+    from nodes.node import Node
+    from interpreter.runtime_result import RuntimeResult
 
 
 class Interpreter:

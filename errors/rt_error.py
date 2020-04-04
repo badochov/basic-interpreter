@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
 
-from errors.Error import Error
+from errors.error import Error
 from errors.string_with_arrows import string_with_arrows
 
 if TYPE_CHECKING:
-    from Context import Context
-    from Position import Position
+    from context import Context
+    from position import Position
 
 
 class RTError(Error):

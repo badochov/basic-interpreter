@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Position import Position
+    from position import Position
 
 
 def string_with_arrows(text: str, pos_start: Position, pos_end: Position) -> str:

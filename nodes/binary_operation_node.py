@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from errors.RTError import RTError
-from interpreter.RuntimeResult import RuntimeResult
-from nodes.Node import Node
+from errors.rt_error import RTError
+from interpreter.runtime_result import RuntimeResult
+from nodes.node import Node
 from token_types import *
 
 if TYPE_CHECKING:
-    from Context import Context
-    from Token import Token
+    from context import Context
+    from token import Token
 
 
 class BinaryOperationNode(Node):

@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from errors.Error import Error
-    from types_.Type import Type
+    from errors.error import Error
+    from types_.type import Type
 
 
 class RuntimeResult:

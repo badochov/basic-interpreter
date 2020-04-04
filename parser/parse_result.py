@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from errors.Error import Error
-    from nodes.Node import Node
-    from Token import Token
+    from errors.error import Error
+    from nodes.node import Node
+    from token import Token
 
 
 class ParseResult:

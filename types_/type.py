@@ -3,10 +3,10 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Optional, Tuple, TypeVar, TYPE_CHECKING
 
-from Context import Context, mock_context
-from Position import Position, mock_position
-from errors.Error import Error
-from errors.NotImplError import NotImplError
+from context import Context, mock_context
+from position import Position, mock_position
+from errors.error import Error
+from errors.not_impl_error import NotImplError
 
 if TYPE_CHECKING:
     pass
@@ -24,7 +24,7 @@ class Type:
         if pos_start is None:
             pos_start = mock_position
         if pos_end is None:
-            pos_end = mock_context
+            pos_end = mock_position
         if context is None:
             context = mock_context
 

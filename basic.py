@@ -3,14 +3,14 @@ from __future__ import annotations
 from typing import Tuple, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from errors.Error import Error
+    from errors.error import Error
 
-from Context import Context
-from types_.Number import Number
-from SymbolTable import SymbolTable
-from interpreter.Interpreter import Interpreter
-from lexer.Lexer import Lexer
-from parser.Parser import Parser
+from context import Context
+from types_.number import Number
+from symbol_table import SymbolTable
+from interpreter.interpreter import Interpreter
+from lexer.lexer import Lexer
+from parser.parser import Parser
 
 global_syntax_table = SymbolTable()
 global_syntax_table.set("null", Number(0))

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from interpreter.RuntimeResult import RuntimeResult
+from interpreter.runtime_result import RuntimeResult
 
 if TYPE_CHECKING:
-    from Context import Context
-    from Position import Position
-    from errors.NotImplError import NotImplError
+    from context import Context
+    from position import Position
+    from errors.not_impl_error import NotImplError
 
 
 class Node:

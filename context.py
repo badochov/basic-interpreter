@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from SymbolTable import SymbolTable
+from symbol_table import SymbolTable
 
 if TYPE_CHECKING:
-    from Position import Position
+    from position import Position
 
 
 class Context:

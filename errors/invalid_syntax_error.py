@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from errors.Error import Error
+from errors.error import Error
 
 if TYPE_CHECKING:
-    from Position import Position
+    from position import Position
 
 
 class InvalidSyntaxError(Error):

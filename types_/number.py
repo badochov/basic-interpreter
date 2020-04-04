@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Tuple, Optional, TYPE_CHECKING
 
-from errors.Error import Error
-from errors.RTError import RTError
-from types_.Type import Type
+from errors.error import Error
+from errors.rt_error import RTError
+from types_.type import Type
 
 if TYPE_CHECKING:
-    from Position import Position
-    from Context import Context
+    from position import Position
+    from context import Context
 
 
 class Number(Type):
