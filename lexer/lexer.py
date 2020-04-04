@@ -3,10 +3,11 @@ from __future__ import annotations
 import re
 from typing import Optional, List, Tuple, TYPE_CHECKING
 
+from errors.illegal_character_error import IllegalCharacterError
+from errors.unexpected_char_error import UnexpectedCharError
+from keywords import KEYWORDS
 from position import Position
 from token import Token
-from errors.illegal_character_error import IllegalCharacterError
-from keywords import KEYWORDS
 from token_types import *
 
 if TYPE_CHECKING:
@@ -57,7 +58,16 @@ class Lexer:
             elif self.current_char == ")":
                 tokens.append(Token(TT_RPAREN, self.pos, self.pos))
             elif self.current_char == "=":
-                tokens.append(Token(TT_EQUALS, self.pos, self.pos))
+                tokens.append(self.make_equals())
+            elif self.current_char == "<":
+                tokens.append(self.make_less_than())
+            elif self.current_char == ">":
+                tokens.append(self.make_greater_than())
+            elif self.current_char == "!":
+                token, error = self.make_not_equals()
+                if error or token is None:
+                    return [], error
+                tokens.append(token)
             elif Lexer.is_digit(self.current_char):
                 tokens.append(self.make_number())
                 continue
@@ -104,3 +114,47 @@ class Lexer:
 
         tok_type = TT_KEYWORD if id_str in KEYWORDS else TT_IDENTIFIER
         return Token(tok_type, pos_start, self.pos, id_str)
+
+    def make_not_equals(self) -> Tuple[Optional[Token], Optional[Error]]:
+        pos_start = self.pos.copy()
+        self.advance()
+        if self.current_char == "=":
+            self.advance()
+            return Token(TT_NE, pos_start, self.pos.copy()), None
+        return (
+            None,
+            UnexpectedCharError(pos_start, self.pos, 'after "!" should be "="'),
+        )
+
+    def make_equals(self) -> Token:
+        token_type = TT_EQUALS
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == "=":
+            self.advance()
+            token_type = TT_EE
+
+        return Token(token_type, pos_start, self.pos.copy())
+
+    def make_greater_than(self) -> Token:
+        token_type = TT_GT
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == "=":
+            self.advance()
+            token_type = TT_GTE
+
+        return Token(token_type, pos_start, self.pos.copy())
+
+    def make_less_than(self) -> Token:
+        token_type = TT_LT
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == "=":
+            self.advance()
+            token_type = TT_LTE
+
+        return Token(token_type, pos_start, self.pos.copy())

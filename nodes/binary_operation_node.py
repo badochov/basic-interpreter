@@ -22,6 +22,7 @@ class BinaryOperationNode(Node):
     def __repr__(self) -> str:
         return f"({self.left_node}, {self.operation_token}, {self.right_node})"
 
+    # TODO more fun with or and not
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         left = res.register(self.left_node.visit(context))
@@ -43,6 +44,22 @@ class BinaryOperationNode(Node):
             result, error = left.divided_by(right)
         elif self.operation_token.type == TT_POW:
             result, error = left.raised_to_power_by(right)
+        elif self.operation_token.type == TT_EE:
+            result, error = left.get_comparison_eq(right)
+        elif self.operation_token.type == TT_NE:
+            result, error = left.get_comparison_ne(right)
+        elif self.operation_token.type == TT_LT:
+            result, error = left.get_comparison_lt(right)
+        elif self.operation_token.type == TT_GT:
+            result, error = left.get_comparison_gt(right)
+        elif self.operation_token.type == TT_LTE:
+            result, error = left.get_comparison_lte(right)
+        elif self.operation_token.type == TT_GTE:
+            result, error = left.get_comparison_gte(right)
+        elif self.operation_token.matches(TT_KEYWORD, "AND"):
+            result, error = left.anded_by(right)
+        elif self.operation_token.matches(TT_KEYWORD, "OR"):
+            result, error = left.ored_by(right)
         else:
             error = RTError(
                 self.pos_start,
@@ -51,6 +68,10 @@ class BinaryOperationNode(Node):
                 context,
             )
 
-        if error or result is None:
+        if error:
             return res.failure(error)
+        if result is None:
+            return res.failure(
+                RTError(self.pos_start, self.pos_end, f"Unknown error", context,)
+            )
         return res.success(result.set_pos(self.pos_start, self.pos_end))

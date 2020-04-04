@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 from interpreter.runtime_result import RuntimeResult
 from nodes.node import Node
 from types_.number import Number
+from keywords import *
+from token_types import *
 
 if TYPE_CHECKING:
     from context import Context
@@ -32,6 +34,8 @@ class UnaryOperationNode(Node):
             result, error = result.multiplied_by(
                 Number(-1, self.pos_start, self.pos_end, context)
             )
+        elif self.operation_token.matches(TT_KEYWORD, KEYWORD_NOT):
+            result, error = result.notted()
         if error:
             return res.failure(error)
         if result is None:

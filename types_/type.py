@@ -7,9 +7,12 @@ from context import Context, mock_context
 from position import Position, mock_position
 from errors.error import Error
 from errors.not_impl_error import NotImplError
+from keywords import *
 
 if TYPE_CHECKING:
-    pass
+    from types_.number import Number
+
+    comp_type = Tuple[Optional[Number], Optional[Error]]
 
 T = TypeVar("T", bound="Type")
 
@@ -58,6 +61,39 @@ class Type:
 
     def raised_to_power_by(self, other: Type) -> oper_type:
         return None, NotImplError(self.pos_start, self.pos_end, "/")
+
+    def get_comparison_eq(self, other: Type) -> comp_type:
+        return None, NotImplError(self.pos_start, self.pos_end, "==")
+
+    def get_comparison_ne(self, other: Type) -> comp_type:
+        return None, NotImplError(self.pos_start, self.pos_end, "!=")
+
+    def get_comparison_lt(self, other: Type) -> comp_type:
+        return None, NotImplError(self.pos_start, self.pos_end, "<")
+
+    def get_comparison_gt(self, other: Type) -> comp_type:
+        return None, NotImplError(self.pos_start, self.pos_end, ">")
+
+    def get_comparison_lte(self, other: Type) -> comp_type:
+        return None, NotImplError(self.pos_start, self.pos_end, "<=")
+
+    def get_comparison_gte(self, other: Type) -> comp_type:
+        return None, NotImplError(self.pos_start, self.pos_end, ">=")
+
+    def anded_by(self, other: Type) -> comp_type:
+        return (
+            None,
+            NotImplError(self.pos_start, self.pos_end, f"KEYWORD:{KEYWORD_AND}"),
+        )
+
+    def ored_by(self, other: Type) -> comp_type:
+        return None, NotImplError(self.pos_start, self.pos_end, f"KEYWORD:{KEYWORD_OR}")
+
+    def notted(self) -> comp_type:
+        return (
+            None,
+            NotImplError(self.pos_start, self.pos_end, f"KEYWORD:{KEYWORD_NOT}"),
+        )
 
 
 oper_type = Tuple[Optional[Type], Optional[Error]]

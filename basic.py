@@ -14,6 +14,8 @@ from parser.parser import Parser
 
 global_syntax_table = SymbolTable()
 global_syntax_table.set("null", Number(0))
+global_syntax_table.set("true", Number(1))
+global_syntax_table.set("false", Number(0))
 
 
 class Basic:

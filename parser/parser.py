@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Callable, TYPE_CHECKING
+from typing import List, Callable, TYPE_CHECKING, Union, Tuple
 
 from errors.invalid_syntax_error import InvalidSyntaxError
-from keywords import VARIABLE_DECLARATION_KEYWORD
+from keywords import *
 from nodes.binary_operation_node import BinaryOperationNode
 from nodes.number_node import NumberNode
 from nodes.unary_operation_node import UnaryOperationNode
@@ -44,7 +44,7 @@ class Parser:
     def binary_operation(
         self,
         function: Callable[[], ParseResult],
-        operands: List[str],
+        operands: Union[List[str], List[Tuple[str, str]]],
         function2: Callable[[], ParseResult] = None,
     ) -> ParseResult:
         if function2 is None:
@@ -54,7 +54,10 @@ class Parser:
         left = res.register(function())
         if res.error or left is None:
             return res
-        while self.current_token and self.current_token.type in operands:
+        while (
+            self.current_token.type in operands
+            or (self.current_token.type, self.current_token.value) in operands
+        ):
             op_token = self.current_token
             res.register_advancement(self.advance())
             right = res.register(function2())
@@ -119,7 +122,7 @@ class Parser:
 
     def expression(self) -> ParseResult:
         res = ParseResult()
-        if self.current_token.matches(TT_KEYWORD, VARIABLE_DECLARATION_KEYWORD):
+        if self.current_token.matches(TT_KEYWORD, KEYWORD_VARIABLE_DECLARATION):
             res.register_advancement(self.advance())
 
             if self.current_token.type != TT_IDENTIFIER:
@@ -148,13 +151,49 @@ class Parser:
             if res.error or expr is None:
                 return res
             return res.success(VariableAssignmentNode(var_name, expr))
-        node = res.register(self.binary_operation(self.term, [TT_PLUS, TT_MINUS]))
+        node = res.register(
+            self.binary_operation(
+                self.logic_expression,
+                [(TT_KEYWORD, KEYWORD_AND), (TT_KEYWORD, KEYWORD_OR)],
+            )
+        )
         if res.error or node is None:
             return res.failure(
                 InvalidSyntaxError(
                     self.current_token.pos_start,
                     self.current_token.pos_end,
-                    f'Expected "{VARIABLE_DECLARATION_KEYWORD}", int, float, +, - or (',
+                    f'Expected "{KEYWORD_VARIABLE_DECLARATION}", int, float, +, - or (',
+                )
+            )
+        return res.success(node)
+
+    def arithmetic_expression(self) -> ParseResult:
+        return self.binary_operation(self.term, [TT_PLUS, TT_MINUS])
+
+    def logic_expression(self) -> ParseResult:
+        res = ParseResult()
+
+        if self.current_token.matches(TT_KEYWORD, KEYWORD_NOT):
+            token = self.current_token
+            res.register_advancement(self.advance())
+
+            node = res.register(self.logic_expression())
+            if res.error or node is None:
+                return res
+            return res.success(UnaryOperationNode(token, node))
+
+        node = res.register(
+            self.binary_operation(
+                self.arithmetic_expression,
+                [TT_EE, TT_GT, TT_NE, TT_LT, TT_LTE, TT_GTE],
+            )
+        )
+        if res.error or node is None:
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    f'Expected "{KEYWORD_NOT}", int, float, +, - or (',
                 )
             )
         return res.success(node)
