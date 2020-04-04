@@ -1,9 +1,13 @@
-from typing import Optional
+from __future__ import annotations
 
-from Context import Context
-from Position import Position
+from typing import Optional, TYPE_CHECKING
+
 from errors.Error import Error
 from errors.string_with_arrows import string_with_arrows
+
+if TYPE_CHECKING:
+    from Context import Context
+    from Position import Position
 
 
 class RTError(Error):
@@ -31,6 +35,8 @@ class RTError(Error):
                 f"  File {pos.file_name}, line {pos.line + 1}, in {ctx.display_name}\n"
                 + result
             )
+            if ctx.parent_entry_pos is None:
+                break
             pos = ctx.parent_entry_pos
             ctx = ctx.parent
 

@@ -1,9 +1,15 @@
-from Context import Context
-from RuntimeResult import RuntimeResult
-from Token import Token
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from interpreter.RuntimeResult import RuntimeResult
 from nodes.Node import Node
-from token_types import *
 from types_.Number import Number
+
+if TYPE_CHECKING:
+    from Context import Context
+    from Token import Token
+    from token_types import *
 
 
 class UnaryOperationNode(Node):
@@ -18,12 +24,16 @@ class UnaryOperationNode(Node):
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         result = res.register(self.node.visit(context))
-        if res.error:
+        if res.error or result is None:
             return res
 
         error = None
         if self.operation_token.type == TT_MINUS:
-            result, error = result.multiplied_by(Number(-1))
+            result, error = result.multiplied_by(
+                Number(-1, self.pos_start, self.pos_end, context)
+            )
         if error:
             return res.failure(error)
+        if result is None:
+            return res
         return res.success(result.set_pos(self.pos_start, self.pos_end))

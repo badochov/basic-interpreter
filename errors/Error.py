@@ -1,5 +1,11 @@
-from Position import Position
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from errors.string_with_arrows import string_with_arrows
+
+if TYPE_CHECKING:
+    from Position import Position
 
 
 class Error:

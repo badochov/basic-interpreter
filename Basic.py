@@ -1,10 +1,19 @@
-from typing import Tuple, Any
+from __future__ import annotations
+
+from typing import Tuple, Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from errors.Error import Error
 
 from Context import Context
-from Interpreter import Interpreter
-from Lexer import Lexer
-from Parser import Parser
-from errors.Error import Error
+from types_.Number import Number
+from SymbolTable import SymbolTable
+from interpreter.Interpreter import Interpreter
+from lexer.Lexer import Lexer
+from parser.Parser import Parser
+
+global_syntax_table = SymbolTable()
+global_syntax_table.set("null", Number(0))
 
 
 class Basic:
@@ -19,12 +28,12 @@ class Basic:
         parser = Parser(tokens)
         ast = parser.parse()
 
-        if ast.error:
+        if ast.error or not ast.node:
             return None, ast.error
 
         interpreter = Interpreter()
 
-        context = Context("<program>")
+        context = Context("<program>", global_syntax_table)
 
         res = interpreter.visit(ast.node, context)
 

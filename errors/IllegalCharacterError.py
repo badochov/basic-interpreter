@@ -1,5 +1,11 @@
-from Position import Position
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from errors.Error import Error
+
+if TYPE_CHECKING:
+    from Position import Position
 
 
 class IllegalCharacterError(Error):

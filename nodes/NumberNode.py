@@ -1,8 +1,14 @@
-from Context import Context
-from RuntimeResult import RuntimeResult
-from Token import Token
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from interpreter.RuntimeResult import RuntimeResult
 from nodes.Node import Node
 from types_.Number import Number
+
+if TYPE_CHECKING:
+    from Context import Context
+    from Token import Token
 
 
 class NumberNode(Node):
@@ -15,7 +21,5 @@ class NumberNode(Node):
 
     def visit(self, context: Context) -> RuntimeResult:
         return RuntimeResult().success(
-            Number(self.token.value)
-            .set_context(context)
-            .set_pos(self.pos_start, self.pos_end)
+            Number(self.token.value, self.pos_start, self.pos_end, context)
         )

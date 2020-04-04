@@ -25,3 +25,6 @@ class Position:
         return Position(
             self.index, self.line, self.column, self.file_name, self.file_content
         )
+
+
+mock_position = Position(0, 0, 0, "<mock_position>", "")

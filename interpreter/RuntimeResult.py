@@ -1,7 +1,10 @@
 from __future__ import annotations
-from types_.Type import Type
-from typing import Optional
-from errors.Error import Error
+
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from errors.Error import Error
+    from types_.Type import Type
 
 
 class RuntimeResult:
@@ -12,7 +15,7 @@ class RuntimeResult:
     def __repr__(self) -> str:
         return f"{self.value} {self.error}"
 
-    def register(self, res: RuntimeResult) -> Type:
+    def register(self, res: RuntimeResult) -> Optional[Type]:
         if res.error:
             self.error = res.error
         return res.value

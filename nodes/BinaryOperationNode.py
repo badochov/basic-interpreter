@@ -1,8 +1,15 @@
-from Context import Context
-from RuntimeResult import RuntimeResult
-from Token import Token
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from errors.RTError import RTError
+from interpreter.RuntimeResult import RuntimeResult
 from nodes.Node import Node
 from token_types import *
+
+if TYPE_CHECKING:
+    from Context import Context
+    from Token import Token
 
 
 class BinaryOperationNode(Node):
@@ -18,10 +25,10 @@ class BinaryOperationNode(Node):
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         left = res.register(self.left_node.visit(context))
-        if res.error:
+        if res.error or left is None:
             return res
         right = res.register(self.right_node.visit(context))
-        if res.error:
+        if res.error or right is None:
             return res
 
         result = None
@@ -37,7 +44,12 @@ class BinaryOperationNode(Node):
         elif self.operation_token.type == TT_POW:
             result, error = left.raised_to_power_by(right)
         else:
-            error = RuntimeError(f"Operation not found {self.operation_token.type}")
+            error = RTError(
+                self.pos_start,
+                self.pos_end,
+                f"Operation not found {self.operation_token.type}",
+                context,
+            )
 
         if error or result is None:
             return res.failure(error)

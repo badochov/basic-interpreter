@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import re
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, TYPE_CHECKING
 
 from Position import Position
 from Token import Token
-from errors.Error import Error
 from errors.IllegalCharacterError import IllegalCharacterError
+from keywords import KEYWORDS
 from token_types import *
+
+if TYPE_CHECKING:
+    from errors.Error import Error
 
 
 class Lexer:
@@ -24,27 +29,40 @@ class Lexer:
     def is_digit(char: str) -> bool:
         return re.match(r"\d", char) is not None
 
+    @staticmethod
+    def is_letter(char: str) -> bool:
+        return Lexer.is_alphanumeric(char) and not Lexer.is_digit(char)
+
+    @staticmethod
+    def is_alphanumeric(char: str) -> bool:
+        return re.match(r"\w", char) is not None
+
     def make_tokens(self) -> Tuple[List[Token], Optional[Error]]:
         tokens = []
 
         self.advance()
         while self.current_char is not None:
             if self.current_char == "+":
-                tokens.append(Token(TT_PLUS, pos_start=self.pos))
+                tokens.append(Token(TT_PLUS, self.pos, self.pos))
             elif self.current_char == "-":
-                tokens.append(Token(TT_MINUS, pos_start=self.pos))
+                tokens.append(Token(TT_MINUS, self.pos, self.pos))
             elif self.current_char == "*":
-                tokens.append(Token(TT_MUL, pos_start=self.pos))
+                tokens.append(Token(TT_MUL, self.pos, self.pos))
             elif self.current_char == "^":
-                tokens.append(Token(TT_POW, pos_start=self.pos))
+                tokens.append(Token(TT_POW, self.pos, self.pos))
             elif self.current_char == "/":
-                tokens.append(Token(TT_DIV, pos_start=self.pos))
+                tokens.append(Token(TT_DIV, self.pos, self.pos))
             elif self.current_char == "(":
-                tokens.append(Token(TT_LPAREN, pos_start=self.pos))
+                tokens.append(Token(TT_LPAREN, self.pos, self.pos))
             elif self.current_char == ")":
-                tokens.append(Token(TT_RPAREN, pos_start=self.pos))
+                tokens.append(Token(TT_RPAREN, self.pos, self.pos))
+            elif self.current_char == "=":
+                tokens.append(Token(TT_EQUALS, self.pos, self.pos))
             elif Lexer.is_digit(self.current_char):
                 tokens.append(self.make_number())
+                continue
+            elif Lexer.is_letter(self.current_char):
+                tokens.append(self.make_identifier())
                 continue
             elif not self.current_char.isspace():
                 post_start = self.pos.copy()
@@ -52,7 +70,7 @@ class Lexer:
                 self.advance()
                 return [], IllegalCharacterError(post_start, self.pos, char)
             self.advance()
-        tokens.append(Token(TT_EOF, pos_start=self.pos))
+        tokens.append(Token(TT_EOF, self.pos, self.pos))
         return tokens, None
 
     def make_number(self) -> Token:
@@ -73,5 +91,16 @@ class Lexer:
                 break
             self.advance()
         if dot_count == 0:
-            return Token(TT_INT, int(num), pos_start, self.pos)
-        return Token(TT_FLOAT, float(num), pos_start, self.pos)
+            return Token(TT_INT, pos_start, self.pos, int(num))
+        return Token(TT_FLOAT, pos_start, self.pos, float(num))
+
+    def make_identifier(self) -> Token:
+        id_str = ""
+        pos_start = self.pos.copy()
+
+        while self.current_char and Lexer.is_alphanumeric(self.current_char):
+            id_str += self.current_char
+            self.advance()
+
+        tok_type = TT_KEYWORD if id_str in KEYWORDS else TT_IDENTIFIER
+        return Token(tok_type, pos_start, self.pos, id_str)

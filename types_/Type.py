@@ -1,11 +1,17 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from copy import deepcopy
+from typing import Optional, Tuple, TypeVar, TYPE_CHECKING
 
-from Context import Context
-from Position import Position
+from Context import Context, mock_context
+from Position import Position, mock_position
 from errors.Error import Error
 from errors.NotImplError import NotImplError
+
+if TYPE_CHECKING:
+    pass
+
+T = TypeVar("T", bound="Type")
 
 
 class Type:
@@ -15,18 +21,28 @@ class Type:
         pos_end: Position = None,
         context: Context = None,
     ):
+        if pos_start is None:
+            pos_start = mock_position
+        if pos_end is None:
+            pos_end = mock_context
+        if context is None:
+            context = mock_context
+
         self.pos_start = pos_start
         self.pos_end = pos_end
         self.context = context
 
-    def set_pos(self, pos_start: Position = None, pos_end: Position = None) -> Type:
+    def set_pos(self: T, pos_start: Position, pos_end: Position) -> T:
         self.pos_start = pos_start
         self.pos_end = pos_end
         return self
 
-    def set_context(self, context: Context = None) -> Type:
+    def set_context(self: T, context: Context) -> T:
         self.context = context
         return self
+
+    def copy(self: T) -> T:
+        return deepcopy(self)
 
     def added_to(self, other: Type) -> oper_type:
         return None, NotImplError(self.pos_start, self.pos_end, "+")
