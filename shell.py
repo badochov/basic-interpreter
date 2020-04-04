@@ -1,3 +1,6 @@
+# noinspection PyUnresolvedReferences
+import readline
+
 from basic import Basic
 
 while True:
