@@ -7,7 +7,7 @@ from errors.illegal_character_error import IllegalCharacterError
 from errors.unexpected_char_error import UnexpectedCharError
 from keywords import KEYWORDS
 from position import Position
-from token import Token
+from lang_token import Token
 from token_types import *
 
 if TYPE_CHECKING:
@@ -59,10 +59,13 @@ class Lexer:
                 tokens.append(Token(TT_RPAREN, self.pos, self.pos))
             elif self.current_char == "=":
                 tokens.append(self.make_equals())
+                continue
             elif self.current_char == "<":
                 tokens.append(self.make_less_than())
+                continue
             elif self.current_char == ">":
                 tokens.append(self.make_greater_than())
+                continue
             elif self.current_char == "!":
                 token, error = self.make_not_equals()
                 if error or token is None:
@@ -112,7 +115,7 @@ class Lexer:
             id_str += self.current_char
             self.advance()
 
-        tok_type = TT_KEYWORD if id_str in KEYWORDS else TT_IDENTIFIER
+        tok_type = TT_KEYWORD if id_str in KEYWORDS.values() else TT_IDENTIFIER
         return Token(tok_type, pos_start, self.pos, id_str)
 
     def make_not_equals(self) -> Tuple[Optional[Token], Optional[Error]]:

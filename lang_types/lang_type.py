@@ -10,14 +10,14 @@ from errors.not_impl_error import NotImplError
 from keywords import *
 
 if TYPE_CHECKING:
-    from types_.number import Number
+    from lang_types.lang_number import LangNumber
 
-    comp_type = Tuple[Optional[Number], Optional[Error]]
+    CompType = Tuple[Optional[LangNumber], Optional[Error]]
 
-T = TypeVar("T", bound="Type")
+T = TypeVar("T", bound="LangType")
 
 
-class Type:
+class LangType:
     def __init__(
         self,
         pos_start: Position = None,
@@ -47,53 +47,59 @@ class Type:
     def copy(self: T) -> T:
         return deepcopy(self)
 
-    def added_to(self, other: Type) -> oper_type:
+    def added_to(self, other: LangType) -> OperType:
         return None, NotImplError(self.pos_start, self.pos_end, "+")
 
-    def multiplied_by(self, other: Type) -> oper_type:
+    def multiplied_by(self, other: LangType) -> OperType:
         return None, NotImplError(self.pos_start, self.pos_end, "*")
 
-    def subtracted_by(self, other: Type) -> oper_type:
+    def subtracted_by(self, other: LangType) -> OperType:
         return None, NotImplError(self.pos_start, self.pos_end, "-")
 
-    def divided_by(self, other: Type) -> oper_type:
+    def divided_by(self, other: LangType) -> OperType:
         return None, NotImplError(self.pos_start, self.pos_end, "/")
 
-    def raised_to_power_by(self, other: Type) -> oper_type:
+    def raised_to_power_by(self, other: LangType) -> OperType:
         return None, NotImplError(self.pos_start, self.pos_end, "/")
 
-    def get_comparison_eq(self, other: Type) -> comp_type:
+    def get_comparison_eq(self, other: LangType) -> CompType:
         return None, NotImplError(self.pos_start, self.pos_end, "==")
 
-    def get_comparison_ne(self, other: Type) -> comp_type:
+    def get_comparison_ne(self, other: LangType) -> CompType:
         return None, NotImplError(self.pos_start, self.pos_end, "!=")
 
-    def get_comparison_lt(self, other: Type) -> comp_type:
+    def get_comparison_lt(self, other: LangType) -> CompType:
         return None, NotImplError(self.pos_start, self.pos_end, "<")
 
-    def get_comparison_gt(self, other: Type) -> comp_type:
+    def get_comparison_gt(self, other: LangType) -> CompType:
         return None, NotImplError(self.pos_start, self.pos_end, ">")
 
-    def get_comparison_lte(self, other: Type) -> comp_type:
+    def get_comparison_lte(self, other: LangType) -> CompType:
         return None, NotImplError(self.pos_start, self.pos_end, "<=")
 
-    def get_comparison_gte(self, other: Type) -> comp_type:
+    def get_comparison_gte(self, other: LangType) -> CompType:
         return None, NotImplError(self.pos_start, self.pos_end, ">=")
 
-    def anded_by(self, other: Type) -> comp_type:
+    def anded_by(self, other: LangType) -> CompType:
         return (
             None,
-            NotImplError(self.pos_start, self.pos_end, f"KEYWORD:{KEYWORD_AND}"),
+            NotImplError(self.pos_start, self.pos_end, f'KEYWORD:{KEYWORDS["AND"]}'),
         )
 
-    def ored_by(self, other: Type) -> comp_type:
-        return None, NotImplError(self.pos_start, self.pos_end, f"KEYWORD:{KEYWORD_OR}")
-
-    def notted(self) -> comp_type:
+    def ored_by(self, other: LangType) -> CompType:
         return (
             None,
-            NotImplError(self.pos_start, self.pos_end, f"KEYWORD:{KEYWORD_NOT}"),
+            NotImplError(self.pos_start, self.pos_end, f'KEYWORD:{KEYWORDS["OR"]}'),
         )
 
+    def notted(self) -> CompType:
+        return (
+            None,
+            NotImplError(self.pos_start, self.pos_end, f'KEYWORD:{KEYWORDS["NOT"]}'),
+        )
 
-oper_type = Tuple[Optional[Type], Optional[Error]]
+    def is_truthy(self) -> bool:
+        return False
+
+
+OperType = Tuple[Optional[LangType], Optional[Error]]

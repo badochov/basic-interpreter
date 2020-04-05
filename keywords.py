@@ -1,6 +1,12 @@
-KEYWORD_VARIABLE_DECLARATION = "let"
-KEYWORD_AND = "and"
-KEYWORD_OR = "or"
-KEYWORD_NOT = "not"
+from typing import Dict
 
-KEYWORDS = [KEYWORD_VARIABLE_DECLARATION, KEYWORD_AND, KEYWORD_OR, KEYWORD_NOT]
+KEYWORDS: Dict[str, str] = {
+    "VARIABLE_DECLARATION": "let",
+    "AND": "and",
+    "OR": "or",
+    "NOT": "not",
+    "IF": "if",
+    "ELSE": "else",
+    "ELIF": "elif",
+    "THEN": "then",
+}

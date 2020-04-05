@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Optional, Union, Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from types_.type import Type
+    from lang_types.lang_type import LangType
 
-    Value = Type
+    Value = LangType
 
 
 class SymbolTable:

@@ -4,23 +4,23 @@ from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from errors.error import Error
-    from types_.type import Type
+    from lang_types.lang_type import LangType
 
 
 class RuntimeResult:
     def __init__(self) -> None:
-        self.value: Optional[Type] = None
+        self.value: Optional[LangType] = None
         self.error: Optional[Error] = None
 
     def __repr__(self) -> str:
         return f"{self.value} {self.error}"
 
-    def register(self, res: RuntimeResult) -> Optional[Type]:
+    def register(self, res: RuntimeResult) -> Optional[LangType]:
         if res.error:
             self.error = res.error
         return res.value
 
-    def success(self, value: Type) -> RuntimeResult:
+    def success(self, value: LangType) -> RuntimeResult:
         self.value = value
         return self
 

@@ -6,10 +6,11 @@ from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
 from nodes.node import Node
 from token_types import *
+from keywords import KEYWORDS
 
 if TYPE_CHECKING:
     from context import Context
-    from token import Token
+    from lang_token import Token
 
 
 class BinaryOperationNode(Node):
@@ -56,9 +57,9 @@ class BinaryOperationNode(Node):
             result, error = left.get_comparison_lte(right)
         elif self.operation_token.type == TT_GTE:
             result, error = left.get_comparison_gte(right)
-        elif self.operation_token.matches(TT_KEYWORD, "AND"):
+        elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["AND"]):
             result, error = left.anded_by(right)
-        elif self.operation_token.matches(TT_KEYWORD, "OR"):
+        elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["OR"]):
             result, error = left.ored_by(right)
         else:
             error = RTError(

@@ -4,14 +4,14 @@ from typing import Tuple, Optional, TYPE_CHECKING
 
 from errors.error import Error
 from errors.rt_error import RTError
-from types_.type import Type
+from lang_types.lang_type import LangType
 
 if TYPE_CHECKING:
     from position import Position
     from context import Context
 
 
-class Number(Type):
+class LangNumber(LangType):
     def __init__(
         self,
         value: float,
@@ -22,10 +22,10 @@ class Number(Type):
         super().__init__(pos_start, pos_end, context)
         self.value = value
 
-    def added_to(self, other: Type) -> oper_type:
-        if isinstance(other, Number):
+    def added_to(self, other: LangType) -> OperType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     self.value + other.value,
                     self.pos_start,
                     other.pos_end,
@@ -35,10 +35,10 @@ class Number(Type):
             )
         return None, None
 
-    def multiplied_by(self, other: Type) -> oper_type:
-        if isinstance(other, Number):
+    def multiplied_by(self, other: LangType) -> OperType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     self.value * other.value,
                     self.pos_start,
                     other.pos_end,
@@ -48,10 +48,10 @@ class Number(Type):
             )
         return None, None
 
-    def subtracted_by(self, other: Type) -> oper_type:
-        if isinstance(other, Number):
+    def subtracted_by(self, other: LangType) -> OperType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     self.value - other.value,
                     self.pos_start,
                     other.pos_end,
@@ -61,8 +61,8 @@ class Number(Type):
             )
         return None, None
 
-    def divided_by(self, other: Type) -> oper_type:
-        if isinstance(other, Number):
+    def divided_by(self, other: LangType) -> OperType:
+        if isinstance(other, LangNumber):
             if other.value == 0:
                 return (
                     None,
@@ -74,7 +74,7 @@ class Number(Type):
                     ),
                 )
             return (
-                Number(
+                LangNumber(
                     self.value / other.value,
                     self.pos_start,
                     other.pos_end,
@@ -84,10 +84,10 @@ class Number(Type):
             )
         return None, None
 
-    def raised_to_power_by(self, other: Type) -> oper_type:
-        if isinstance(other, Number):
+    def raised_to_power_by(self, other: LangType) -> OperType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     self.value ** other.value,
                     self.pos_start,
                     other.pos_end,
@@ -97,10 +97,10 @@ class Number(Type):
             )
         return None, None
 
-    def get_comparison_eq(self, other: Type) -> comp_type:
-        if isinstance(other, Number):
+    def get_comparison_eq(self, other: LangType) -> CompType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     int(self.value == other.value),
                     self.pos_start,
                     other.pos_end,
@@ -111,10 +111,10 @@ class Number(Type):
 
         return super().get_comparison_eq(other)
 
-    def get_comparison_ne(self, other: Type) -> comp_type:
-        if isinstance(other, Number):
+    def get_comparison_ne(self, other: LangType) -> CompType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     int(self.value != other.value),
                     self.pos_start,
                     other.pos_end,
@@ -125,10 +125,10 @@ class Number(Type):
 
         return super().get_comparison_ne(other)
 
-    def get_comparison_lt(self, other: Type) -> comp_type:
-        if isinstance(other, Number):
+    def get_comparison_lt(self, other: LangType) -> CompType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     int(self.value < other.value),
                     self.pos_start,
                     other.pos_end,
@@ -139,10 +139,10 @@ class Number(Type):
 
         return super().get_comparison_lt(other)
 
-    def get_comparison_gt(self, other: Type) -> comp_type:
-        if isinstance(other, Number):
+    def get_comparison_gt(self, other: LangType) -> CompType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     int(self.value > other.value),
                     self.pos_start,
                     other.pos_end,
@@ -153,10 +153,10 @@ class Number(Type):
 
         return super().get_comparison_gt(other)
 
-    def get_comparison_lte(self, other: Type) -> comp_type:
-        if isinstance(other, Number):
+    def get_comparison_lte(self, other: LangType) -> CompType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     int(self.value <= other.value),
                     self.pos_start,
                     other.pos_end,
@@ -167,10 +167,10 @@ class Number(Type):
 
         return super().get_comparison_lte(other)
 
-    def get_comparison_gte(self, other: Type) -> comp_type:
-        if isinstance(other, Number):
+    def get_comparison_gte(self, other: LangType) -> CompType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     int(self.value >= other.value),
                     self.pos_start,
                     other.pos_end,
@@ -181,10 +181,10 @@ class Number(Type):
 
         return super().get_comparison_gte(other)
 
-    def anded_by(self, other: Type) -> comp_type:
-        if isinstance(other, Number):
+    def anded_by(self, other: LangType) -> CompType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     int(self.value and other.value),
                     self.pos_start,
                     other.pos_end,
@@ -195,10 +195,10 @@ class Number(Type):
 
         return super().anded_by(other)
 
-    def ored_by(self, other: Type) -> comp_type:
-        if isinstance(other, Number):
+    def ored_by(self, other: LangType) -> CompType:
+        if isinstance(other, LangNumber):
             return (
-                Number(
+                LangNumber(
                     int(self.value or other.value),
                     self.pos_start,
                     other.pos_end,
@@ -209,15 +209,20 @@ class Number(Type):
 
         return super().ored_by(other)
 
-    def notted(self) -> comp_type:
+    def notted(self) -> CompType:
         return (
-            Number(int(not self.value), self.pos_start, self.pos_end, self.context,),
+            LangNumber(
+                int(not self.value), self.pos_start, self.pos_end, self.context,
+            ),
             None,
         )
+
+    def is_truthy(self) -> bool:
+        return self.value != 0
 
     def __repr__(self) -> str:
         return f"{self.value}"
 
 
-oper_type = Tuple[Optional[Number], Optional[Error]]
-comp_type = Tuple[Optional[Number], Optional[Error]]
+OperType = Tuple[Optional[LangNumber], Optional[Error]]
+CompType = Tuple[Optional[LangNumber], Optional[Error]]

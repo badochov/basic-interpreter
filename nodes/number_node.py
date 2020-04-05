@@ -4,11 +4,12 @@ from typing import TYPE_CHECKING
 
 from interpreter.runtime_result import RuntimeResult
 from nodes.node import Node
-from types_.number import Number
+from lang_types.lang_number import LangNumber
+from errors.rt_error import RTError
 
 if TYPE_CHECKING:
     from context import Context
-    from token import Token
+    from lang_token import Token
 
 
 class NumberNode(Node):
@@ -20,6 +21,10 @@ class NumberNode(Node):
         return f"{self.token}"
 
     def visit(self, context: Context) -> RuntimeResult:
-        return RuntimeResult().success(
-            Number(self.token.value, self.pos_start, self.pos_end, context)
+        if isinstance(self.token.value, float):
+            return RuntimeResult().success(
+                LangNumber(self.token.value, self.pos_start, self.pos_end, context)
+            )
+        return RuntimeResult().failure(
+            RTError(self.pos_start, self.pos_end, "Expected float or int", context)
         )

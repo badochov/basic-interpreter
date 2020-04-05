@@ -7,7 +7,7 @@ from nodes.node import Node
 
 if TYPE_CHECKING:
     from context import Context
-    from token import Token
+    from lang_token import Token
 
 
 class VariableAssignmentNode(Node):
