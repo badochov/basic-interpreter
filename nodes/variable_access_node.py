@@ -12,11 +12,10 @@ if TYPE_CHECKING:
 
 
 class VariableAccessNode(Node):
-    def __init__(self, var_name_token: Token, arg_nodes: List[Token]):
-        pos_end = arg_nodes[-1].pos_end if arg_nodes else var_name_token.pos_end
+    def __init__(self, var_name_token: Token):
+        pos_end = var_name_token.pos_end
         super().__init__(var_name_token.pos_start, pos_end)
         self.var_name_token = var_name_token
-        self.arg_nodes = List[Token]
 
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()

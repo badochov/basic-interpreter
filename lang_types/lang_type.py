@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Optional, Tuple, TypeVar, TYPE_CHECKING
+from typing import Optional, Tuple, TypeVar, TYPE_CHECKING, List
 
 from context import Context, mock_context
-from position import Position, mock_position
 from errors.error import Error
 from errors.not_impl_error import NotImplError
+from interpreter.runtime_result import RuntimeResult
 from keywords import *
+from nodes.node import Node
+from position import Position, mock_position
 
 if TYPE_CHECKING:
     from lang_types.lang_number import LangNumber
@@ -100,6 +102,11 @@ class LangType:
 
     def is_truthy(self) -> bool:
         return False
+
+    def call(self, context: Context, args: List[Node]) -> RuntimeResult:
+        return RuntimeResult().failure(
+            NotImplError(self.pos_start, self.pos_end, "Call")
+        )
 
 
 OperType = Tuple[Optional[LangType], Optional[Error]]

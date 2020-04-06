@@ -29,7 +29,7 @@ class Basic:
         if err:
             return None, err
 
-        print(tokens)
+        # print(tokens)
         # Generate AST
         parser = Parser(tokens)
         ast = parser.parse()

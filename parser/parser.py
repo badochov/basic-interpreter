@@ -11,6 +11,8 @@ from nodes.number_node import NumberNode
 from nodes.unary_operation_node import UnaryOperationNode
 from nodes.variable_access_node import VariableAccessNode
 from nodes.variable_assignment_node import VariableAssignmentNode
+from nodes.function_definition_node import FunctionDefinitionNode
+from nodes.function_call_node import FunctionCallNode
 from parser.parse_result import ParseResult
 from token_types import *
 
@@ -161,9 +163,10 @@ class Parser:
             res.register_advancement(self.advance())
             return res.success(NumberNode(token))
         elif token.type in (TT_IDENTIFIER,):
-            # TODO look for arguments
-            res.register_advancement(self.advance())
-            return res.success(VariableAccessNode(token))
+            call_node = res.register(self.function_call())
+            if res.error or call_node is None:
+                return res
+            return res.success(call_node)
         elif token.type in (TT_LPAREN,):
             res.register_advancement(self.advance())
             expr = res.register(self.expression())
@@ -192,7 +195,6 @@ class Parser:
         )
 
     def if_expression(self, keyword_type: str = "IF") -> ParseResult:
-        pos_start = self.current_token.pos_start.copy()
         res = ParseResult()
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS[keyword_type]):
             return res.failure(
@@ -241,6 +243,34 @@ class Parser:
                 f'Expected {KEYWORDS["ELIF"]} or {KEYWORDS["ELSE"]}',
             )
         )
+
+    def function_call(self) -> ParseResult:
+        res = ParseResult()
+
+        var_name = None
+
+        if self.current_token.type != TT_IDENTIFIER:
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    "Expected identifier",
+                )
+            )
+
+        var_name = self.current_token
+        res.register_advancement(self.advance())
+
+        arg_tokens: List[Node] = []
+        while self.current_token.type in (TT_LPAREN, TT_IDENTIFIER, TT_INT, TT_FLOAT):
+            expr = res.register(self.expression())
+            if expr is None or res.error:
+                return res
+            arg_tokens.append(expr)
+
+        if arg_tokens:
+            return res.success(FunctionCallNode(var_name, arg_tokens))
+        return res.success(VariableAccessNode(var_name))
 
     def function_definition(
         self,
@@ -291,30 +321,32 @@ class Parser:
         expr = res.register(self.expression())
         if res.error or expr is None:
             return res
-        fun = res.register(self.make_function(var_name, arg_tokens, expr))
+        fun = res.register(Parser._make_function_definition(var_name, arg_tokens, expr))
         if res.error or fun is None:
             return res
         return res.success(fun)
 
-    def make_function(
-        self, var_name: Optional[Token], args: List[Token], body: Node
+    @staticmethod
+    def _make_function_definition(
+        var_name: Optional[Token], args: List[Token], body: Node
     ) -> ParseResult:
         res = ParseResult()
         id_tokens = [var_name, *args] if var_name else args
-        if Parser._check_if_tokens_values_are_distinct(id_tokens):
+        if not Parser._check_if_tokens_values_are_distinct(id_tokens):
             pos_start = var_name.pos_start if var_name else args[0].pos_start
             return res.failure(
                 InvalidSyntaxError(
                     pos_start,
-                    args[-1].pos_end,
+                    id_tokens[-1].pos_end,
                     "Names in this function declaration are not unique",
                 )
             )
         if not args:
-            return res.success(VariableAssignmentNode(var_name, None, body))
+            return res.success(FunctionDefinitionNode(var_name, None, body))
         prev_fun = body
         for arg in reversed(args):
-            prev_fun = VariableAssignmentNode(None, arg, prev_fun)
+            prev_fun = FunctionDefinitionNode(None, arg, prev_fun)
+        return res.success(FunctionDefinitionNode(var_name, None, prev_fun))
 
     @staticmethod
     def _check_if_tokens_values_are_distinct(tokens: List[Token]) -> bool:
