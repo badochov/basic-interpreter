@@ -9,9 +9,9 @@ if TYPE_CHECKING:
 
 
 class SymbolTable:
-    def __init__(self) -> None:
+    def __init__(self, parent: SymbolTable = None) -> None:
         self.symbols: Dict[str, Value] = {}
-        self.parent: Optional[SymbolTable] = None
+        self.parent: Optional[SymbolTable] = parent
 
     def get(self, name: str) -> Union[Value, None]:
         if name in self.symbols:
@@ -25,3 +25,10 @@ class SymbolTable:
 
     def remove(self, name: str) -> None:
         del self.symbols[name]
+
+    def add_root(self, table: Optional[SymbolTable]) -> SymbolTable:
+        if self.parent:
+            self.parent.add_root(table)
+        else:
+            self.parent = table
+        return self

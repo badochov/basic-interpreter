@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING, Optional
 
 
+from sys import getrecursionlimit, setrecursionlimit
+
 from context import Context
 from lang_types.lang_number import LangNumber
 from symbol_table import SymbolTable
@@ -19,6 +21,8 @@ global_syntax_table = SymbolTable()
 global_syntax_table.set("null", LangNumber(0))
 global_syntax_table.set("true", LangNumber(1))
 global_syntax_table.set("false", LangNumber(0))
+
+setrecursionlimit(getrecursionlimit() * 1000)
 
 
 class Basic:

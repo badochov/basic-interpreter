@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from context import Context
     from lang_token import Token
 
+
 # BUG
 #  to działą
 # let add x y = x + y
@@ -53,8 +54,14 @@ class FunctionCallNode(Node):
             )
 
         fun_cpy = fun.copy().set_pos(self.pos_start, self.pos_end)
+        args = []
+        for arg_node in reversed(self.arg_nodes):
+            arg = res.register(arg_node.visit(context))
+            if arg is None or res.error:
+                return res
 
-        call_res = res.register(fun_cpy.call(context, self.arg_nodes))
+            args.append(arg)
+        call_res = res.register(fun_cpy.call(context, args))
         if call_res is None or res.error:
             return res
         return res.success(call_res)

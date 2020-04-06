@@ -23,7 +23,7 @@ class VariableAccessNode(Node):
 
         value = None
         if isinstance(var_name, str):
-            value = context.symbol_table.get(var_name)
+            value = context.get(var_name)
 
         if not value:
             return res.failure(

@@ -103,7 +103,7 @@ class LangType:
     def is_truthy(self) -> bool:
         return False
 
-    def call(self, context: Context, args: List[Node]) -> RuntimeResult:
+    def call(self, context: Context, args: List[LangType]) -> RuntimeResult:
         return RuntimeResult().failure(
             NotImplError(self.pos_start, self.pos_end, "Call")
         )

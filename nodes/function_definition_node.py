@@ -43,6 +43,7 @@ class FunctionDefinitionNode(Node):
                 )
 
             value: LangType = LangFunction(
+                self.var_name_token,
                 self.arg_token.value,
                 self.body_node,
                 self.pos_start,

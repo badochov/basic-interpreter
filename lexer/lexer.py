@@ -124,7 +124,7 @@ class Lexer:
         self.advance()
         if self.current_char == "=":
             self.advance()
-            return Token(TT_NE, pos_start, self.pos.copy()), None
+            return Token(TT_NE, pos_start, self.pos), None
         return (
             None,
             UnexpectedCharError(pos_start, self.pos, 'after "!" should be "="'),
@@ -139,7 +139,7 @@ class Lexer:
             self.advance()
             token_type = TT_EE
 
-        return Token(token_type, pos_start, self.pos.copy())
+        return Token(token_type, pos_start, self.pos)
 
     def make_greater_than(self) -> Token:
         token_type = TT_GT
@@ -150,7 +150,7 @@ class Lexer:
             self.advance()
             token_type = TT_GTE
 
-        return Token(token_type, pos_start, self.pos.copy())
+        return Token(token_type, pos_start, self.pos)
 
     def make_less_than(self) -> Token:
         token_type = TT_LT
@@ -161,7 +161,7 @@ class Lexer:
             self.advance()
             token_type = TT_LTE
 
-        return Token(token_type, pos_start, self.pos.copy())
+        return Token(token_type, pos_start, self.pos)
 
     def make_minus_or_arrow(self) -> Token:
         token_type = TT_MINUS
@@ -172,4 +172,4 @@ class Lexer:
             self.advance()
             token_type = TT_ARROW
 
-        return Token(token_type, pos_start, self.pos.copy())
+        return Token(token_type, pos_start, self.pos)
