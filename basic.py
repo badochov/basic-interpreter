@@ -2,15 +2,18 @@ from __future__ import annotations
 
 from typing import Tuple, TYPE_CHECKING, Optional
 
-if TYPE_CHECKING:
-    from errors.error import Error
-    from lang_types.lang_type import LangType
+
 from context import Context
 from lang_types.lang_number import LangNumber
 from symbol_table import SymbolTable
 from interpreter.interpreter import Interpreter
 from lexer.lexer import Lexer
 from parser.parser import Parser
+
+
+if TYPE_CHECKING:
+    from errors.error import Error
+    from lang_types.lang_type import LangType
 
 global_syntax_table = SymbolTable()
 global_syntax_table.set("null", LangNumber(0))
@@ -26,6 +29,7 @@ class Basic:
         if err:
             return None, err
 
+        print(tokens)
         # Generate AST
         parser = Parser(tokens)
         ast = parser.parse()

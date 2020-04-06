@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
@@ -12,12 +12,11 @@ if TYPE_CHECKING:
 
 
 class VariableAccessNode(Node):
-    def __init__(self, var_name_token: Token):
-        super().__init__(var_name_token.pos_start, var_name_token.pos_end)
+    def __init__(self, var_name_token: Token, arg_nodes: List[Token]):
+        pos_end = arg_nodes[-1].pos_end if arg_nodes else var_name_token.pos_end
+        super().__init__(var_name_token.pos_start, pos_end)
         self.var_name_token = var_name_token
-
-        self.pos_start = var_name_token.pos_start
-        self.pos_end = var_name_token.pos_end
+        self.arg_nodes = List[Token]
 
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()

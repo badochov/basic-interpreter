@@ -21,7 +21,7 @@ class NumberNode(Node):
         return f"{self.token}"
 
     def visit(self, context: Context) -> RuntimeResult:
-        if isinstance(self.token.value, float):
+        if isinstance(self.token.value, float) or isinstance(self.token.value, int):
             return RuntimeResult().success(
                 LangNumber(self.token.value, self.pos_start, self.pos_end, context)
             )

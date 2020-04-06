@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import List, Callable, TYPE_CHECKING, Union, Tuple
+from typing import List, Callable, TYPE_CHECKING, Union, Tuple, Optional
 
 from errors.invalid_syntax_error import InvalidSyntaxError
 from keywords import KEYWORDS
 from nodes.binary_operation_node import BinaryOperationNode
 from nodes.if_node import IfNode
+from nodes.node import Node
 from nodes.number_node import NumberNode
 from nodes.unary_operation_node import UnaryOperationNode
 from nodes.variable_access_node import VariableAccessNode
@@ -74,34 +75,15 @@ class Parser:
     def expression(self) -> ParseResult:
         res = ParseResult()
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["VARIABLE_DECLARATION"]):
-            res.register_advancement(self.advance())
-
-            if self.current_token.type != TT_IDENTIFIER:
-                return res.failure(
-                    InvalidSyntaxError(
-                        self.current_token.pos_start,
-                        self.current_token.pos_end,
-                        "Expected identifier",
-                    )
+            fun_def = res.register(
+                self.function_definition(
+                    KEYWORDS["VARIABLE_DECLARATION"], True, TT_EQUALS
                 )
-
-            var_name = self.current_token
-
-            res.register_advancement(self.advance())
-
-            if self.current_token.type != TT_EQUALS:
-                return res.failure(
-                    InvalidSyntaxError(
-                        self.current_token.pos_start,
-                        self.current_token.pos_end,
-                        "Expected '='",
-                    )
-                )
-            res.register_advancement(self.advance())
-            expr = res.register(self.expression())
-            if res.error or expr is None:
+            )
+            if res.error or fun_def is None:
                 return res
-            return res.success(VariableAssignmentNode(var_name, expr))
+            return res.success(fun_def)
+
         node = res.register(
             self.binary_operation(
                 self.logic_expression,
@@ -179,6 +161,7 @@ class Parser:
             res.register_advancement(self.advance())
             return res.success(NumberNode(token))
         elif token.type in (TT_IDENTIFIER,):
+            # TODO look for arguments
             res.register_advancement(self.advance())
             return res.success(VariableAccessNode(token))
         elif token.type in (TT_LPAREN,):
@@ -197,7 +180,11 @@ class Parser:
             if res.error or if_expr is None:
                 return res
             return res.success(if_expr)
-
+        elif token.matches(TT_KEYWORD, KEYWORDS["FUN"]):
+            fun_def = res.register(self.function_definition())
+            if res.error or fun_def is None:
+                return res
+            return res.success(fun_def)
         return res.failure(
             InvalidSyntaxError(
                 token.pos_start, token.pos_end, "Expected int, float, +, - or ("
@@ -254,3 +241,82 @@ class Parser:
                 f'Expected {KEYWORDS["ELIF"]} or {KEYWORDS["ELSE"]}',
             )
         )
+
+    def function_definition(
+        self,
+        keyword: str = KEYWORDS["FUN"],
+        has_name: bool = False,
+        end_def_token: str = TT_ARROW,
+    ) -> ParseResult:
+        res = ParseResult()
+        if not self.current_token.matches(TT_KEYWORD, keyword):
+            res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    f"Expected {keyword}",
+                )
+            )
+
+        res.register_advancement(self.advance())
+
+        var_name = None
+        if has_name:
+            if self.current_token.type != TT_IDENTIFIER:
+                return res.failure(
+                    InvalidSyntaxError(
+                        self.current_token.pos_start,
+                        self.current_token.pos_end,
+                        "Expected identifier",
+                    )
+                )
+
+            var_name = self.current_token
+            res.register_advancement(self.advance())
+
+        arg_tokens: List[Token] = []
+        while self.current_token.type == TT_IDENTIFIER:
+            arg_tokens.append(self.current_token)
+            res.register_advancement(self.advance())
+
+        if self.current_token.type != end_def_token:
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    f'Expected "{end_def_token}"',
+                )
+            )
+        res.register_advancement(self.advance())
+        expr = res.register(self.expression())
+        if res.error or expr is None:
+            return res
+        fun = res.register(self.make_function(var_name, arg_tokens, expr))
+        if res.error or fun is None:
+            return res
+        return res.success(fun)
+
+    def make_function(
+        self, var_name: Optional[Token], args: List[Token], body: Node
+    ) -> ParseResult:
+        res = ParseResult()
+        id_tokens = [var_name, *args] if var_name else args
+        if Parser._check_if_tokens_values_are_distinct(id_tokens):
+            pos_start = var_name.pos_start if var_name else args[0].pos_start
+            return res.failure(
+                InvalidSyntaxError(
+                    pos_start,
+                    args[-1].pos_end,
+                    "Names in this function declaration are not unique",
+                )
+            )
+        if not args:
+            return res.success(VariableAssignmentNode(var_name, None, body))
+        prev_fun = body
+        for arg in reversed(args):
+            prev_fun = VariableAssignmentNode(None, arg, prev_fun)
+
+    @staticmethod
+    def _check_if_tokens_values_are_distinct(tokens: List[Token]) -> bool:
+        ids = list(map(lambda t: t.value, tokens))
+        return len(set(ids)) == len(ids)

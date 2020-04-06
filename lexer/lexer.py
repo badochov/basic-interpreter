@@ -46,7 +46,8 @@ class Lexer:
             if self.current_char == "+":
                 tokens.append(Token(TT_PLUS, self.pos, self.pos))
             elif self.current_char == "-":
-                tokens.append(Token(TT_MINUS, self.pos, self.pos))
+                tokens.append(self.make_minus_or_arrow())
+                continue
             elif self.current_char == "*":
                 tokens.append(Token(TT_MUL, self.pos, self.pos))
             elif self.current_char == "^":
@@ -159,5 +160,16 @@ class Lexer:
         if self.current_char == "=":
             self.advance()
             token_type = TT_LTE
+
+        return Token(token_type, pos_start, self.pos.copy())
+
+    def make_minus_or_arrow(self) -> Token:
+        token_type = TT_MINUS
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == ">":
+            self.advance()
+            token_type = TT_ARROW
 
         return Token(token_type, pos_start, self.pos.copy())

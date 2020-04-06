@@ -1,5 +1,5 @@
-expr            : KEYWORD:let IDENTIFIER EQ expr
-                : logic-expr ((KEYWORD:or|KEYWORD:and) logic-expr)*
+expr            : KEYWORD:VARIABLE_DECLARATION IDENTIFIER (ARGUMENT )* EQ expr
+                : logic-expr ((KEYWORD:OR|KEYWORD:AND) logic-expr)*
 
 logic-expr      : arith-expr ((EE|LT|GT|LTE|GTE) arith-expr)*
                 : KEYWORD:not logic-expr
@@ -13,10 +13,14 @@ factor          : (PLUS|MINUS) factor
 
 power           : atom (POW factor)*
 
-atom            : INT|FLOAT|IDENTIFIER
+atom            : INT|FLOAT
                 : LPAREN expr RPAREN
                 : if-expr
+                : IDENTIFIER (ARGUMENT)*l
+                : fun-def
 
 if-expr         : KEYWORD:IF expr KEYWORD:THEN expr
                   (KEYWORD:ELIF expr KEYWORD:THEN expr)*
                   KEYWORD:ELSE expr
+
+fun-def         : KEYWORD:FUN IDENTIFIER? (ARGUMENT)* ARROW
