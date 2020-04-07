@@ -247,9 +247,9 @@ class Parser:
     def function_call(self) -> ParseResult:
         res = ParseResult()
 
-        var_name = None
+        var_name = self.current_token
 
-        if self.current_token.type != TT_IDENTIFIER:
+        if var_name.type != TT_IDENTIFIER:
             return res.failure(
                 InvalidSyntaxError(
                     self.current_token.pos_start,
@@ -258,15 +258,18 @@ class Parser:
                 )
             )
 
-        var_name = self.current_token
         res.register_advancement(self.advance())
 
         arg_tokens: List[Node] = []
         while self.current_token.type in (TT_LPAREN, TT_IDENTIFIER, TT_INT, TT_FLOAT):
-            expr = res.register(self.expression())
-            if expr is None or res.error:
-                return res
-            arg_tokens.append(expr)
+            if self.current_token.type == TT_IDENTIFIER:
+                arg_tokens.append(VariableAccessNode(self.current_token))
+                res.register_advancement(self.advance())
+            else:
+                atom = res.register(self.atom())
+                if atom is None or res.error:
+                    return res
+                arg_tokens.append(atom)
 
         if arg_tokens:
             return res.success(FunctionCallNode(var_name, arg_tokens))

@@ -60,13 +60,13 @@ class LangFunction(LangType):
         if res.error or result is None:
             return res
 
-        result_cpy = result.copy()
+        result_cpy = result  # .copy()
         result_cpy.context = new_ctx
         if args:
             val = res.register(result_cpy.call(new_ctx, args))
             if val is None or res.error:
                 return res
-            val_c = val.copy()
+            val_c = val  # .copy()
 
             self.context = new_ctx
             return res.success(val_c)

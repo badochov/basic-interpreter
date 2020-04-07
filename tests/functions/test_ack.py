@@ -24,10 +24,8 @@ def test_ack() -> None:
         LangFunction,
         None,
     )
-    run_test(basic, "ack 2 2", "test_ack_part1", LangNumber, None, ack(2, 2))
-    run_test(basic, "ack 2 1", "test_ack_part1", LangNumber, None, ack(2, 1))
-    run_test(basic, "ack 3 1", "test_ack_part1", LangNumber, None, ack(3, 1))
-    # run_test(basic, "ack 3 2", "test_ack_part1", LangNumber, None, 29)
-    run_test(basic, "ack 1 2", "test_ack_part1", LangNumber, None, ack(1, 2))
-    run_test(basic, "ack 1 3", "test_ack_part1", LangNumber, None, ack(1, 3))
-    run_test(basic, "ack 1 1", "test_ack_part1", LangNumber, None, ack(1, 1))
+    for i in range(1, 4):
+        for j in range(1, 4):
+            run_test(
+                basic, f"ack {i} {j}", f"test_ack.{i}.{j}", LangNumber, None, ack(i, j)
+            )

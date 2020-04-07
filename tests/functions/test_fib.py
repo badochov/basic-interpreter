@@ -16,7 +16,7 @@ def test_fib_naive() -> None:
     basic = Basic()
     run_test(
         basic,
-        "let fib n = if n <2 then n else (fib (n-1)) + (fib (n-2))",
+        "let fib n = if n <2 then n else fib (n-1) + fib (n-2)",
         "test_fib_naive_part1",
         LangFunction,
         None,

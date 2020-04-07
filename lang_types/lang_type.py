@@ -46,6 +46,7 @@ class LangType:
         self.context = context
         return self
 
+    # todo improve copy
     def copy(self: T) -> T:
         return deepcopy(self)
 
