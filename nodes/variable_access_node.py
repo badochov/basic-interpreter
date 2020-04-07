@@ -35,5 +35,5 @@ class VariableAccessNode(Node):
                 )
             )
 
-        value = value  # .copy().set_pos(self.pos_start, self.pos_end)
+        value = value.copy().set_pos(self.pos_start, self.pos_end)
         return res.success(value)

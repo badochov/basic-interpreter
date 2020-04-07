@@ -29,7 +29,9 @@ class LangFunction(LangType):
         pos_end: Position = None,
         context: Context = None,
     ):
-        super().__init__(pos_start, pos_end, context)
+        super().__init__(
+            pos_start, pos_end, context, ["body_node", "arg_name", "name_token", "name"]
+        )
         self.arg_name = arg_name
         self.body_node = body_node
         self.name = (
@@ -60,13 +62,13 @@ class LangFunction(LangType):
         if res.error or result is None:
             return res
 
-        result_cpy = result  # .copy()
+        result_cpy = result.copy()
         result_cpy.context = new_ctx
         if args:
             val = res.register(result_cpy.call(new_ctx, args))
             if val is None or res.error:
                 return res
-            val_c = val  # .copy()
+            val_c = val.copy()
 
             self.context = new_ctx
             return res.success(val_c)

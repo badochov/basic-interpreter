@@ -8,7 +8,6 @@ from errors.error import Error
 from errors.not_impl_error import NotImplError
 from interpreter.runtime_result import RuntimeResult
 from keywords import *
-from nodes.node import Node
 from position import Position, mock_position
 
 if TYPE_CHECKING:
@@ -25,6 +24,7 @@ class LangType:
         pos_start: Position = None,
         pos_end: Position = None,
         context: Context = None,
+        not_copied: List[str] = None,
     ):
         if pos_start is None:
             pos_start = mock_position
@@ -36,6 +36,9 @@ class LangType:
         self.pos_start = pos_start
         self.pos_end = pos_end
         self.context = context
+        self.not_copied = ["context", "pos_start", "pos_end"] + (
+            not_copied if not_copied else []
+        )
 
     def set_pos(self: T, pos_start: Position, pos_end: Position) -> T:
         self.pos_start = pos_start
@@ -48,7 +51,14 @@ class LangType:
 
     # todo improve copy
     def copy(self: T) -> T:
-        return deepcopy(self)
+        cls = self.__class__
+        result = cls.__new__(cls)
+        for k, v in self.__dict__.items():
+            if k not in self.not_copied:
+                setattr(result, k, deepcopy(v))
+            else:
+                setattr(result, k, v)
+        return result
 
     def added_to(self, other: LangType) -> OperType:
         return None, NotImplError(self.pos_start, self.pos_end, "+")
