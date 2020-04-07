@@ -33,7 +33,7 @@ class FunctionCallNode(Node):
         res = RuntimeResult()
         fun = None
         if isinstance(self.fun_name_token.value, str):
-            fun = context.symbol_table.get(self.fun_name_token.value)
+            fun = context.get(self.fun_name_token.value)
         if not fun:
             return res.failure(
                 RTError(
@@ -61,7 +61,8 @@ class FunctionCallNode(Node):
                 return res
 
             args.append(arg)
-        call_res = res.register(fun_cpy.call(context, args))
+        # print(self.arg_nodes, args, context.get("n"))
+        call_res = res.register(fun_cpy.call(fun_cpy.context, args))
         if call_res is None or res.error:
             return res
         return res.success(call_res)

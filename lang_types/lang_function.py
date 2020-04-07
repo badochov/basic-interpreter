@@ -45,12 +45,7 @@ class LangFunction(LangType):
         return True
 
     def call(self, context: Context, args: List[LangType]) -> RuntimeResult:
-        # let fib n = if n < 2 then n else fib (n-1) + (n-2)
-        # doesn't work
-        new_ctx = Context(
-            self.name, SymbolTable(context.symbol_table), self.context, self.pos_start
-        )
-        print(new_ctx.get("n"))
+        new_ctx = Context(self.name, SymbolTable(), context, self.pos_start)
         res = RuntimeResult()
         if not args:
             return res.failure(TooFewArgsError(self.pos_start, self.pos_start, ""))
@@ -60,17 +55,21 @@ class LangFunction(LangType):
             )
 
         arg = args.pop()
-
         new_ctx.symbol_table.set(self.arg_name, arg)
-
         result = res.register(self.body_node.visit(new_ctx))
         if res.error or result is None:
             return res
 
-        result_cpy = result
+        result_cpy = result.copy()
+        result_cpy.context = new_ctx
         if args:
             val = res.register(result_cpy.call(new_ctx, args))
             if val is None or res.error:
                 return res
-            return res.success(val)
+            val_c = val.copy()
+
+            self.context = new_ctx
+            return res.success(val_c)
+
+        self.context = new_ctx
         return res.success(result_cpy)
