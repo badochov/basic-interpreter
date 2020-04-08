@@ -1,8 +1,12 @@
-expr            : KEYWORD:VARIABLE_DECLARATION IDENTIFIER (ARGUMENT )* EQ expr
+#TODO finish rework
+
+var-decl        : KEYWORD:VARIABLE_DECLARATION IDENTIFIER (IDENTIFIER )* EQ expr
+
+expr            : var-decl KEYWORD:IN expr
                 : logic-expr ((KEYWORD:OR|KEYWORD:AND) logic-expr)*
 
 logic-expr      : arith-expr ((EE|LT|GT|LTE|GTE) arith-expr)*
-                : KEYWORD:not logic-expr
+                : KEYWORD:NOT logic-expr
 
 arith-expr      : term ((PLUS|MINUS) term)*
 
@@ -13,14 +17,17 @@ factor          : (PLUS|MINUS) factor
 
 power           : atom (POW factor)*
 
-atom            : INT|FLOAT
-                : LPAREN expr RPAREN
-                : if-expr
-                : IDENTIFIER (ARGUMENT)*l
+atom            : if-expr
+                : IDENTIFIER (argument)*
                 : fun-def
+                : argument
 
 if-expr         : KEYWORD:IF expr KEYWORD:THEN expr
                   (KEYWORD:ELIF expr KEYWORD:THEN expr)*
                   KEYWORD:ELSE expr
 
-fun-def         : KEYWORD:FUN IDENTIFIER? (ARGUMENT)* ARROW
+fun-def         : KEYWORD:FUN IDENTIFIER? (IDENTIFIER)* ARROW
+
+argument        : INT|FLOAT
+                : LPAREN expr RPAREN
+                : IDENTIFIER

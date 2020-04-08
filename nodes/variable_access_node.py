@@ -17,6 +17,9 @@ class VariableAccessNode(Node):
         super().__init__(var_name_token.pos_start, pos_end)
         self.var_name_token = var_name_token
 
+    def __repr__(self):
+        return f"({self.var_name_token})"
+
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         var_name = self.var_name_token.value

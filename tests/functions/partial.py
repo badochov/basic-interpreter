@@ -36,7 +36,7 @@ def test_ack() -> None:
         for j in range(10):
             run_test(
                 basic,
-                f"add {i} {j}",
+                f"let _ = add {i} {j}",
                 f"test_partials_part2.{i}.{j}",
                 LangNumber,
                 None,
@@ -44,13 +44,18 @@ def test_ack() -> None:
             )
     for i in range(21):
         run_test(
-            basic, f"inc {i}", f"test_partials_part3.{i}", LangNumber, None, inc(i)
+            basic,
+            f"let _ = inc {i}",
+            f"test_partials_part3.{i}",
+            LangNumber,
+            None,
+            inc(i),
         )
     for i in range(10):
         for j in range(10):
             run_test(
                 basic,
-                f"add {i} {j}",
+                f"let _ = add {i} {j}",
                 f"test_partials_part4.{i}.{j}",
                 LangNumber,
                 None,
@@ -58,5 +63,10 @@ def test_ack() -> None:
             )
     for i in range(21):
         run_test(
-            basic, f"inc {i}", f"test_partials_part5.{i}", LangNumber, None, inc(i)
+            basic,
+            f"let _ = inc {i}",
+            f"test_partials_part5.{i}",
+            LangNumber,
+            None,
+            inc(i),
         )

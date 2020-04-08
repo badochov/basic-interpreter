@@ -29,6 +29,9 @@ class FunctionCallNode(Node):
         self.fun_name_token = fun_name_token
         self.arg_nodes = arg_nodes
 
+    def __repr__(self):
+        return f"({self.fun_name_token}, {self.arg_nodes})"
+
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         fun = None

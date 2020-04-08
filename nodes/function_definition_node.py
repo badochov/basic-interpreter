@@ -32,6 +32,9 @@ class FunctionDefinitionNode(Node):
         self.arg_token = arg_token
         self.body_node = body_node
 
+    def __repr__(self):
+        return f"({self.var_name_token or '<anonymous>'}, {self.arg_token}, {self.body_node})"
+
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         if self.arg_token:

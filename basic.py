@@ -42,8 +42,7 @@ class Basic:
 
         interpreter = Interpreter()
 
-        context = Context("<program>", global_syntax_table)
-
+        context = Context(file_name, global_syntax_table)
         res = interpreter.visit(ast.node, context)
 
         return res.value, res.error

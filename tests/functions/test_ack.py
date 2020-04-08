@@ -19,13 +19,18 @@ def test_ack() -> None:
     basic = Basic()
     run_test(
         basic,
-        "let ack m n = if m ==0 then n+1 elif n ==0 and m>0 then ack (m-1) 1 elif m>0 and n>0 then ack (m-1) (ack (m) (n-1)) else 0",
-        "test_ack_part1",
+        "let ack m n = if m ==0 then n+1 elif n ==0 and m>0 then ack (m-1) 1 elif m>0 and n>0 then ack (m-1) (ack m (n-1)) else 0",
+        "test_ack_decl",
         LangFunction,
         None,
     )
     for i in range(1, 4):
         for j in range(1, 4):
             run_test(
-                basic, f"ack {i} {j}", f"test_ack.{i}.{j}", LangNumber, None, ack(i, j)
+                basic,
+                f"let _ = ack {i} {j}",
+                f"test_ack.{i}.{j}",
+                LangNumber,
+                None,
+                ack(i, j),
             )

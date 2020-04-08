@@ -29,9 +29,7 @@ class LangFunction(LangType):
         pos_end: Position = None,
         context: Context = None,
     ):
-        super().__init__(
-            pos_start, pos_end, context, ["body_node", "arg_name", "name_token", "name"]
-        )
+        super().__init__(pos_start, pos_end, context)
         self.arg_name = arg_name
         self.body_node = body_node
         self.name = (

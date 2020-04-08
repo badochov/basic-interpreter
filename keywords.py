@@ -10,4 +10,5 @@ KEYWORDS: Dict[str, str] = {
     "ELIF": "elif",
     "THEN": "then",
     "FUN": "fun",
+    "IN": "in",
 }

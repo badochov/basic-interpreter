@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING
 
 from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
+from keywords import KEYWORDS
 from nodes.node import Node
 from token_types import *
-from keywords import KEYWORDS
 
 if TYPE_CHECKING:
     from context import Context
@@ -32,7 +32,6 @@ class BinaryOperationNode(Node):
         right = res.register(self.right_node.visit(context))
         if res.error or right is None:
             return res
-
         result = None
 
         if self.operation_token.type == TT_PLUS:
@@ -61,6 +60,8 @@ class BinaryOperationNode(Node):
             result, error = left.anded_by(right)
         elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["OR"]):
             result, error = left.ored_by(right)
+        elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["IN"]):
+            result, error = right, res.error
         else:
             error = RTError(
                 self.pos_start,

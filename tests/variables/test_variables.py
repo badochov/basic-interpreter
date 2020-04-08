@@ -54,7 +54,7 @@ def test_integer_assignment() -> None:
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 4
-    res, err = basic.run("a3", "test_addition_integer_assignment_part2")
+    res, err = basic.run("let _ = a3", "test_addition_integer_assignment_part2")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
@@ -67,7 +67,7 @@ def test_integer_assignment() -> None:
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 4
-    res, err = basic.run("a4", "test_multiplication_integer_assignment_part2")
+    res, err = basic.run("let _ = a4", "test_multiplication_integer_assignment_part2")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
@@ -80,57 +80,59 @@ def test_integer_assignment() -> None:
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 4
-    res, err = basic.run("a5", "test_raised_to_power_integer_assignment_part2")
+    res, err = basic.run("let _ = a5", "test_raised_to_power_integer_assignment_part2")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 4
 
     res, err = basic.run(
-        "let a6 = (let a7 = 2) * (let a8 = 1) * (let a9 = 3) * (let a10 = 7)",
+        "let a6 = (let a7 = 2 let_in a7) * (let a8 = 1 let_in a8) * (let a9 = 3 let_in a9) * (let a10 = 7 let_in a10)",
         "test_assignement_output_part1",
     )
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 2 * 1 * 3 * 7
-    res, err = basic.run("a6", "test_assignement_output_part2")
+    res, err = basic.run("let _ = a6", "test_assignement_output_part2")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 2 * 1 * 3 * 7
-    res, err = basic.run("a7", "test_assignement_output_part3")
+    res, err = basic.run("let _ = a7", "test_assignement_output_part3")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 2
-    res, err = basic.run("a8", "test_assignement_output_part4")
+    res, err = basic.run("let _ = a8", "test_assignement_output_part4")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 1
-    res, err = basic.run("a9", "test_assignement_output_part5")
+    res, err = basic.run("let _ = a9", "test_assignement_output_part5")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 3
-    res, err = basic.run("a10", "test_assignement_output_part6")
+    res, err = basic.run("let _ = a10", "test_assignement_output_part6")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 7
 
-    res, err = basic.run("let a11 = let a12 = 2", "test_multi_assignement_part1",)
+    res, err = basic.run(
+        "let a11 = (let a12 = 2 let_in a12)", "test_multi_assignement_part1",
+    )
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 2
-    res, err = basic.run("a11", "test_multi_assignement_part2")
+    res, err = basic.run("let _ = a11", "test_multi_assignement_part2")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
     assert res.value == 2
-    res, err = basic.run("a12", "test_multi_assignement_part3")
+    res, err = basic.run("let _ = a12", "test_multi_assignement_part3")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
