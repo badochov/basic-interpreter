@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from basic import Basic
 from lang_types.lang_number import LangNumber
 from errors.invalid_syntax_error import InvalidSyntaxError

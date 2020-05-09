@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Optional, Tuple, TypeVar, TYPE_CHECKING, List
+from typing import Optional, Tuple, TypeVar, TYPE_CHECKING, List, cast
 
 from context import Context, mock_context
 from errors.error import Error
@@ -27,7 +27,7 @@ class LangType:
         context: Context = None,
         deep_copied: List[str] = None,
     ):
-        self.pos_start = pos_start if pos_start else pos_start
+        self.pos_start = pos_start if pos_start else mock_position
         self.pos_end = pos_end if pos_end else mock_position
         self.context = context if context else mock_context
         self.deep_copied = deep_copied if deep_copied else []
@@ -45,7 +45,7 @@ class LangType:
     # todo improve copy
     def copy(self: T) -> T:
         cls = type(self)
-        result = cls.__new__(cls)
+        result = cast(T, cls.__new__(cls))
         for key, value in self.__dict__.items():
             if key in self.deep_copied:
                 setattr(result, key, deepcopy(value))

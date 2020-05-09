@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Callable, TYPE_CHECKING, Union, Tuple, Optional
+from typing import List, Callable, TYPE_CHECKING, Union, Tuple, Optional, cast
 
 from errors.invalid_syntax_error import InvalidSyntaxError
 from keywords import KEYWORDS
@@ -292,17 +292,17 @@ class Parser:
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["MATCH_OR"]):
             res.register_advancement(self.advance())
 
-        cases: List[Node] = []
+        cases: List[MatchCaseNode] = []
         case = res.register(self._match_case())
         if res.error or case is None:
             return res
-        cases.append(case)
+        cases.append(cast(MatchCaseNode, case))
         while self.current_token.matches(TT_KEYWORD, KEYWORDS["MATCH_OR"]):
             res.register_advancement(self.advance())
             case = res.register(self._match_case())
             if res.error or case is None:
                 return res
-            cases.append(case)
+            cases.append(cast(MatchCaseNode, case))
 
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS["END"]):
             return res.failure(
@@ -313,14 +313,6 @@ class Parser:
                 )
             )
         res.register_advancement(self.advance())
-        if not all(map(lambda case: isinstance(case, MatchCaseNode), cases)):
-            return res.failure(
-                InvalidSyntaxError(
-                    self.current_token.pos_start,
-                    self.current_token.pos_end,
-                    f"All nodes should be MatchCaseNode",
-                )
-            )
 
         return res.success(MatchNode(expr, cases))
 

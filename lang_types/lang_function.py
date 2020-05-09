@@ -10,7 +10,7 @@ from interpreter.runtime_result import RuntimeResult
 from lang_token import Token
 from lang_types.lang_type import LangType
 from nodes.node import Node
-from position import Position
+from position import Position, mock_position
 from symbol_table import SymbolTable
 
 if TYPE_CHECKING:
@@ -48,10 +48,10 @@ class LangFunction(LangType):
         new_ctx = Context(self.name, SymbolTable(), context, self.pos_start)
         res = RuntimeResult()
         if not args:
-            return res.failure(TooFewArgsError(self.pos_start, self.pos_start, ""))
+            return res.failure(TooFewArgsError(self.pos_start, self.pos_end, ""))
         if not self.body_node:
             return res.failure(
-                RTError(self.pos_start, self.pos_start, "No function body", new_ctx)
+                RTError(self.pos_start, self.pos_end, "No function body", new_ctx)
             )
 
         arg = args.pop()
