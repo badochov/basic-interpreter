@@ -1,42 +1,35 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
 from lang_types.lang_function import LangFunction
 from lang_types.lang_type import LangType
 from nodes.node import Node
+from nodes.type_variant_node import TypeVariantNode
 
 if TYPE_CHECKING:
     from context import Context
     from lang_token import Token
 
 
-class FunctionDefinitionNode(Node):
+class TypeDefinitionNode(Node):
     def __init__(
-        self,
-        var_name_token: Optional[Token],
-        arg_token: Optional[Token],
-        body_node: Node,
+        self, var_name_token: Token, variants: List[TypeVariantNode],
     ):
-        if var_name_token:
-            pos_start = var_name_token.pos_start
-        elif arg_token:
-            pos_start = arg_token.pos_start
-        else:
-            pos_start = body_node.pos_start
+        pos_end = variants[-1].pos_end if variants else var_name_token.pos_end
 
-        super().__init__(pos_start, body_node.pos_end)
+        super().__init__(var_name_token.pos_start, pos_end)
         self.var_name_token = var_name_token
-        self.arg_token = arg_token
-        self.body_node = body_node
+        self.variants = variants
 
     def __repr__(self) -> str:
-        return f"({self.var_name_token or '<anonymous>'}, {self.arg_token}, {self.body_node})"
+        return f"({self.var_name_token}: {self.variants})"
 
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
+        return res
         if self.arg_token:
             if not isinstance(self.arg_token.value, str):
                 return res.failure(

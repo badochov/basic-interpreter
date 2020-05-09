@@ -6,8 +6,8 @@ from typing import Optional, List, Tuple, TYPE_CHECKING
 from errors.illegal_character_error import IllegalCharacterError
 from errors.unexpected_char_error import UnexpectedCharError
 from keywords import KEYWORDS
-from position import Position
 from lang_token import Token
+from position import Position
 from token_types import *
 
 if TYPE_CHECKING:
@@ -58,6 +58,18 @@ class Lexer:
                 tokens.append(Token(TT_LPAREN, self.pos, self.pos))
             elif self.current_char == ")":
                 tokens.append(Token(TT_RPAREN, self.pos, self.pos))
+            elif self.current_char == "[":
+                tokens.append(Token(TT_LBRACKET, self.pos, self.pos))
+            elif self.current_char == "]":
+                tokens.append(Token(TT_RBRACKET, self.pos, self.pos))
+            elif self.current_char == ";":
+                tokens.append(Token(TT_LIST_SEP, self.pos, self.pos))
+            elif self.current_char == "|":
+                tokens.append(
+                    Token(TT_KEYWORD, self.pos, self.pos, KEYWORDS["MATCH_OR"])
+                )
+            elif self.current_char == ",":
+                tokens.append(Token(TT_COMA, self.pos, self.pos))
             elif self.current_char == "=":
                 tokens.append(self.make_equals())
                 continue

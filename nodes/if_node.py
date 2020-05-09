@@ -20,9 +20,11 @@ class IfNode(Node):
 
     def __repr__(self) -> str:
         return (
+            "("
             f'{KEYWORDS["IF"]} {self.condition_node} '
             f'{KEYWORDS["THEN"]} {self.then_node} '
             f'{KEYWORDS["ELSE"]} {self.else_node}'
+            ")"
         )
 
     def visit(self, context: Context) -> RuntimeResult:

@@ -5,17 +5,20 @@ from typing import List, Callable, TYPE_CHECKING, Union, Tuple, Optional
 from errors.invalid_syntax_error import InvalidSyntaxError
 from keywords import KEYWORDS
 from nodes.binary_operation_node import BinaryOperationNode
+from nodes.function_call_node import FunctionCallNode
+from nodes.function_definition_node import FunctionDefinitionNode
 from nodes.if_node import IfNode
+from nodes.match_case_node import MatchCaseNode
+from nodes.match_node import MatchNode
 from nodes.node import Node
 from nodes.number_node import NumberNode
+from nodes.type_definition_node import TypeDefinitionNode
+from nodes.type_variant_node import TypeVariantNode
 from nodes.unary_operation_node import UnaryOperationNode
 from nodes.variable_access_node import VariableAccessNode
-from nodes.variable_assignment_node import VariableAssignmentNode
-from nodes.function_definition_node import FunctionDefinitionNode
-from nodes.function_call_node import FunctionCallNode
 from parser.parse_result import ParseResult
-from token_types import *
 from position import mock_position
+from token_types import *
 
 if TYPE_CHECKING:
     from lang_token import Token
@@ -23,8 +26,7 @@ if TYPE_CHECKING:
 
 class Parser:
     def __init__(self, tokens: List[Token]):
-        # TODO handle if token list is empty
-        # TODO handle multiline
+        # TODO handle multiple statements
         # TODO think about change variable assignment to not return value
         self.tokens = tokens
         self.token_index = 0
@@ -32,16 +34,16 @@ class Parser:
             TT_EOF, mock_position, mock_position
         )
 
-    def parse(self) -> ParseResult:
+    def parse(self, repl: bool = False) -> ParseResult:
         if self.current_token.type == TT_EOF:
             return ParseResult()
-        res = self.var_decl()
+        res = self.repl_top_level() if repl else self.top_level()
         if not res.error and self.current_token.type != TT_EOF:
             return res.failure(
                 InvalidSyntaxError(
                     self.current_token.pos_start,
                     self.current_token.pos_end,
-                    "Expected '+', '-', '*' or '/'",
+                    "Expected '+', '-', '*', '/' or '^'",
                 )
             )
         return res
@@ -51,6 +53,65 @@ class Parser:
         if self.token_index < len(self.tokens):
             self.current_token = self.tokens[self.token_index]
         return self.current_token
+
+    def repl_top_level(self) -> ParseResult:
+        if self.current_token.matches(TT_KEYWORD, KEYWORDS["VARIABLE_DECLARATION"]):
+            return self.var_decl()
+        if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DECLARATION"]):
+            return self.type_decl()
+        return self.expression()
+
+    def top_level(self) -> ParseResult:
+        if self.current_token.matches(TT_KEYWORD, KEYWORDS["VARIABLE_DECLARATION"]):
+            return self.var_decl()
+        if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DECLARATION"]):
+            return self.type_decl()
+        return ParseResult().failure(
+            InvalidSyntaxError(
+                self.current_token.pos_start,
+                self.current_token.pos_end,
+                f'Expected "{KEYWORDS["VARIABLE_DECLARATION"]}" or "{KEYWORDS["TYPE_DECLARATION"]}"',
+            )
+        )
+
+    def type_decl(self) -> ParseResult:
+        res = ParseResult()
+
+        if not self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DECLARATION"]):
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    f'Expected "{KEYWORDS["TYPE_DECLARATION"]}"',
+                )
+            )
+        res.register_advancement(self.advance())
+        type_name: Token = self.current_token
+        res.register_advancement(self.advance())
+        if self.current_token.type != TT_EQUALS:
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    f'Expected "="',
+                )
+            )
+        res.register_advancement(self.advance())
+
+        variants: List[TypeVariantNode] = []
+        variant = res.register(self._variant_type_identifier())
+        if variant is None or res.error or not isinstance(variant, TypeVariantNode):
+            return res
+        variants.append(variant)
+
+        while self.current_token.matches(TT_KEYWORD, KEYWORDS["OR"]):
+            res.register_advancement(self.advance())
+            variant = res.register(self._variant_type_identifier())
+            if variant is None or res.error or not isinstance(variant, TypeVariantNode):
+                return res
+            variants.append(variant)
+
+        return res.success(TypeDefinitionNode(type_name, variants))
 
     def var_decl(self) -> ParseResult:
         res = ParseResult()
@@ -166,6 +227,11 @@ class Parser:
             if res.error or fun_def is None:
                 return res
             return res.success(fun_def)
+        elif token.matches(TT_KEYWORD, KEYWORDS["MATCH"]):
+            match_def = res.register(self.match())
+            if res.error or match_def is None:
+                return res
+            return res.success(match_def)
         return self.argument()
 
     def argument(self) -> ParseResult:
@@ -197,6 +263,66 @@ class Parser:
                 token.pos_start, token.pos_end, "Expected int, float, variable or ("
             )
         )
+
+    def match(self) -> ParseResult:
+        res = ParseResult()
+        if not self.current_token.matches(TT_KEYWORD, KEYWORDS["MATCH"]):
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    f'Expected "{KEYWORDS["MATCH"]}"',
+                )
+            )
+
+        res.register_advancement(self.advance())
+        expr = res.register(self.expression())
+        if res.error or expr is None:
+            return res
+
+        if not self.current_token.matches(TT_KEYWORD, KEYWORDS["WITH"]):
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    f'Expected "{KEYWORDS["WITH"]}"',
+                )
+            )
+        res.register_advancement(self.advance())
+        if self.current_token.matches(TT_KEYWORD, KEYWORDS["MATCH_OR"]):
+            res.register_advancement(self.advance())
+
+        cases: List[Node] = []
+        case = res.register(self._match_case())
+        if res.error or case is None:
+            return res
+        cases.append(case)
+        while self.current_token.matches(TT_KEYWORD, KEYWORDS["MATCH_OR"]):
+            res.register_advancement(self.advance())
+            case = res.register(self._match_case())
+            if res.error or case is None:
+                return res
+            cases.append(case)
+
+        if not self.current_token.matches(TT_KEYWORD, KEYWORDS["END"]):
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    f'Expected "{KEYWORDS["END"]}"',
+                )
+            )
+        res.register_advancement(self.advance())
+        if not all(map(lambda case: isinstance(case, MatchCaseNode), cases)):
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    f"All nodes should be MatchCaseNode",
+                )
+            )
+
+        return res.success(MatchNode(expr, cases))
 
     def if_expression(self, keyword_type: str = "IF") -> ParseResult:
         res = ParseResult()
@@ -340,7 +466,6 @@ class Parser:
                     self.current_token.pos_start,
                     self.current_token.pos_end,
                     "Expected identifier",
-                    "Expected identifier",
                 )
             )
 
@@ -382,3 +507,90 @@ class Parser:
             left = BinaryOperationNode(left, op_token, right)
 
         return res.success(left)
+
+    def _variant_type_identifier(self) -> ParseResult:
+        res = ParseResult()
+
+        variant_type_name = self.current_token
+
+        if variant_type_name.type != TT_IDENTIFIER:
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    "Expected variant type name",
+                )
+            )
+
+        res.register_advancement(self.advance())
+        args_tokens: List[Token] = []
+        if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DESCRIPTION"]):
+            res.register_advancement(self.advance())
+            while self.current_token.type == TT_IDENTIFIER:
+                args_tokens.append(self.current_token)
+                res.register_advancement(self.advance())
+                if self.current_token.type == TT_MUL:
+                    res.register_advancement(self.advance())
+                    if self.current_token.type != TT_IDENTIFIER:
+                        return res.failure(
+                            InvalidSyntaxError(
+                                self.current_token.pos_start,
+                                self.current_token.pos_end,
+                                "Expected type identifier",
+                            )
+                        )
+
+        return res.success(TypeVariantNode(variant_type_name, args_tokens))
+
+    def _match_case(self) -> ParseResult:
+        res = ParseResult()
+
+        type_name = self.current_token
+
+        if type_name.type != TT_IDENTIFIER:
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    "Expected type name",
+                )
+            )
+
+        res.register_advancement(self.advance())
+
+        arg_tokens: List[Token] = []
+        if self.current_token.type == TT_LPAREN:
+            res.register_advancement(self.advance())
+            while self.current_token.type == TT_IDENTIFIER:
+                arg_tokens.append(self.current_token)
+                res.register_advancement(self.advance())
+
+                if self.current_token.type == TT_COMA:
+                    res.register_advancement(self.advance())
+                else:
+                    break
+
+            if self.current_token.type != TT_RPAREN:
+                return res.failure(
+                    InvalidSyntaxError(
+                        self.current_token.pos_start,
+                        self.current_token.pos_end,
+                        'Expected ")"',
+                    )
+                )
+            res.register_advancement(self.advance())
+
+        if self.current_token.type != TT_ARROW:
+            return res.failure(
+                InvalidSyntaxError(
+                    self.current_token.pos_start,
+                    self.current_token.pos_end,
+                    'Expected "->"',
+                )
+            )
+        res.register_advancement(self.advance())
+
+        expr_node = res.register(self.expression())
+        if res.error or expr_node is None:
+            return res
+        return res.success(MatchCaseNode(type_name, arg_tokens, expr_node))

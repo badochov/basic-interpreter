@@ -1,17 +1,14 @@
 from __future__ import annotations
 
+from sys import getrecursionlimit, setrecursionlimit
 from typing import Tuple, TYPE_CHECKING, Optional
 
-
-from sys import getrecursionlimit, setrecursionlimit
-
 from context import Context
-from lang_types.lang_number import LangNumber
-from symbol_table import SymbolTable
 from interpreter.interpreter import Interpreter
+from lang_types.lang_number import LangNumber
 from lexer.lexer import Lexer
 from parser.parser import Parser
-
+from symbol_table import SymbolTable
 
 if TYPE_CHECKING:
     from errors.error import Error
@@ -25,18 +22,22 @@ global_syntax_table.set("false", LangNumber(0))
 setrecursionlimit(getrecursionlimit() * 1000)
 
 
+# TODO think about cross compatibility with python mby some decorator
 class Basic:
     @staticmethod
-    def run(text: str, file_name: str) -> Tuple[Optional[LangType], Optional[Error]]:
+    def run(
+        text: str, file_name: str, repl_mode: bool = False, print_tokens: bool = False
+    ) -> Tuple[Optional[LangType], Optional[Error]]:
         lexer = Lexer(text, file_name)
         tokens, err = lexer.make_tokens()
         if err:
             return None, err
 
-        # print(tokens)
+        if print_tokens:
+            print(tokens)
         # Generate AST
         parser = Parser(tokens)
-        ast = parser.parse()
+        ast = parser.parse(repl_mode)
         if ast.error or not ast.node:
             return None, ast.error
 

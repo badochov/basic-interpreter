@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
@@ -13,30 +13,22 @@ if TYPE_CHECKING:
     from lang_token import Token
 
 
-class FunctionDefinitionNode(Node):
+class TypeVariantNode(Node):
     def __init__(
-        self,
-        var_name_token: Optional[Token],
-        arg_token: Optional[Token],
-        body_node: Node,
+        self, var_name_token: Token, args_tokens: List[Token],
     ):
-        if var_name_token:
-            pos_start = var_name_token.pos_start
-        elif arg_token:
-            pos_start = arg_token.pos_start
-        else:
-            pos_start = body_node.pos_start
+        pos_end = args_tokens[-1].pos_end if args_tokens else var_name_token.pos_end
 
-        super().__init__(pos_start, body_node.pos_end)
+        super().__init__(var_name_token.pos_start, pos_end)
         self.var_name_token = var_name_token
-        self.arg_token = arg_token
-        self.body_node = body_node
+        self.args_token = args_tokens
 
     def __repr__(self) -> str:
-        return f"({self.var_name_token or '<anonymous>'}, {self.arg_token}, {self.body_node})"
+        return f"({self.var_name_token} of {self.args_token})"
 
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
+        return res
         if self.arg_token:
             if not isinstance(self.arg_token.value, str):
                 return res.failure(

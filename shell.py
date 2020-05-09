@@ -1,25 +1,23 @@
 # noinspection PyUnresolvedReferences
 import readline
+import sys
 
 from basic import Basic
 
-# text = """
-#         let fib =
-#             let fib_pom a b n =
-#                 if n == 0 then
-#                     a
-#                 else
-#                     fib_pom b (a+b) (n-1)
-#             in
-#                 fib_pom 0 1
-#         """
-# Basic.run(text, "fdasfdas")
 
-while True:
-    text = input("basic > ")
-    result, error = Basic.run(text, "<stdin>")
+def main(debug: bool = False) -> None:
+    while True:
+        text = input("basic > ")
+        result, error = Basic.run(text, "<stdin>", True, debug)
 
-    if error:
-        print(error)
+        if error:
+            print(error)
+        else:
+            print(result)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        main(True)
     else:
-        print(result)
+        main()

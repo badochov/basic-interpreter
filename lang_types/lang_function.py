@@ -29,7 +29,7 @@ class LangFunction(LangType):
         pos_end: Position = None,
         context: Context = None,
     ):
-        super().__init__(pos_start, pos_end, context)
+        super().__init__("function", pos_start, pos_end, context)
         self.arg_name = arg_name
         self.body_node = body_node
         self.name = (

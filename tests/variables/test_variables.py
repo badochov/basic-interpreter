@@ -87,7 +87,7 @@ def test_integer_assignment() -> None:
     assert res.value == 4
 
     res, err = basic.run(
-        "let a6 = (let a7 = 2 let_in a7) * (let a8 = 1 let_in a8) * (let a9 = 3 let_in a9) * (let a10 = 7 let_in a10)",
+        "let a6 = (let a7 = 2 in a7) * (let a8 = 1 in a8) * (let a9 = 3 in a9) * (let a10 = 7 in a10)",
         "test_assignement_output_part1",
     )
     assert err is None
@@ -121,7 +121,7 @@ def test_integer_assignment() -> None:
     assert res.value == 7
 
     res, err = basic.run(
-        "let a11 = (let a12 = 2 let_in a12)", "test_multi_assignement_part1",
+        "let a11 = (let a12 = 2 in a12)", "test_multi_assignement_part1",
     )
     assert err is None
     assert res is not None

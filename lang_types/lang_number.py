@@ -19,7 +19,7 @@ class LangNumber(LangType):
         pos_end: Position = None,
         context: Context = None,
     ):
-        super().__init__(pos_start, pos_end, context)
+        super().__init__("number", pos_start, pos_end, context)
         self.value = value
 
     def added_to(self, other: LangType) -> OperType:

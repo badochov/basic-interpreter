@@ -1,4 +1,11 @@
-#TODO finish rework
+repl-top-level  : expr | top-lvl
+
+top-lvl         : type-decl | var-decl
+
+variant-type-id : IDENTIFIER (KEYWORD:TYPE_DESCRIPTION IDENTIFIER (MUL IDENTIFIER))?
+
+type-decl       : KEYWORD:TYPE_DECLARATION IDENTIFIER EQ
+                        variant-type-id (KEYWORD:OR variant-type-id)*
 
 var-decl        : KEYWORD:VARIABLE_DECLARATION IDENTIFIER (IDENTIFIER )* EQ expr
 
@@ -21,13 +28,23 @@ atom            : if-expr
                 : IDENTIFIER (argument)*
                 : fun-def
                 : argument
+                : match
+
+match-case      : IDENTIFIER (LPAREN (IDENTIFIER (, IDENTIFIER)*)? RPAREN)? ARROW expr
+
+match           : KEYWORD:MATCH expr KEYWORD:WITH KEYWORD:MATCH_OR? match-case (KEYWORD:MATCH_OR match-case)* KEYWORD:END
+
 
 if-expr         : KEYWORD:IF expr KEYWORD:THEN expr
                   (KEYWORD:ELIF expr KEYWORD:THEN expr)*
                   KEYWORD:ELSE expr
 
-fun-def         : KEYWORD:FUN IDENTIFIER? (IDENTIFIER)* ARROW
+fun-def         : KEYWORD:FN IDENTIFIER? (IDENTIFIER)* ARROW
 
 argument        : INT|FLOAT
+                #: list
                 : LPAREN expr RPAREN
                 : IDENTIFIER
+                : IDENTIFIER((argument (COMA argument)*)?)
+
+#list            : LBRACKET (expr (LIST_SEP expr)*)? RBRACKET
