@@ -160,3 +160,6 @@ let mfc1 = multi_fold lines1 c
 
 let test_mfr1_1 = mfr1 (Point 7 3) == 0
 let _ = r (Point 1 1)
+
+#TODO make it work probably functions are fucked up
+#TODO add comments
