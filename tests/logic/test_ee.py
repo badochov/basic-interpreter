@@ -34,7 +34,7 @@ def test_integer_equals_equals() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(4 == 2)
+    assert res._value == int(4 == 2)
 
     res, err = basic.run(
         " let _ = 4 == 4", "test_positive_integer_equals_equals_equals"
@@ -42,19 +42,19 @@ def test_integer_equals_equals() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(4 == 4)
+    assert res._value == int(4 == 4)
 
     res, err = basic.run(" let _ = -4 == -2", "test_negative_integer_equals_equals")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(-4 == -2)
+    assert res._value == int(-4 == -2)
 
     res, err = basic.run(" let _ = 4 == -2", "test_mixed_integer_equals_equals")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(4 == -2)
+    assert res._value == int(4 == -2)
 
 
 def test_float_equals_equals() -> None:
@@ -64,13 +64,13 @@ def test_float_equals_equals() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(4.5 == 2.3)
+    assert res._value == int(4.5 == 2.3)
 
     res, err = basic.run(" let _ = -4.5 == -2.3", "test_negative_float_equals_equals")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(-4.5 == -2.3)
+    assert res._value == int(-4.5 == -2.3)
 
     res, err = basic.run(
         " let _ = -4.5 == -4.5", "test_negative_float_equals_equals_equals"
@@ -78,13 +78,13 @@ def test_float_equals_equals() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(-4.5 == -4.5)
+    assert res._value == int(-4.5 == -4.5)
 
     res, err = basic.run(" let _ = 4.5 == -2.3", "test_mixed_float_equals_equals")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(4.5 == -2.3)
+    assert res._value == int(4.5 == -2.3)
 
 
 def test_mixed_equals_equals() -> None:
@@ -94,13 +94,13 @@ def test_mixed_equals_equals() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(4.5 == 5)
+    assert res._value == int(4.5 == 5)
 
     res, err = basic.run(" let _ = -4.5 == -2", "test_negative_mixed_equals_equals")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(-4.5 == -2)
+    assert res._value == int(-4.5 == -2)
 
     res, err = basic.run(
         " let _ = -4.0 == -4", "test_negative_mixed_equals_equals_equals"
@@ -108,4 +108,4 @@ def test_mixed_equals_equals() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(-4.0 == -4)
+    assert res._value == int(-4.0 == -4)

@@ -11,25 +11,25 @@ def test_parentheses() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == (4 + 2)
+    assert res._value == (4 + 2)
 
     res, err = basic.run(" let _ = (4) + 2", "test_single_parentheses")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == (4) + 2
+    assert res._value == (4) + 2
 
     res, err = basic.run(" let _ = ((4 + 2) + 6)", "test_double_parentheses")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == ((4 + 2) + 6)
+    assert res._value == ((4 + 2) + 6)
 
     res, err = basic.run(" let _ = -((4 + 2) + 6)", "test_double_parentheses_negation")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == -((4 + 2) + 6)
+    assert res._value == -((4 + 2) + 6)
 
 
 def test_parentheses_error() -> None:
@@ -58,82 +58,82 @@ def test_order() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 42 - 6 * 7
+    assert res._value == 42 - 6 * 7
 
     res, err = basic.run(" let _ = 7 + 2 * (6 + 3) / 3 - 7", "test_order_2")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 7 + 2 * (6 + 3) / 3 - 7
+    assert res._value == 7 + 2 * (6 + 3) / 3 - 7
 
     res, err = basic.run(" let _ = 42 - 6 * 7", "test_order_1")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 42 - 6 * 7
+    assert res._value == 42 - 6 * 7
 
     res, err = basic.run(" let _ = 7 + 2 * (6 + 3) / 3 - 7", "test_order_2")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 7 + 2 * (6 + 3) / 3 - 7
+    assert res._value == 7 + 2 * (6 + 3) / 3 - 7
 
     res, err = basic.run(" let _ = 42 - 6 * 7", "test_order_1")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 42 - 6 * 7
+    assert res._value == 42 - 6 * 7
 
     res, err = basic.run(" let _ = 11 + 19 * 2", "test_order_3")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 11 + 19 * 2
+    assert res._value == 11 + 19 * 2
 
     res, err = basic.run(" let _ = 42 - 6 * 7", "test_order_4")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 42 - 6 * 7
+    assert res._value == 42 - 6 * 7
 
     res, err = basic.run(" let _ = 7 + 2 * (6 + 3) / 3 - 7", "test_order_5")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 7 + 2 * (6 + 3) / 3 - 7
+    assert res._value == 7 + 2 * (6 + 3) / 3 - 7
 
     res, err = basic.run(" let _ = (14 + 2) * 2 + 3", "test_order_6")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == (14 + 2) * 2 + 3
+    assert res._value == (14 + 2) * 2 + 3
 
     res, err = basic.run(" let _ = 120 / (6 + 12 * 2)", "test_order_7")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 120 / (6 + 12 * 2)
+    assert res._value == 120 / (6 + 12 * 2)
 
     res, err = basic.run(" let _ = 12 + 2 * 44", "test_order_8")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 12 + 2 * 44
+    assert res._value == 12 + 2 * 44
 
     res, err = basic.run(" let _ = 10 * 2 - (7 + 9)", "test_order_9")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 10 * 2 - (7 + 9)
+    assert res._value == 10 * 2 - (7 + 9)
 
     res, err = basic.run(" let _ = 2 * 2 ^ 3", "test_order_10")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 2 * 2 ** 3
+    assert res._value == 2 * 2 ** 3
 
     res, err = basic.run(" let _ = 2 * 2 ^ 3 * 2", "test_order_7")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 2 * 2 ** 3 * 2
+    assert res._value == 2 * 2 ** 3 * 2

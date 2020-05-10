@@ -30,21 +30,66 @@ atom            : if-expr
                 : argument
                 : match
 
-match-case      : IDENTIFIER (LPAREN (IDENTIFIER (, IDENTIFIER)*)? RPAREN)? ARROW expr
+match-case      : IDENTIFIER IDENTIFIER* ARROW expr
 
-match           : KEYWORD:MATCH expr KEYWORD:WITH KEYWORD:MATCH_OR? match-case (KEYWORD:MATCH_OR match-case)* KEYWORD:END
+match           : KEYWORD:MATCH expr KEYWORD:WITH  match-case+ KEYWORD:END
 
 
 if-expr         : KEYWORD:IF expr KEYWORD:THEN expr
                   (KEYWORD:ELIF expr KEYWORD:THEN expr)*
                   KEYWORD:ELSE expr
 
-fun-def         : KEYWORD:FN IDENTIFIER? (IDENTIFIER)* ARROW
+fun-def         : KEYWORD:FN (IDENTIFIER)* ARROW
 
 argument        : INT|FLOAT
                 #: list
                 : LPAREN expr RPAREN
                 : IDENTIFIER
-                : IDENTIFIER((argument (COMA argument)*)?)
-
+                : IDENTIFIER argument*
 #list            : LBRACKET (expr (LIST_SEP expr)*)? RBRACKET
+
+let test_mfr1_1 = mfr1 (Point 7 3) == 0
+let test_mfr1_2 = mfr1 (Point 5 8) == 0
+let test_mfr1_3 = mfr1 (Point 3 5) == 0
+let test_mfr1_4 = mfr1 (Point 5 5) == 0
+let test_mfr1_5 = mfr1 (Point 0 0) == 2
+let test_mfr1_6 = mfr1 (Point 0 10) == 2
+let test_mfr1_7 = mfr1 (Point 2.5 2.5) == 2
+let test_mfr1_8 = mfr1 (Point 2.5 7.5) == 2
+let test_mfr1_9 = mfr1 (Point 2.5 5) == 4
+let test_mfr1_10 = mfr1 (Point 0 5) == 5
+let test_mfr1_11 = mfr1 (Point 1 2) == 4
+let test_mfr1_12 = mfr1 (Point 1 5) == 8
+let test_mfr1_13 = mfr1 (Point 1 8) == 4
+
+let test_mfc1_1 = mfc1 (Point 7 3) == 0
+let test_mfc1_2 = mfc1 (Point 5 8) == 0
+let test_mfc1_3 = mfc1 (Point 3 5) == 0
+let test_mfc1_4 = mfc1 (Point 5 5) == 0
+let test_mfc1_5 = mfc1 (Point 2.5 2.5) == 2
+let test_mfc1_6 = mfc1 (Point 2.5 2.7) == 2
+let test_mfc1_7 = mfc1 (Point 2.5 5) == 4
+let test_mfc1_8 = mfc1 (Point 0 5) == 5
+let test_mfc1_9 = mfc1 (Point 1 3) == 4
+let test_mfc1_10 = mfc1 (Point 1 5) == 8
+let test_mfc1_11 = mfc1 (Point 1 7) == 4
+
+let test_mfr2_1 = mfr2 (Point (-4) 6) == 2
+let test_mfr2_2 = mfr2 (Point (-3) 5) == 1
+let test_mfr2_3 = mfr2 (Point (-3) 7) == 2
+let test_mfr2_4 = mfr2 (Point (-2) 6) == 3
+let test_mfr2_5 = mfr2 (Point (-2.5) 6.5) == 4
+let test_mfr2_6 = mfr2 (Point (-2) 8) == 5
+let test_mfr2_7 = mfr2 (Point (-1) 7) == 3
+let test_mfr2_8 = mfr2 (Point (-1.5) 7.5) == 6
+let test_mfr2_9 = mfr2 (Point 0 8) == 5
+let test_mfr2_10 = mfr2 (Point (-1) 9) == 4
+let test_mfr2_11 = mfr2 (Point (-0.5) 8.5) == 8
+let test_mfr2_12 = mfr2 (Point 0 10) == 6
+let test_mfr2_13 = mfr2 (Point 1 9) == 5
+let test_mfr2_14 = mfr2 (Point 0.5 9.5) == 10
+
+        (NonEmpty (LineCoords (Point 5 0) (Point 10 5))
+        (NonEmpty (LineCoords (Point 10 0) (Point 0 10))
+        (NonEmpty (LineCoords (Point 2.5 0) (Point 2.5 10))
+        (Empty))))

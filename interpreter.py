@@ -12,9 +12,9 @@ file_name = sys.argv[1]
 with open(file_name, "r") as f:
     code = f.read()
 
-result, error = Basic.run(code, file_name)
-
-if error:
-    print(error)
-else:
-    print(result)
+results = Basic.run(code, "<stdin>", True)
+for result, error in results:
+    if error:
+        print(error)
+    else:
+        print(result)

@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, List
 
 from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
+from lang_types.lang_variant_type import LangVariantType
+from lang_types.type_def import LangVariantTypeDefinition
 from nodes.node import Node
 
 if TYPE_CHECKING:
@@ -24,19 +26,32 @@ class VariableAccessNode(Node):
         res = RuntimeResult()
         var_name = self.var_name_token.value
 
-        value = None
-        if isinstance(var_name, str):
-            value = context.get(var_name)
+        assert isinstance(var_name, str)
 
+        value = context.get(var_name)
         if not value:
             return res.failure(
                 RTError(
                     self.pos_start,
                     self.pos_end,
-                    f'"{var_name}" is not defined',
+                    f'"{var_name}" is not defined {value}',
                     context,
                 )
             )
-
-        value = value.copy().set_pos(self.pos_start, self.pos_end)
+        if isinstance(value, LangVariantTypeDefinition):
+            if len(value.args) == 0:
+                value = LangVariantType(
+                    [], var_name, self.pos_start, self.pos_end, context
+                )
+            else:
+                return res.failure(
+                    RTError(
+                        self.pos_start,
+                        self.pos_end,
+                        f'"{var_name}" excepts more arguments',
+                        context,
+                    )
+                )
+        else:
+            value = value.copy().set_pos(self.pos_start, self.pos_end)
         return res.success(value)

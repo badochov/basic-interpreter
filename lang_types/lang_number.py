@@ -20,13 +20,17 @@ class LangNumber(LangType):
         context: Context = None,
     ):
         super().__init__("number", pos_start, pos_end, context)
-        self.value = value
+        self._value = value
+
+    @property
+    def value(self) -> float:
+        return self._value
 
     def added_to(self, other: LangType) -> OperType:
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    self.value + other.value,
+                    self._value + other._value,
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -39,7 +43,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    self.value * other.value,
+                    self._value * other._value,
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -52,7 +56,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    self.value - other.value,
+                    self._value - other._value,
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -63,7 +67,7 @@ class LangNumber(LangType):
 
     def divided_by(self, other: LangType) -> OperType:
         if isinstance(other, LangNumber):
-            if other.value == 0:
+            if other._value == 0:
                 return (
                     None,
                     RTError(
@@ -75,7 +79,7 @@ class LangNumber(LangType):
                 )
             return (
                 LangNumber(
-                    self.value / other.value,
+                    self._value / other._value,
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -88,7 +92,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    self.value ** other.value,
+                    self._value ** other._value,
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -101,7 +105,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    int(self.value == other.value),
+                    int(self._value == other._value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -115,7 +119,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    int(self.value != other.value),
+                    int(self._value != other._value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -129,7 +133,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    int(self.value < other.value),
+                    int(self._value < other._value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -143,7 +147,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    int(self.value > other.value),
+                    int(self._value > other._value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -157,7 +161,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    int(self.value <= other.value),
+                    int(self._value <= other._value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -171,7 +175,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    int(self.value >= other.value),
+                    int(self._value >= other._value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -185,7 +189,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    int(self.value and other.value),
+                    int(self._value and other._value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -199,7 +203,7 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return (
                 LangNumber(
-                    int(self.value or other.value),
+                    int(self._value or other._value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -212,16 +216,16 @@ class LangNumber(LangType):
     def notted(self) -> CompType:
         return (
             LangNumber(
-                int(not self.value), self.pos_start, self.pos_end, self.context,
+                int(not self._value), self.pos_start, self.pos_end, self.context,
             ),
             None,
         )
 
     def is_truthy(self) -> bool:
-        return self.value != 0
+        return self._value != 0
 
     def __repr__(self) -> str:
-        return f"{self.value}"
+        return f"{self._value}"
 
 
 OperType = Tuple[Optional[LangNumber], Optional[Error]]

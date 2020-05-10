@@ -6,6 +6,7 @@ from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
 from lang_types.lang_function import LangFunction
 from lang_types.lang_type import LangType
+from lang_types.type_def import LangVariantTypeDefinition, LangTypeDefinition
 from nodes.node import Node
 from nodes.type_variant_node import TypeVariantNode
 
@@ -16,48 +17,26 @@ if TYPE_CHECKING:
 
 class TypeDefinitionNode(Node):
     def __init__(
-        self, var_name_token: Token, variants: List[TypeVariantNode],
-    ):
-        pos_end = variants[-1].pos_end if variants else var_name_token.pos_end
-
-        super().__init__(var_name_token.pos_start, pos_end)
+        self, var_name_token: Token, variant_nodes: List[TypeVariantNode]
+    ) -> None:
+        super().__init__(var_name_token.pos_start, variant_nodes[-1].pos_end)
         self.var_name_token = var_name_token
-        self.variants = variants
+        self.variant_nodes = variant_nodes
 
     def __repr__(self) -> str:
-        return f"({self.var_name_token}: {self.variants})"
+        return f"({self.var_name_token}: {self.variant_nodes})"
 
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
-        return res
-        if self.arg_token:
-            if not isinstance(self.arg_token.value, str):
-                return res.failure(
-                    RTError(
-                        self.pos_start, self.pos_end, "Expected identifier", context
-                    )
-                )
-
-            value: LangType = LangFunction(
-                self.var_name_token,
-                self.arg_token.value,
-                self.body_node,
-                self.pos_start,
-                self.pos_end,
-                context,
-            )
-        else:
-            val = res.register(self.body_node.visit(context))
-            if val is None or res.error:
+        var_name = self.var_name_token.value
+        assert isinstance(var_name, str)
+        variants: List[LangVariantTypeDefinition] = []
+        for variant_node in self.variant_nodes:
+            variant = res.register(variant_node.visit(context))
+            if res.error or not isinstance(variant, LangVariantTypeDefinition):
                 return res
-            value = val
+            variants.append(variant)
+        type_def = LangTypeDefinition(variants, self.pos_start, self.pos_end, context)
+        context.symbol_table.set(var_name, type_def)
 
-        if self.var_name_token:
-            if not isinstance(self.var_name_token.value, str):
-                return res.failure(
-                    RTError(
-                        self.pos_start, self.pos_end, "Expected identifier", context
-                    )
-                )
-            context.symbol_table.set(self.var_name_token.value, value)
-        return res.success(value)
+        return res.success(type_def)

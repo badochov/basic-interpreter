@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, List
 from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
 from lang_types.lang_function import LangFunction
+from lang_types.lang_variant_type import LangVariantType
+from lang_types.type_def import LangVariantTypeDefinition
 from nodes.node import Node
 
 if TYPE_CHECKING:
@@ -34,9 +36,9 @@ class FunctionCallNode(Node):
 
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
-        fun = None
-        if isinstance(self.fun_name_token.value, str):
-            fun = context.get(self.fun_name_token.value)
+        fun_name = self.fun_name_token.value
+        assert isinstance(fun_name, str)
+        fun = context.get(fun_name)
         if not fun:
             return res.failure(
                 RTError(
@@ -46,7 +48,9 @@ class FunctionCallNode(Node):
                     context,
                 )
             )
-        if not isinstance(fun, LangFunction):
+        is_fun = isinstance(fun, LangFunction)
+        is_variant = isinstance(fun, LangVariantTypeDefinition)
+        if not is_fun and not is_variant:
             return res.failure(
                 RTError(
                     self.pos_start,
@@ -56,7 +60,6 @@ class FunctionCallNode(Node):
                 )
             )
 
-        fun_cpy = fun.copy().set_pos(self.pos_start, self.pos_end)
         args = []
         for arg_node in reversed(self.arg_nodes):
             arg = res.register(arg_node.visit(context))
@@ -64,8 +67,30 @@ class FunctionCallNode(Node):
                 return res
 
             args.append(arg)
-        # print(self.arg_nodes, args, context.get("n"))
-        call_res = res.register(fun_cpy.call(fun_cpy.context, args))
-        if call_res is None or res.error:
-            return res
-        return res.success(call_res)
+
+        if isinstance(fun, LangVariantTypeDefinition):
+            if len(args) != len(fun.args):
+                return res.failure(
+                    RTError(
+                        self.pos_start,
+                        self.pos_end,
+                        f'"{self.fun_name_token}" got to few arguments',
+                        context,
+                    )
+                )
+            return res.success(
+                LangVariantType(
+                    list(reversed(args)),
+                    fun_name,
+                    self.pos_start,
+                    self.pos_end,
+                    context,
+                )
+            )
+        else:
+            fun_cpy = fun.copy().set_pos(self.pos_start, self.pos_end)
+            call_res = res.register(fun_cpy.call(fun_cpy.context, args))
+            if call_res is None or res.error:
+                return res
+
+            return res.success(call_res)

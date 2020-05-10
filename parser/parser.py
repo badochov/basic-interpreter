@@ -34,19 +34,14 @@ class Parser:
             TT_EOF, mock_position, mock_position
         )
 
-    def parse(self, repl: bool = False) -> ParseResult:
-        if self.current_token.type == TT_EOF:
-            return ParseResult()
-        res = self.repl_top_level() if repl else self.top_level()
-        if not res.error and self.current_token.type != TT_EOF:
-            return res.failure(
-                InvalidSyntaxError(
-                    self.current_token.pos_start,
-                    self.current_token.pos_end,
-                    "Expected '+', '-', '*', '/' or '^'",
-                )
-            )
-        return res
+    def parse(self, repl: bool = False) -> List[ParseResult]:
+        results: List[ParseResult] = []
+        while self.current_token.type != TT_EOF:
+            res = self.repl_top_level() if repl else self.top_level()
+            results.append(res)
+            if res.error:
+                break
+        return results
 
     def advance(self) -> Token:
         self.token_index += 1
@@ -462,6 +457,7 @@ class Parser:
             )
 
         res.register_advancement(self.advance())
+        type_creation = self.current_token.type == TT_LCURLY
 
         arg_tokens: List[Node] = []
         while self.current_token.type in (TT_LPAREN, TT_IDENTIFIER, TT_INT, TT_FLOAT):
@@ -551,25 +547,9 @@ class Parser:
         res.register_advancement(self.advance())
 
         arg_tokens: List[Token] = []
-        if self.current_token.type == TT_LPAREN:
-            res.register_advancement(self.advance())
-            while self.current_token.type == TT_IDENTIFIER:
-                arg_tokens.append(self.current_token)
-                res.register_advancement(self.advance())
 
-                if self.current_token.type == TT_COMA:
-                    res.register_advancement(self.advance())
-                else:
-                    break
-
-            if self.current_token.type != TT_RPAREN:
-                return res.failure(
-                    InvalidSyntaxError(
-                        self.current_token.pos_start,
-                        self.current_token.pos_end,
-                        'Expected ")"',
-                    )
-                )
+        while self.current_token.type == TT_IDENTIFIER:
+            arg_tokens.append(self.current_token)
             res.register_advancement(self.advance())
 
         if self.current_token.type != TT_ARROW:

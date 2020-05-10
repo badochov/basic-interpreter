@@ -6,6 +6,8 @@ from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
 from lang_types.lang_function import LangFunction
 from lang_types.lang_type import LangType
+from lang_types.lang_variant_type import LangVariantType
+from lang_types.type_def import LangVariantTypeDefinition
 from nodes.node import Node
 
 if TYPE_CHECKING:
@@ -28,35 +30,16 @@ class TypeVariantNode(Node):
 
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
-        return res
-        if self.arg_token:
-            if not isinstance(self.arg_token.value, str):
-                return res.failure(
-                    RTError(
-                        self.pos_start, self.pos_end, "Expected identifier", context
-                    )
-                )
+        var_name = self.var_name_token.value
 
-            value: LangType = LangFunction(
-                self.var_name_token,
-                self.arg_token.value,
-                self.body_node,
-                self.pos_start,
-                self.pos_end,
-                context,
-            )
-        else:
-            val = res.register(self.body_node.visit(context))
-            if val is None or res.error:
-                return res
-            value = val
+        assert isinstance(var_name, str)
+        variant_def = LangVariantTypeDefinition(
+            var_name,
+            list(map(lambda token: str(token.type), self.args_token)),
+            self.pos_start,
+            self.pos_end,
+            context,
+        )
+        context.symbol_table.set(var_name, variant_def)
 
-        if self.var_name_token:
-            if not isinstance(self.var_name_token.value, str):
-                return res.failure(
-                    RTError(
-                        self.pos_start, self.pos_end, "Expected identifier", context
-                    )
-                )
-            context.symbol_table.set(self.var_name_token.value, value)
-        return res.success(value)
+        return res.success(variant_def)

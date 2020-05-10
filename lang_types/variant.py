@@ -1,2 +1,13 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from lang_token import Token
+
+
+@dataclass
 class Variant:
-    pass
+    name: str
+    args: List[Token]

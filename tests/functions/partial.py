@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from basic import Basic
-from lang_types.lang_number import LangNumber
-from errors.invalid_syntax_error import InvalidSyntaxError
 from tests.utilities import run_test
-from lang_types.lang_function import LangFunction
-from lang_types.lang_number import LangNumber
+
+if TYPE_CHECKING:
+    from lang_types.lang_function import LangFunction
+    from lang_types.lang_number import LangNumber
 
 
 def inc(x: int) -> int:

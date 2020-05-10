@@ -62,6 +62,10 @@ class Lexer:
                 tokens.append(Token(TT_LBRACKET, self.pos, self.pos))
             elif self.current_char == "]":
                 tokens.append(Token(TT_RBRACKET, self.pos, self.pos))
+            elif self.current_char == "{":
+                tokens.append(Token(TT_LCURLY, self.pos, self.pos))
+            elif self.current_char == "}":
+                tokens.append(Token(TT_RCURLY, self.pos, self.pos))
             elif self.current_char == ";":
                 tokens.append(Token(TT_LIST_SEP, self.pos, self.pos))
             elif self.current_char == "|":

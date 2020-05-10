@@ -46,25 +46,25 @@ def test_integer_if() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(4 != 2)
+    assert res._value == int(4 != 2)
 
     res, err = basic.run(" let _ = 4 != 4", "test_positive_integer_if_equals")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(4 != 4)
+    assert res._value == int(4 != 4)
 
     res, err = basic.run(" let _ = -4 != -2", "test_negative_integer_if")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(-4 != -2)
+    assert res._value == int(-4 != -2)
 
     res, err = basic.run(" let _ = 4 != -2", "test_mixed_integer_if")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == int(4 != -2)
+    assert res._value == int(4 != -2)
 
 
 def test_if() -> None:
@@ -74,19 +74,19 @@ def test_if() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 2
+    assert res._value == 2
 
     res, err = basic.run(" let _ = if 0 then 1 elif 1 then 2 else 3", "test_if_elif_1")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 2
+    assert res._value == 2
 
     res, err = basic.run(" let _ = if 0 then 1 elif 0 then 2 else 3", "test_if_elif_2")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 3
+    assert res._value == 3
 
     res, err = basic.run(
         "let _ = if 0 then 1 elif 0 then 2 elif 1 then 42 else 69",
@@ -95,7 +95,7 @@ def test_if() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 42
+    assert res._value == 42
 
     res, err = basic.run(
         "let _ = if 0 then 1 elif 0 then 2 elif 0 then 42 else 69",
@@ -104,7 +104,7 @@ def test_if() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 69
+    assert res._value == 69
 
     res, err = basic.run(
         "let _ = if 0 then 1 elif 0 then 2 else if 1 then 42 else 69",
@@ -113,7 +113,7 @@ def test_if() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 42
+    assert res._value == 42
 
     res, err = basic.run(
         "let _ = if 0 then 1 elif 0 then 2 else if 0 then 42 else 69",
@@ -122,4 +122,4 @@ def test_if() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 69
+    assert res._value == 69

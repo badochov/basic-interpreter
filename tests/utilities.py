@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING, Any
+from typing import Optional, TYPE_CHECKING, Any, Type
 
 if TYPE_CHECKING:
     from basic import Basic
@@ -12,20 +12,19 @@ def run_test(
     basic: Basic,
     code: str,
     name: str,
-    res_type: Optional[LangType] = None,
-    err_type: Optional[Error] = None,
+    res_type: Optional[Type[LangType]] = None,
+    err_type: Optional[Type[Error]] = None,
     value: Optional[Any] = None,
 ) -> None:
     res, err = basic.run(code, name)
     if res_type:
-        assert res is not None
+        assert isinstance(res, res_type)
     else:
         assert res is None
     if err_type:
-        assert err is not None
+        assert isinstance(err, err_type)
     else:
         assert err is None
-    if res_type:
-        assert isinstance(res, res_type)
+
     if value:
-        assert res.value == value
+        assert res and res.value == value

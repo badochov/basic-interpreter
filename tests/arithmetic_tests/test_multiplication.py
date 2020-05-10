@@ -34,19 +34,19 @@ def test_integer_multiplication() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 4 * 2
+    assert res._value == 4 * 2
 
     res, err = basic.run(" let _ = -4 * -2", "test_negative_integer_multiplication")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == -4 * -2
+    assert res._value == -4 * -2
 
     res, err = basic.run(" let _ = 4 * -2", "test_mixed_integer_multiplication")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 4 * -2
+    assert res._value == 4 * -2
 
 
 def test_float_multiplication() -> None:
@@ -56,16 +56,16 @@ def test_float_multiplication() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 4.5 * 2.3
+    assert res._value == 4.5 * 2.3
 
     res, err = basic.run(" let _ = -4.5 * -2.3", "test_negative_float_multiplication")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == -4.5 * -2.3
+    assert res._value == -4.5 * -2.3
 
     res, err = basic.run(" let _ = 4.5 * -2.3", "test_mixed_float_multiplication")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 4.5 * -2.3
+    assert res._value == 4.5 * -2.3

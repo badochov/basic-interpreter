@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from sys import getrecursionlimit, setrecursionlimit
-from typing import Tuple, TYPE_CHECKING, Optional
+from typing import Tuple, TYPE_CHECKING, Optional, List
 
 from context import Context
 from interpreter.interpreter import Interpreter
@@ -27,23 +27,26 @@ class Basic:
     @staticmethod
     def run(
         text: str, file_name: str, repl_mode: bool = False, print_tokens: bool = False
-    ) -> Tuple[Optional[LangType], Optional[Error]]:
+    ) -> List[Tuple[Optional[LangType], Optional[Error]]]:
         lexer = Lexer(text, file_name)
         tokens, err = lexer.make_tokens()
         if err:
-            return None, err
+            return [(None, err)]
 
         if print_tokens:
             print(tokens)
         # Generate AST
         parser = Parser(tokens)
-        ast = parser.parse(repl_mode)
-        if ast.error or not ast.node:
-            return None, ast.error
+        asts = parser.parse(repl_mode)
 
-        interpreter = Interpreter()
+        results: List[Tuple[Optional[LangType], Optional[Error]]] = []
+        for ast in asts:
+            if ast.error or not ast.node:
+                return [(None, ast.error)]
 
-        context = Context(file_name, global_syntax_table)
-        res = interpreter.visit(ast.node, context)
+            interpreter = Interpreter()
 
-        return res.value, res.error
+            context = Context(file_name, global_syntax_table)
+            res = interpreter.visit(ast.node, context)
+            results.append((res.value, res.error))
+        return results

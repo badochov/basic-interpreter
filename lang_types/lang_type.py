@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Optional, Tuple, TypeVar, TYPE_CHECKING, List, cast
+from typing import Optional, Tuple, TypeVar, TYPE_CHECKING, List, cast, Any
 
 from context import Context, mock_context
 from errors.error import Error
@@ -105,6 +105,10 @@ class LangType:
 
     def __not_impl(self, error_msg: str) -> Tuple[None, NotImplError]:
         return None, NotImplError(self.pos_start, self.pos_end, error_msg)
+
+    @property
+    def value(self) -> Any:
+        return None
 
 
 OperType = Tuple[Optional[LangType], Optional[Error]]

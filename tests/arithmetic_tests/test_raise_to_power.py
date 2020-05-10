@@ -34,19 +34,19 @@ def test_integer_raise_to_power() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 4 ** 2
+    assert res._value == 4 ** 2
 
     res, err = basic.run(" let _ = -4 ^ -2", "test_negative_integer_raise_to_power")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == -(4 ** -2)
+    assert res._value == -(4 ** -2)
 
     res, err = basic.run(" let _ = 4 ^ -2", "test_mixed_integer_raise_to_power")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 4 ** -2
+    assert res._value == 4 ** -2
 
 
 def test_float_raise_to_power() -> None:
@@ -56,19 +56,19 @@ def test_float_raise_to_power() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 4.5 ** 2.3
+    assert res._value == 4.5 ** 2.3
 
     res, err = basic.run(" let _ = -4.5 ^ -2.3", "test_negative_float_raise_to_power")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == -(4.5 ** -2.3)
+    assert res._value == -(4.5 ** -2.3)
 
     res, err = basic.run("let _ = 4.5 ^ -2.3", "test_mixed_float_raise_to_power")
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == 4.5 ** -2.3
+    assert res._value == 4.5 ** -2.3
 
 
 def test_negation_raise_to_power() -> None:
@@ -80,7 +80,7 @@ def test_negation_raise_to_power() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == -(4.5 ** 2)
+    assert res._value == -(4.5 ** 2)
 
     res, err = basic.run(
         " let _ = (-4.5) ^ 2", "test_negation_in_parentheses_raised_to_power"
@@ -88,4 +88,4 @@ def test_negation_raise_to_power() -> None:
     assert err is None
     assert res is not None
     assert isinstance(res, LangNumber)
-    assert res.value == (-4.5) ** +2
+    assert res._value == (-4.5) ** +2
