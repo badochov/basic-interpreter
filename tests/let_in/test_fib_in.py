@@ -1,6 +1,4 @@
 from basic import Basic
-from lang_types.lang_number import LangNumber
-from errors.invalid_syntax_error import InvalidSyntaxError
 from tests.utilities import run_test
 from lang_types.lang_function import LangFunction
 from lang_types.lang_number import LangNumber
@@ -26,7 +24,7 @@ def test_fib_naive() -> None:
             in
                 fib_pom 0 1
         """,
-        "test_fib_naive_part1",
+        "test_fib_part1",
         LangFunction,
         None,
     )
