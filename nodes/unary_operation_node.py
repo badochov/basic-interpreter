@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from interpreter.runtime_result import RuntimeResult
-from nodes.node import Node
-from lang_types.lang_number import LangNumber
 from keywords import *
+from lang_types.lang_number import LangNumber
+from nodes.node import Node
 from token_types import *
 
 if TYPE_CHECKING:

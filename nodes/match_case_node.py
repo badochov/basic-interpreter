@@ -2,14 +2,12 @@ from __future__ import annotations
 
 from typing import List, Optional, TYPE_CHECKING
 
+from context import Context
 from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
 from lang_types.lang_variant_type import LangVariantType
 from nodes.node import Node
-
-
 from symbol_table import SymbolTable
-from context import Context
 
 if TYPE_CHECKING:
     from tokens.lang_string_token import StringToken

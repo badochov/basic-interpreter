@@ -1,7 +1,7 @@
 from basic import Basic
-from tests.utilities import run_test
 from lang_types.lang_function import LangFunction
 from lang_types.lang_number import LangNumber
+from tests.utilities import run_test
 
 
 def fib(n: int, a: int = 0, b: int = 1) -> int:
@@ -32,7 +32,7 @@ def test_fib_naive() -> None:
         run_test(
             basic,
             f"let _ = fib {i}",
-            f"test_fib_in_part{i+1}",
+            f"test_fib_in_part{i + 1}",
             LangNumber,
             None,
             fib(i),

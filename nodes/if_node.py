@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from interpreter.runtime_result import RuntimeResult
 from keywords import KEYWORDS
 from nodes.node import Node
-from lang_types.lang_number import LangNumber
 
 if TYPE_CHECKING:
     from context import Context

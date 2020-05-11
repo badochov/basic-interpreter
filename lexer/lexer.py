@@ -5,12 +5,12 @@ from typing import Optional, List, Tuple, TYPE_CHECKING
 from errors.illegal_character_error import IllegalCharacterError
 from errors.unexpected_char_error import UnexpectedCharError
 from keywords import KEYWORDS
+from position import Position
+from token_types import *
 from tokens.lang_empty_token import EmptyToken
 from tokens.lang_number_token import NumberToken
 from tokens.lang_string_token import StringToken
 from tokens.lang_token import Token
-from position import Position
-from token_types import *
 
 if TYPE_CHECKING:
     from errors.error import Error

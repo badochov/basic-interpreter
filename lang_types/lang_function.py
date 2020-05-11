@@ -6,11 +6,11 @@ from context import Context
 from errors.error import Error
 from errors.too_few_args_error import TooFewArgsError
 from interpreter.runtime_result import RuntimeResult
-from tokens.lang_token import Token
 from lang_types.lang_type import LangType
 from nodes.node import Node
 from position import Position
 from symbol_table import SymbolTable
+from tokens.lang_token import Token
 
 if TYPE_CHECKING:
     from lang_types.lang_number import LangNumber
