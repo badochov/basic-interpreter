@@ -2,6 +2,7 @@ type List = NonEmpty of Any * List or Empty
 type Coord = Point of float * float or LineCoords of Point * Point
 type Shape = Line of float * float * float
 
+
 let list_fold_left fun acc list =
     match list with
     |   Empty -> acc

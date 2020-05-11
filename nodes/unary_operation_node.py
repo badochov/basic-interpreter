@@ -10,12 +10,11 @@ from token_types import *
 
 if TYPE_CHECKING:
     from context import Context
-    from lang_token import Token
-    from token_types import *
+    from tokens.lang_empty_token import EmptyToken
 
 
 class UnaryOperationNode(Node):
-    def __init__(self, operation_token: Token, node: Node):
+    def __init__(self, operation_token: EmptyToken, node: Node):
         super().__init__(operation_token.pos_start, node.pos_end)
         self.operation_token = operation_token
         self.node = node

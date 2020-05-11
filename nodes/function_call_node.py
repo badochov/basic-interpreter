@@ -11,21 +11,11 @@ from nodes.node import Node
 
 if TYPE_CHECKING:
     from context import Context
-    from lang_token import Token
+    from tokens.lang_string_token import StringToken
 
 
-# BUG
-#  to działą
-# let add x y = x + y
-# let inc = add 1
-# inc 2
-#  to nie
-# let add x y = x + y
-# add 1 2
-# let inc = add 1
-# inc 2
 class FunctionCallNode(Node):
-    def __init__(self, fun_name_token: Token, arg_nodes: List[Node]):
+    def __init__(self, fun_name_token: StringToken, arg_nodes: List[Node]):
 
         super().__init__(fun_name_token.pos_start, arg_nodes[-1].pos_end)
         self.fun_name_token = fun_name_token
@@ -37,9 +27,8 @@ class FunctionCallNode(Node):
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         name = self.fun_name_token.value
-        assert isinstance(name, str)
-        fun = context.get(name)
-        if not fun:
+
+        if not (fun := context.get(name)):
             return res.failure(
                 RTError(
                     self.pos_start,
@@ -85,9 +74,6 @@ class FunctionCallNode(Node):
             )
         else:
             fun_cpy = fun.copy().set_pos(self.pos_start, self.pos_end)
-            if self.fun_name_token.value == "make_line":
-                # print(fun_cpy.context.symbol_table)
-                ...
             call_res = res.register(fun_cpy.call(context, args))
             if call_res is None or res.error:
                 return res

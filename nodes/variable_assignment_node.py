@@ -7,11 +7,11 @@ from nodes.node import Node
 
 if TYPE_CHECKING:
     from context import Context
-    from lang_token import Token
+    from tokens.lang_string_token import StringToken
 
 
 class VariableAssignmentNode(Node):
-    def __init__(self, var_name_token: Token, value_node: Node):
+    def __init__(self, var_name_token: StringToken, value_node: Node):
         super().__init__(var_name_token.pos_start, var_name_token.pos_end)
         self.var_name_token = var_name_token
         self.value_node = value_node
@@ -27,7 +27,6 @@ class VariableAssignmentNode(Node):
         if res.error or value is None:
             return res
 
-        if isinstance(var_name, str):
-            context.symbol_table.set(var_name, value)
+        context.symbol_table.set(var_name, value)
 
         return res.success(value)

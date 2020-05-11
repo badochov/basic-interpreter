@@ -1,20 +1,26 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
-from lang_token import Token
 from lang_types.lang_variant_type import LangVariantType
 from nodes.node import Node
-from symbol_table import SymbolTable
 
+
+from symbol_table import SymbolTable
 from context import Context
+
+if TYPE_CHECKING:
+    from tokens.lang_string_token import StringToken
 
 
 class MatchCaseNode(Node):
     def __init__(
-        self, type_variant_name_token: Token, arg_tokens: List[Token], expr_node: Node
+        self,
+        type_variant_name_token: StringToken,
+        arg_tokens: List[StringToken],
+        expr_node: Node,
     ):
         super().__init__(type_variant_name_token.pos_start, expr_node.pos_end)
         self.type_variant_name_token = type_variant_name_token
@@ -34,19 +40,19 @@ class MatchCaseNode(Node):
 
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
-        if self.var is None:
-            return res.failure(
-                RTError(
-                    self.pos_start,
-                    self.pos_end,
-                    "set_matched_variable should be called before visiting MatchCaseNode",
-                    context,
-                )
-            )
+        assert self.var is not None
+        every = self.type_variant_name_token.value == "_"
 
-        if not self.var.is_of_type(str(self.type_variant_name_token.value)):
+        if every:
+            if self.arg_tokens:
+                return res.failure(
+                    RTError(
+                        self.pos_start, self.pos_end, "Unexpected arguments", context
+                    )
+                )
+        elif not self.var.is_of_type(self.type_variant_name_token.value):
             return res
-        if len(self.arg_tokens) != len(self.var.args):
+        if len(self.arg_tokens) != len(self.var.args) and not every:
             return res.failure(
                 RTError(
                     self.pos_start,
@@ -61,12 +67,9 @@ class MatchCaseNode(Node):
             context,
             self.pos_start,
         )
-        for i, arg_token in enumerate(self.arg_tokens):
-            if not isinstance(arg_token.value, str):
-                return res.failure(
-                    RTError(self.pos_start, self.pos_end, "Expected string", context,)
-                )
-            new_ctx.symbol_table.set(arg_token.value, self.var.args[i])
+        if not every:
+            for i, arg_token in enumerate(self.arg_tokens):
+                new_ctx.symbol_table.set(arg_token.value, self.var.args[i])
 
         value = res.register(self.expr_node.visit(new_ctx))
         if value is None or res.error:

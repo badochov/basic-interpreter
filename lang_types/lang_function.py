@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-import sys
 from typing import Optional, Tuple, TYPE_CHECKING, List
 
 from context import Context
 from errors.error import Error
-from errors.rt_error import RTError
 from errors.too_few_args_error import TooFewArgsError
 from interpreter.runtime_result import RuntimeResult
-from lang_token import Token
+from tokens.lang_token import Token
 from lang_types.lang_type import LangType
 from nodes.node import Node
-from position import Position, mock_position
+from position import Position
 from symbol_table import SymbolTable
 
 if TYPE_CHECKING:

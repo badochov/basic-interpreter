@@ -1,23 +1,19 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, List
 
-from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
-from lang_types.lang_function import LangFunction
-from lang_types.lang_type import LangType
-from lang_types.lang_variant_type import LangVariantType
 from lang_types.type_def import LangVariantTypeDefinition
 from nodes.node import Node
 
 if TYPE_CHECKING:
     from context import Context
-    from lang_token import Token
+    from tokens.lang_string_token import StringToken
 
 
 class TypeVariantNode(Node):
     def __init__(
-        self, var_name_token: Token, args_tokens: List[Token],
+        self, var_name_token: StringToken, args_tokens: List[StringToken],
     ):
         pos_end = args_tokens[-1].pos_end if args_tokens else var_name_token.pos_end
 
@@ -32,10 +28,9 @@ class TypeVariantNode(Node):
         res = RuntimeResult()
         var_name = self.var_name_token.value
 
-        assert isinstance(var_name, str)
         variant_def = LangVariantTypeDefinition(
             var_name,
-            list(map(lambda token: str(token.type), self.args_token)),
+            list(map(lambda token: token.value, self.args_token)),
             self.pos_start,
             self.pos_end,
             context,

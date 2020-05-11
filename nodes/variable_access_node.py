@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from errors.rt_error import RTError
 from interpreter.runtime_result import RuntimeResult
@@ -10,11 +10,11 @@ from nodes.node import Node
 
 if TYPE_CHECKING:
     from context import Context
-    from lang_token import Token
+    from tokens.lang_string_token import StringToken
 
 
 class VariableAccessNode(Node):
-    def __init__(self, var_name_token: Token):
+    def __init__(self, var_name_token: StringToken):
         pos_end = var_name_token.pos_end
         super().__init__(var_name_token.pos_start, pos_end)
         self.var_name_token = var_name_token
@@ -25,8 +25,6 @@ class VariableAccessNode(Node):
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         var_name = self.var_name_token.value
-
-        assert isinstance(var_name, str)
 
         value = context.get(var_name)
         if not value:

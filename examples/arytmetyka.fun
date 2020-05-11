@@ -1,3 +1,5 @@
+# Doesn't work
+
 type Num = Infinity of float or
            Number of float
            NaN

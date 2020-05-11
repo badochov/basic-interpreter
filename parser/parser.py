@@ -19,18 +19,19 @@ from nodes.variable_access_node import VariableAccessNode
 from parser.parse_result import ParseResult
 from position import mock_position
 from token_types import *
+from tokens.lang_empty_token import EmptyToken
+from tokens.lang_number_token import NumberToken
+from tokens.lang_string_token import StringToken
 
 if TYPE_CHECKING:
-    from lang_token import Token
+    from tokens.lang_token import Token
 
 
 class Parser:
     def __init__(self, tokens: List[Token]):
-        # TODO handle multiple statements
-        # TODO think about change variable assignment to not return value
         self.tokens = tokens
         self.token_index = 0
-        self.current_token: Token = tokens[0] if tokens else Token(
+        self.current_token: Token = tokens[0] if tokens else EmptyToken(
             TT_EOF, mock_position, mock_position
         )
 
@@ -106,7 +107,7 @@ class Parser:
                 return res
             variants.append(variant)
 
-        return res.success(TypeDefinitionNode(type_name, variants))
+        return res.success(TypeDefinitionNode(cast(StringToken, type_name), variants))
 
     def var_decl(self) -> ParseResult:
         res = ParseResult()
@@ -159,7 +160,7 @@ class Parser:
             node = res.register(self.logic_expression())
             if res.error or node is None:
                 return res
-            return res.success(UnaryOperationNode(token, node))
+            return res.success(UnaryOperationNode(cast(EmptyToken, token), node))
 
         node = res.register(
             self._binary_operation(
@@ -195,7 +196,7 @@ class Parser:
             factor = res.register(self.factor())
             if res.error or factor is None:
                 return res
-            return res.success(UnaryOperationNode(token, factor))
+            return res.success(UnaryOperationNode(cast(EmptyToken, token), factor))
 
         return self.power()
 
@@ -238,10 +239,10 @@ class Parser:
 
         if token.type in (TT_FLOAT, TT_INT):
             res.register_advancement(self.advance())
-            return res.success(NumberNode(token))
+            return res.success(NumberNode(cast(NumberToken, token)))
         elif token.type in (TT_IDENTIFIER,):
             res.register_advancement(self.advance())
-            return res.success(VariableAccessNode(token))
+            return res.success(VariableAccessNode(cast(StringToken, token)))
         elif token.type in (TT_LPAREN,):
             res.register_advancement(self.advance())
             expr = res.register(self.expression())
@@ -393,9 +394,9 @@ class Parser:
             var_name = self.current_token
             res.register_advancement(self.advance())
 
-        arg_tokens: List[Token] = []
+        arg_tokens: List[StringToken] = []
         while self.current_token.type == TT_IDENTIFIER:
-            arg_tokens.append(self.current_token)
+            arg_tokens.append(cast(StringToken, self.current_token))
             res.register_advancement(self.advance())
 
         if self.current_token.type != end_def_token:
@@ -410,17 +411,21 @@ class Parser:
         expr = res.register(self.expression())
         if res.error or expr is None:
             return res
-        fun = res.register(Parser._make_function_definition(var_name, arg_tokens, expr))
+        fun = res.register(
+            Parser._make_function_definition(
+                cast(StringToken, var_name), arg_tokens, expr
+            )
+        )
         if res.error or fun is None:
             return res
         return res.success(fun)
 
     @staticmethod
     def _make_function_definition(
-        var_name: Optional[Token], args: List[Token], body: Node
+        var_name: Optional[StringToken], args: List[StringToken], body: Node
     ) -> ParseResult:
         res = ParseResult()
-        id_tokens = [var_name, *args] if var_name else args
+        id_tokens: List[StringToken] = [var_name, *args] if var_name else args
         if not Parser._check_if_tokens_values_are_distinct(id_tokens):
             pos_start = var_name.pos_start if var_name else args[0].pos_start
             return res.failure(
@@ -438,7 +443,7 @@ class Parser:
         return res.success(FunctionDefinitionNode(var_name, None, prev_fun))
 
     @staticmethod
-    def _check_if_tokens_values_are_distinct(tokens: List[Token]) -> bool:
+    def _check_if_tokens_values_are_distinct(tokens: List[StringToken]) -> bool:
         ids = list(map(lambda t: t.value, tokens))
         return len(set(ids)) == len(ids)
 
@@ -455,9 +460,9 @@ class Parser:
                     "Expected identifier",
                 )
             )
+        var_name = cast(StringToken, var_name)
 
         res.register_advancement(self.advance())
-        type_creation = self.current_token.type == TT_LCURLY
 
         arg_tokens: List[Node] = []
         while self.current_token.type in (TT_LPAREN, TT_IDENTIFIER, TT_INT, TT_FLOAT):
@@ -509,13 +514,14 @@ class Parser:
                     "Expected variant type name",
                 )
             )
+        variant_type_name = cast(StringToken, variant_type_name)
 
         res.register_advancement(self.advance())
-        args_tokens: List[Token] = []
+        args_tokens: List[StringToken] = []
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DESCRIPTION"]):
             res.register_advancement(self.advance())
             while self.current_token.type == TT_IDENTIFIER:
-                args_tokens.append(self.current_token)
+                args_tokens.append(cast(StringToken, self.current_token))
                 res.register_advancement(self.advance())
                 if self.current_token.type == TT_MUL:
                     res.register_advancement(self.advance())
@@ -543,13 +549,13 @@ class Parser:
                     "Expected type name",
                 )
             )
-
+        type_name = cast(StringToken, type_name)
         res.register_advancement(self.advance())
 
-        arg_tokens: List[Token] = []
+        arg_tokens: List[StringToken] = []
 
         while self.current_token.type == TT_IDENTIFIER:
-            arg_tokens.append(self.current_token)
+            arg_tokens.append(cast(StringToken, self.current_token))
             res.register_advancement(self.advance())
 
         if self.current_token.type != TT_ARROW:

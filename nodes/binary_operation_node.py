@@ -10,7 +10,7 @@ from token_types import *
 
 if TYPE_CHECKING:
     from context import Context
-    from lang_token import Token
+    from tokens.lang_token import Token
 
 
 class BinaryOperationNode(Node):

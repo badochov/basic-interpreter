@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-from typing import Union, TYPE_CHECKING
+from abc import ABC
+from typing import TYPE_CHECKING, TypeVar, Generic
 
 if TYPE_CHECKING:
     from position import Position
 
+T = TypeVar("T")
 
-class Token:
+
+class Token(ABC, Generic[T]):
     def __init__(
-        self,
-        type_: str,
-        pos_start: Position,
-        pos_end: Position,
-        value: Union[str, float] = None,
-    ):
+        self, type_: str, pos_start: Position, pos_end: Position, value: T,
+    ) -> None:
         self.type = type_
         self.value = value
         if pos_start:

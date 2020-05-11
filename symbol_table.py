@@ -25,7 +25,8 @@ class SymbolTable:
         return None
 
     def set(self, name: str, value: Value) -> None:
-        self.symbols[name] = value
+        if name != "_":
+            self.symbols[name] = value
 
     def remove(self, name: str) -> None:
         del self.symbols[name]

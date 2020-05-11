@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from lang_token import Token
+    from tokens.lang_token import Token
 
 
 @dataclass

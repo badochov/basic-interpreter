@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from errors.error import Error
     from nodes.node import Node
-    from lang_token import Token
+    from tokens.lang_token import Token
 
 
 class ParseResult:
