@@ -19,6 +19,7 @@ class FunctionDefinitionNode(Node):
         var_name_token: Optional[Token],
         arg_token: Optional[Token],
         body_node: Node,
+        save_name: bool = True,
     ):
         if var_name_token:
             pos_start = var_name_token.pos_start
@@ -31,6 +32,7 @@ class FunctionDefinitionNode(Node):
         self.var_name_token = var_name_token
         self.arg_token = arg_token
         self.body_node = body_node
+        self.save_name = save_name
 
     def __repr__(self) -> str:
         return f"({self.var_name_token or '<anonymous>'}, {self.arg_token}, {self.body_node})"
@@ -59,7 +61,7 @@ class FunctionDefinitionNode(Node):
                 return res
             value = val
 
-        if self.var_name_token:
+        if self.var_name_token and self.save_name:
             if not isinstance(self.var_name_token.value, str):
                 return res.failure(
                     RTError(

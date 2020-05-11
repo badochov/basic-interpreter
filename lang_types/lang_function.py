@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import Optional, Tuple, TYPE_CHECKING, List
 
 from context import Context
@@ -39,37 +40,28 @@ class LangFunction(LangType):
         )
 
     def __repr__(self) -> str:
-        return f"{self.arg_name} {self.body_node}"
+        return f"fn {self.arg_name}"
 
     def is_truthy(self) -> bool:
         return True
 
     def call(self, context: Context, args: List[LangType]) -> RuntimeResult:
-        new_ctx = Context(self.name, SymbolTable(), context, self.pos_start)
+        new_ctx = Context(self.name, SymbolTable(), context, self.pos_start,)
+        new_ctx.symbol_table.add_parent(self.context.symbol_table)
         res = RuntimeResult()
         if not args:
             return res.failure(TooFewArgsError(self.pos_start, self.pos_end, ""))
-        if not self.body_node:
-            return res.failure(
-                RTError(self.pos_start, self.pos_end, "No function body", new_ctx)
-            )
 
-        arg = args.pop()
-        new_ctx.symbol_table.set(self.arg_name, arg)
+        new_ctx.symbol_table.set(self.arg_name, args.pop())
         result = res.register(self.body_node.visit(new_ctx))
         if res.error or result is None:
             return res
 
         result_cpy = result.copy()
-        result_cpy.context = new_ctx
         if args:
             val = res.register(result_cpy.call(new_ctx, args))
             if val is None or res.error:
                 return res
-            val_c = val.copy()
+            result_cpy = val.copy()
 
-            self.context = new_ctx
-            return res.success(val_c)
-
-        self.context = new_ctx
         return res.success(result_cpy)

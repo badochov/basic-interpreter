@@ -36,9 +36,9 @@ class FunctionCallNode(Node):
 
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
-        fun_name = self.fun_name_token.value
-        assert isinstance(fun_name, str)
-        fun = context.get(fun_name)
+        name = self.fun_name_token.value
+        assert isinstance(name, str)
+        fun = context.get(name)
         if not fun:
             return res.failure(
                 RTError(
@@ -80,16 +80,15 @@ class FunctionCallNode(Node):
                 )
             return res.success(
                 LangVariantType(
-                    list(reversed(args)),
-                    fun_name,
-                    self.pos_start,
-                    self.pos_end,
-                    context,
+                    list(reversed(args)), name, self.pos_start, self.pos_end, context,
                 )
             )
         else:
             fun_cpy = fun.copy().set_pos(self.pos_start, self.pos_end)
-            call_res = res.register(fun_cpy.call(fun_cpy.context, args))
+            if self.fun_name_token.value == "make_line":
+                # print(fun_cpy.context.symbol_table)
+                ...
+            call_res = res.register(fun_cpy.call(context, args))
             if call_res is None or res.error:
                 return res
 

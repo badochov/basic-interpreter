@@ -39,15 +39,24 @@ class Lexer:
         return re.match(r"\w", char) is not None
 
     def make_tokens(self) -> Tuple[List[Token], Optional[Error]]:
+        comment = False
         tokens = []
 
         self.advance()
         while self.current_char is not None:
+            if comment:
+                if self.current_char in "\n\r":
+                    comment = False
+                else:
+                    self.advance()
+                    continue
             if self.current_char == "+":
                 tokens.append(Token(TT_PLUS, self.pos, self.pos))
             elif self.current_char == "-":
                 tokens.append(self.make_minus_or_arrow())
                 continue
+            elif self.current_char == "#":
+                comment = True
             elif self.current_char == "*":
                 tokens.append(Token(TT_MUL, self.pos, self.pos))
             elif self.current_char == "^":

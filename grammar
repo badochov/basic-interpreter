@@ -88,8 +88,3 @@ let test_mfr2_11 = mfr2 (Point (-0.5) 8.5) == 8
 let test_mfr2_12 = mfr2 (Point 0 10) == 6
 let test_mfr2_13 = mfr2 (Point 1 9) == 5
 let test_mfr2_14 = mfr2 (Point 0.5 9.5) == 10
-
-        (NonEmpty (LineCoords (Point 5 0) (Point 10 5))
-        (NonEmpty (LineCoords (Point 10 0) (Point 0 10))
-        (NonEmpty (LineCoords (Point 2.5 0) (Point 2.5 10))
-        (Empty))))

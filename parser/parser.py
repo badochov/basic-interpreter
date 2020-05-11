@@ -427,14 +427,14 @@ class Parser:
                 InvalidSyntaxError(
                     pos_start,
                     id_tokens[-1].pos_end,
-                    "Names let_in this function declaration are not unique",
+                    "Names in this function declaration are not unique",
                 )
             )
         if not args:
             return res.success(FunctionDefinitionNode(var_name, None, body))
         prev_fun = body
         for arg in reversed(args):
-            prev_fun = FunctionDefinitionNode(None, arg, prev_fun)
+            prev_fun = FunctionDefinitionNode(var_name, arg, prev_fun, False)
         return res.success(FunctionDefinitionNode(var_name, None, prev_fun))
 
     @staticmethod

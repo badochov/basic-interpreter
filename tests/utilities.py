@@ -16,7 +16,7 @@ def run_test(
     err_type: Optional[Type[Error]] = None,
     value: Optional[Any] = None,
 ) -> None:
-    res, err = basic.run(code, name)
+    [(res, err)] = basic.run(code, name)
     if res_type:
         assert isinstance(res, res_type)
     else:
