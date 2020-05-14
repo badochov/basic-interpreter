@@ -2,11 +2,12 @@
 #TODO Input output
 #TODO Lists
 #TODO strings
-#TODO type hinting
 #TODO vscode extension
 #TODO tail recurrence
 #TODO imports
 #TODO infix operators
-#TODO tests for types and pattern matching
 #TODO destructuring
 #TODO -> instead of = to match
+#TODO remove end from math -> make it force all patterns from type
+
+#TODO tests for types, pattern matching, type hinting

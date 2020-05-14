@@ -340,10 +340,18 @@ class Parser:
             var_name = StringToken.as_string_token(self.current_token)
             self.advance(res)
 
+        res.register(self._make_type_hint())
+        if res.error:
+            return res
+
         arg_tokens: List[StringToken] = []
         while self.current_token.type == TT_IDENTIFIER:
             arg_tokens.append(StringToken.as_string_token(self.current_token))
             self.advance(res)
+
+            res.register(self._make_type_hint())
+            if res.error:
+                return res
 
         if self.current_token.type != end_def_token:
             return self._fail_with_invalid_syntax_error(
@@ -485,3 +493,19 @@ class Parser:
                 self.current_token.pos_start, self.current_token.pos_end, message
             )
         )
+
+    def _make_type_hint(self) -> ParseResult:
+        res = ParseResult()
+        if not self.current_token.type == TT_COLON:
+            return res
+        self.advance(res)
+        ended = False
+        while self.current_token.type == TT_IDENTIFIER and not ended:
+            if self.advance(res).type == TT_ARROW:
+                self.advance()
+            else:
+                ended = True
+
+        if ended:
+            return res
+        return self._fail_with_invalid_syntax_error(res, "Excepted type hint")

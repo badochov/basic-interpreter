@@ -71,7 +71,7 @@ let line_side line point =
 let denominator a b =
     (a ^ 2) + (b ^ 2)
 
-let flip_x line point =
+let flip_x : int line point =
     match line with
         Line a b c ->
             match point with
