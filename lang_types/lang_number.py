@@ -4,11 +4,13 @@ from typing import Tuple, Optional, TYPE_CHECKING
 
 from errors.error import Error
 from errors.rt_error import RTError
+from lang_types.lang_bool import LangBool
 from lang_types.lang_type import LangType
 
 if TYPE_CHECKING:
     from position import Position
     from context import Context
+    from lang_types.lang_type import CompType
 
 
 class LangNumber(LangType):
@@ -104,8 +106,8 @@ class LangNumber(LangType):
     def get_comparison_eq(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return (
-                LangNumber(
-                    int(self._value == other._value),
+                LangBool(
+                    (self._value == other.value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -118,8 +120,8 @@ class LangNumber(LangType):
     def get_comparison_ne(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return (
-                LangNumber(
-                    int(self._value != other._value),
+                LangBool(
+                    (self._value != other.value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -132,8 +134,8 @@ class LangNumber(LangType):
     def get_comparison_lt(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return (
-                LangNumber(
-                    int(self._value < other._value),
+                LangBool(
+                    (self._value < other.value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -146,8 +148,8 @@ class LangNumber(LangType):
     def get_comparison_gt(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return (
-                LangNumber(
-                    int(self._value > other._value),
+                LangBool(
+                    (self._value > other.value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -160,8 +162,8 @@ class LangNumber(LangType):
     def get_comparison_lte(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return (
-                LangNumber(
-                    int(self._value <= other._value),
+                LangBool(
+                    (self._value <= other.value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -174,8 +176,8 @@ class LangNumber(LangType):
     def get_comparison_gte(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return (
-                LangNumber(
-                    int(self._value >= other._value),
+                LangBool(
+                    (self._value >= other.value),
                     self.pos_start,
                     other.pos_end,
                     self.context,
@@ -185,48 +187,9 @@ class LangNumber(LangType):
 
         return super().get_comparison_gte(other)
 
-    def anded_by(self, other: LangType) -> CompType:
-        if isinstance(other, LangNumber):
-            return (
-                LangNumber(
-                    int(self._value and other._value),
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
-            )
-
-        return super().anded_by(other)
-
-    def ored_by(self, other: LangType) -> CompType:
-        if isinstance(other, LangNumber):
-            return (
-                LangNumber(
-                    int(self._value or other._value),
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
-            )
-
-        return super().ored_by(other)
-
-    def notted(self) -> CompType:
-        return (
-            LangNumber(
-                int(not self._value), self.pos_start, self.pos_end, self.context,
-            ),
-            None,
-        )
-
-    def is_truthy(self) -> bool:
-        return self._value != 0
-
     def __repr__(self) -> str:
         return f"{self._value}"
 
 
-OperType = Tuple[Optional[LangNumber], Optional[Error]]
-CompType = Tuple[Optional[LangNumber], Optional[Error]]
+if TYPE_CHECKING:
+    OperType = Tuple[Optional[LangNumber], Optional[Error]]

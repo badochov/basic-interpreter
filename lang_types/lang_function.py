@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, TYPE_CHECKING, List
+from typing import Optional, TYPE_CHECKING, List
 
 from context import Context
-from errors.error import Error
 from errors.too_few_args_error import TooFewArgsError
 from interpreter.runtime_result import RuntimeResult
 from lang_types.lang_type import LangType
@@ -13,9 +12,7 @@ from symbol_table import SymbolTable
 from tokens.lang_token import Token
 
 if TYPE_CHECKING:
-    from lang_types.lang_number import LangNumber
-
-    CompType = Tuple[Optional[LangNumber], Optional[Error]]
+    ...
 
 
 class LangFunction(LangType):
@@ -39,9 +36,6 @@ class LangFunction(LangType):
 
     def __repr__(self) -> str:
         return f"fn {self.arg_name}"
-
-    def is_truthy(self) -> bool:
-        return True
 
     def call(self, context: Context, args: List[LangType]) -> RuntimeResult:
         new_ctx = Context(self.name, SymbolTable(), context, self.pos_start,)

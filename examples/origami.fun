@@ -18,7 +18,7 @@ let list_join list1 list2 =
     end
 
 let rectangle left_bottom right_upper =
-    fn point ->
+    fn point =
         match left_bottom with
             Point x1 y1 ->
                 match right_upper with
@@ -34,7 +34,7 @@ let rectangle left_bottom right_upper =
         end
 
 let circle center radius =
-    fn point ->
+    fn point =
         match center with
             Point x1 y1 ->
                 match point with
@@ -103,7 +103,7 @@ let points_after_fold line point =
         NonEmpty point (NonEmpty (Point x y) Empty)
 
 let fold point1 point2 paper =
-    fn point ->
+    fn point =
         let count acc pnt = acc + paper pnt in
         let line = make_line point1 point2 in
         let points = points_after_fold line point in
@@ -218,7 +218,7 @@ let test_mfr2_14 = mfr2 (Point 0.5 9.5) == 10
 # Version with outputting points
 
 let rectangle_point left_bottom right_upper =
-    fn point ->
+    fn point =
         match left_bottom with
             Point x1 y1 ->
                 match right_upper with
@@ -234,7 +234,7 @@ let rectangle_point left_bottom right_upper =
         end
 
 let circle_point center radius =
-    fn point ->
+    fn point =
         match center with
             Point x1 y1 ->
                 match point with
@@ -247,7 +247,7 @@ let circle_point center radius =
         end
 
 let fold_points point1 point2 paper =
-    fn point ->
+    fn point =
         let count acc pnt = list_join acc (paper pnt) in
         let line = make_line point1 point2 in
         let points = points_after_fold line point in

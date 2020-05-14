@@ -5,6 +5,7 @@ from typing import Tuple, TYPE_CHECKING, Optional, List
 
 from context import Context
 from interpreter.interpreter import Interpreter
+from lang_types.lang_bool import LangBool
 from lang_types.lang_number import LangNumber
 from lexer.lexer import Lexer
 from parser.parser import Parser
@@ -16,8 +17,8 @@ if TYPE_CHECKING:
 
 global_syntax_table = SymbolTable()
 global_syntax_table.set("null", LangNumber(0))
-global_syntax_table.set("true", LangNumber(1))
-global_syntax_table.set("false", LangNumber(0))
+global_syntax_table.set("true", LangBool(True))
+global_syntax_table.set("false", LangBool(False))
 
 setrecursionlimit(getrecursionlimit() * 1000)
 

@@ -1,5 +1,6 @@
 from basic import Basic
 from errors.invalid_syntax_error import InvalidSyntaxError
+from lang_types.lang_bool import LangBool
 from lang_types.lang_number import LangNumber
 from tests.utilities import run_test
 
@@ -52,33 +53,33 @@ def test_integer_equals() -> None:
         basic,
         " let _ = 4 != +2",
         "test_positive_integer_equals",
-        LangNumber,
+        LangBool,
         None,
-        int(4 != 2),
+        4 != 2,
     )
     run_test(
         basic,
         " let _ = 4 != 4",
         "test_positive_integer_not_equals",
-        LangNumber,
+        LangBool,
         None,
-        int(4 != 4),
+        (4 != 4),
     )
     run_test(
         basic,
         " let _ = -4 != -2",
         "test_negative_integer_not_equals",
-        LangNumber,
+        LangBool,
         None,
-        int(-4 != -2),
+        (-4 != -2),
     )
     run_test(
         basic,
         " let _ = 4 != -2",
         "test_mixed_integer_not_equals",
-        LangNumber,
+        LangBool,
         None,
-        int(4 != -2),
+        (4 != -2),
     )
 
 
@@ -86,11 +87,16 @@ def test_if() -> None:
     basic = Basic()
 
     run_test(
-        basic, " let _ = if 0 then 1 else 2", "test_if_just_else1", LangNumber, None, 2
+        basic,
+        " let _ = if false then 1 else 2",
+        "test_if_just_else1",
+        LangNumber,
+        None,
+        2,
     )
     run_test(
         basic,
-        " let _ = if 0 then 1 elif 1 then 2 else 3",
+        " let _ = if false then 1 elif true then 2 else 3",
         "test_if_elif_1",
         LangNumber,
         None,
@@ -98,7 +104,7 @@ def test_if() -> None:
     )
     run_test(
         basic,
-        " let _ = if 0 then 1 elif 0 then 2 else 3",
+        " let _ = if false then 1 elif false then 2 else 3",
         "test_if_elif_2",
         LangNumber,
         None,
@@ -106,7 +112,7 @@ def test_if() -> None:
     )
     run_test(
         basic,
-        "let _ = if 0 then 1 elif 0 then 2 elif 1 then 42 else 69",
+        "let _ = if false then 1 elif false then 2 elif true then 42 else 69",
         "test_if_multi_elif_1",
         LangNumber,
         None,
@@ -114,7 +120,7 @@ def test_if() -> None:
     )
     run_test(
         basic,
-        "let _ = if 0 then 1 elif 0 then 2 elif 0 then 42 else 69",
+        "let _ = if false then 1 elif false then 2 elif false then 42 else 69",
         "test_if_multi_elif_2",
         LangNumber,
         None,
@@ -122,7 +128,7 @@ def test_if() -> None:
     )
     run_test(
         basic,
-        "let _ = if 0 then 1 elif 0 then 2 else if 1 then 42 else 69",
+        "let _ = if false then 1 elif false then 2 else if true then 42 else 69",
         "test_if_nested_if_1",
         LangNumber,
         None,
@@ -130,7 +136,7 @@ def test_if() -> None:
     )
     run_test(
         basic,
-        "let _ = if 0 then 1 elif 0 then 2 else if 0 then 42 else 69",
+        "let _ = if false then 1 elif false then 2 else if false then 42 else 69",
         "test_if_nested_if_2",
         LangNumber,
         None,

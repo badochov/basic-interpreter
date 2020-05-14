@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from interpreter.runtime_result import RuntimeResult
 from keywords import KEYWORDS
+from lang_types.lang_bool import LangBool
 from nodes.node import Node
 
 if TYPE_CHECKING:
@@ -32,7 +33,7 @@ class IfNode(Node):
         if res.error or condition is None:
             return res
 
-        if condition.is_truthy():
+        if isinstance(condition, LangBool) and condition.value:
             node = res.register(self.then_node.visit(context))
             if res.error or node is None:
                 return res

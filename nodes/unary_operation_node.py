@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from interpreter.runtime_result import RuntimeResult
 from keywords import *
@@ -11,10 +11,11 @@ from token_types import *
 if TYPE_CHECKING:
     from context import Context
     from tokens.lang_empty_token import EmptyToken
+    from tokens.lang_string_token import StringToken
 
 
 class UnaryOperationNode(Node):
-    def __init__(self, operation_token: EmptyToken, node: Node):
+    def __init__(self, operation_token: Union[EmptyToken, StringToken], node: Node):
         super().__init__(operation_token.pos_start, node.pos_end)
         self.operation_token = operation_token
         self.node = node

@@ -8,4 +8,5 @@
 #TODO imports
 #TODO infix operators
 #TODO tests for types and pattern matching
-#TODO add boolean
+#TODO destructuring
+#TODO -> instead of = to match

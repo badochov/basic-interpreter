@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from abc import ABC
-from typing import TYPE_CHECKING, TypeVar, Generic
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, TypeVar, Generic, Union
 
 if TYPE_CHECKING:
     from position import Position
@@ -21,10 +21,22 @@ class Token(ABC, Generic[T]):
         if pos_end:
             self.pos_end = pos_end.copy()
 
-    def matches(self, type_: str, value: str) -> bool:
+    def matches(self, type_: str, value: Union[str, float]) -> bool:
         return self.type == type_ and self.value == value
 
     def __repr__(self) -> str:
         if self.value is not None:
             return f"{self.type}:{self.value}"
         return f"{self.type}"
+
+    @abstractmethod
+    def is_number_token(self) -> bool:
+        ...
+
+    @abstractmethod
+    def is_string_token(self) -> bool:
+        ...
+
+    @abstractmethod
+    def is_empty_token(self) -> bool:
+        ...

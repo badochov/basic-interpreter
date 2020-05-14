@@ -11,9 +11,9 @@ from keywords import *
 from position import Position, mock_position
 
 if TYPE_CHECKING:
-    from lang_types.lang_number import LangNumber
+    from lang_types.lang_bool import LangBool
 
-    CompType = Tuple[Optional[LangNumber], Optional[Error]]
+    CompType = Tuple[Optional[LangBool], Optional[Error]]
 
 T = TypeVar("T", bound="LangType")
 
@@ -94,9 +94,6 @@ class LangType:
 
     def notted(self) -> CompType:
         return self.__not_impl(f'KEYWORD:{KEYWORDS["NOT"]}')
-
-    def is_truthy(self) -> bool:
-        return False
 
     def call(self, context: Context, args: List[LangType]) -> RuntimeResult:
         return RuntimeResult().failure(
