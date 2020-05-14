@@ -498,14 +498,22 @@ class Parser:
         res = ParseResult()
         if not self.current_token.type == TT_COLON:
             return res
+        lparen = 0
         self.advance(res)
         ended = False
-        while self.current_token.type == TT_IDENTIFIER and not ended:
-            if self.advance(res).type == TT_ARROW:
-                self.advance()
+        while self.current_token.type in (TT_IDENTIFIER, TT_LPAREN) and not ended:
+            if self.current_token == TT_LPAREN:
+                lparen += 1
+
+            if self.advance(res).type == TT_RPAREN:
+                lparen -= 1
+                self.advance(res)
+
+            if self.current_token.type == TT_ARROW:
+                self.advance(res)
             else:
                 ended = True
 
-        if ended:
+        if ended and lparen == 0:
             return res
-        return self._fail_with_invalid_syntax_error(res, "Excepted type hint")
+        return self._fail_with_invalid_syntax_error(res, "Expected type hint")

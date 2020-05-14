@@ -3,9 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from interpreter.runtime_result import RuntimeResult
 
 if TYPE_CHECKING:
+    from interpreter.runtime_result import RuntimeResult
     from context import Context
     from position import Position
 

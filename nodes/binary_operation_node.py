@@ -23,7 +23,6 @@ class BinaryOperationNode(Node):
     def __repr__(self) -> str:
         return f"({self.left_node}, {self.operation_token}, {self.right_node})"
 
-    # TODO more fun with or and not
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         left = res.register(self.left_node.visit(context))
