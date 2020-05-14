@@ -89,7 +89,6 @@ class Parser:
         if self.advance(res).type != TT_EQUALS:
             return self._fail_with_invalid_syntax_error(res, f'Expected "="',)
         self.advance(res)
-
         variants: List[TypeVariantNode] = []
         variant = res.register(self._variant_type_identifier())
         if variant is None or res.error or not isinstance(variant, TypeVariantNode):
@@ -435,13 +434,12 @@ class Parser:
     def _variant_type_identifier(self) -> ParseResult:
         res = ParseResult()
 
-        variant_type_name = self.current_token
-
-        if variant_type_name.type != TT_IDENTIFIER:
+        if self.current_token.type != TT_IDENTIFIER:
             return self._fail_with_invalid_syntax_error(
                 res, "Expected variant type name",
             )
-        variant_type_name = StringToken.as_string_token(variant_type_name)
+        variant_type_name = StringToken.as_string_token(self.current_token)
+        self.advance(res)
 
         args_tokens: List[StringToken] = []
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DESCRIPTION"]):
