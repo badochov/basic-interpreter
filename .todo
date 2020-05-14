@@ -1,3 +1,6 @@
+#TODO -> instead of = to match
+#TODO debug origami, problem is with saving local variables/ switch case when match returns newly defined function
+
 #TODO Tuples
 #TODO Input output
 #TODO Lists
@@ -7,7 +10,6 @@
 #TODO imports
 #TODO infix operators
 #TODO destructuring
-#TODO -> instead of = to match
 #TODO remove end from math -> make it force all patterns from type
 
 #TODO tests for types, pattern matching, type hinting

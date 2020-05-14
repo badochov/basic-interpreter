@@ -18,7 +18,6 @@ from nodes.variable_access_node import VariableAccessNode
 from parser.parse_result import ParseResult
 from position import mock_position
 from token_types import *
-
 from tokens.lang_empty_token import EmptyToken
 from tokens.lang_number_token import NumberToken
 from tokens.lang_string_token import StringToken
@@ -45,12 +44,12 @@ class Parser:
                 break
         return results
 
-    def advance(self, res: Optional[ParseResult] = None) -> Token:
+    def advance(self, res: ParseResult) -> Token:
         self.token_index += 1
         if self.token_index < len(self.tokens):
             self.current_token = self.tokens[self.token_index]
-        if res:
-            res.register_advancement(self.current_token)
+
+        res.register_advancement(self.current_token)
         return self.current_token
 
     def repl_top_level(self) -> ParseResult:
@@ -325,6 +324,7 @@ class Parser:
         keyword: str = KEYWORDS["FUN"],
         has_name: bool = False,
         end_def_token: str = TT_EQUALS,
+        end_def_match_token: str = TT_ARROW,
     ) -> ParseResult:
         res = ParseResult()
         if not self.current_token.matches(TT_KEYWORD, keyword):
@@ -353,10 +353,16 @@ class Parser:
             if res.error:
                 return res
 
-        if self.current_token.type != end_def_token:
+        if self.current_token.type not in (end_def_token, end_def_match_token):
             return self._fail_with_invalid_syntax_error(
                 res, f'Expected "{end_def_token}"',
             )
+        if self.current_token.type == end_def_match_token:
+            if not arg_tokens:
+                return self._fail_with_invalid_syntax_error(
+                    res, 'Definition with "->" can only be used with arguments.'
+                )
+            self._add_match(arg_tokens[-1])
         self.advance(res)
         expr = res.register(self.expression())
         if res.error or expr is None:
@@ -486,11 +492,11 @@ class Parser:
         return res.success(MatchCaseNode(type_name, arg_tokens, expr_node))
 
     def _fail_with_invalid_syntax_error(
-        self, res: ParseResult, message: str
+        self, res: ParseResult, msg: str
     ) -> ParseResult:
         return res.failure(
             InvalidSyntaxError(
-                self.current_token.pos_start, self.current_token.pos_end, message
+                self.current_token.pos_start, self.current_token.pos_end, msg
             )
         )
 
@@ -517,3 +523,25 @@ class Parser:
         if ended and lparen == 0:
             return res
         return self._fail_with_invalid_syntax_error(res, "Expected type hint")
+
+    def _add_match(self, variable_name: StringToken) -> None:
+        self._add_token(
+            StringToken(
+                TT_KEYWORD,
+                variable_name.pos_start,
+                variable_name.pos_end,
+                KEYWORDS["WITH"],
+            )
+        )
+        self._add_token(variable_name)
+        self._add_token(
+            StringToken(
+                TT_KEYWORD,
+                variable_name.pos_start,
+                variable_name.pos_end,
+                KEYWORDS["MATCH"],
+            )
+        )
+
+    def _add_token(self, token: Token) -> None:
+        self.tokens.insert(self.token_index + 1, token)

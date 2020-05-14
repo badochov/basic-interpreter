@@ -3,8 +3,7 @@ type Coord = Point of float * float or LineCoords of Point * Point
 type Shape = Line of float * float * float
 
 
-let list_fold_left fun acc list =
-    match list with
+let list_fold_left fun acc list ->
     |   Empty -> acc
     |   NonEmpty head tail ->
             list_fold_left fun (fun acc head) tail
@@ -17,78 +16,71 @@ let list_join list1 list2 =
     |   Empty -> list2
     end
 
-let rectangle left_bottom right_upper =
-    fn point =
-        match left_bottom with
-            Point x1 y1 ->
-                match right_upper with
-                    Point x2 y2 ->
-                        match point with
-                            Point x y ->
-                                if x1 <= x and x <= x2 and y1 <= y and y <= y2 then
-                                    1
-                                else
-                                    0
-                        end
-                end
-        end
-
-let circle center radius =
-    fn point =
-        match center with
-            Point x1 y1 ->
-                match point with
-                    Point x y ->
-                        if ((x1 - x) ^ 2 + (y1 - y) ^ 2) ^ 0.5 <= radius then
+let rectangle lb right_upper ->
+    Point x2 y2 ->
+        fn punkcik ->
+            Point x y ->
+                match lb with
+                    Point x1 y1 ->
+                        if x1 <= x and x <= x2 and y1 <= y and y <= y2 then
                             1
                         else
                             0
                 end
         end
+    end
 
-
-let make_line point1 point2 =
-    match point1 with
-        Point x1 y1 ->
-            match point2 with
-                Point x2 y2 ->
-                    let a = y1 - y2 in
-                    let b = x2 - x1 in
-                    let c = -y1 * b - x1 * a in
-                    Line a b c
+let circle center radius =
+    fn point ->
+        Point x y ->
+            match center with
+                Point x1 y1 ->
+                    if ((x1 - x) ^ 2 + (y1 - y) ^ 2) ^ 0.5 <= radius then
+                        1
+                    else
+                        0
             end
     end
 
-let line_side line point =
-    match line with
-        Line a b c ->
-            match point with
-                Point x y ->
-                    a * x + b * y + c
+
+let make_line point1 point2 ->
+    Point x2 y2 ->
+        match point1 with
+            Point x1 y1 ->
+                let a = y1 - y2 in
+                let b = x2 - x1 in
+                let c = -y1 * b - x1 * a in
+                Line a b c
+        end
+    end
+
+let line_side line point ->
+    Point x y ->
+        match line with
+            Line a b c ->
+                a * x + b * y + c
             end
     end
 
 let denominator a b =
     (a ^ 2) + (b ^ 2)
 
-let flip_x : int line point =
-    match line with
-        Line a b c ->
-            match point with
-                Point x y ->
-                    let numerator = ((b ^ 2) - (a ^ 2)) * x - 2 * a * b * y  - 2 * a * c in
-                    numerator / denominator a b
-            end
+let flip_x : int line point ->
+    Point x y ->
+        match line with
+            Line a b c ->
+                let numerator = ((b ^ 2) - (a ^ 2)) * x - 2 * a * b * y  - 2 * a * c in
+                numerator / denominator a b
+        end
     end
 
-let flip_y line point =
-    match line with
-        Line a b c ->
-            match point with
-                Point x y ->
-                    let numerator = ((a ^ 2) - (b ^ 2)) * y - 2 * a * b * x  - 2 * b * c in
-                    numerator / denominator a b
-            end
+let flip_y line point ->
+    Point x y ->
+        match line with
+            Line a b c ->
+                let numerator = ((a ^ 2) - (b ^ 2)) * y - 2 * a * b * x  - 2 * b * c in
+                numerator / denominator a b
+        end
     end
 
 let points_after_fold line point =
@@ -111,13 +103,11 @@ let fold point1 point2 paper =
 
 
 let multi_fold lines paper =
-    let fold_helper acc points =
-        match points with
-            LineCoords point1 point2 ->
-                fold point1 point2 acc
-        end
-    in
-        list_fold_left fold_helper paper lines
+    let fold_helper acc points ->
+        LineCoords point1 point2 ->
+            fold point1 point2 acc
+    end in
+    list_fold_left fold_helper paper lines
 
 
 let test_rect1 = rectangle (Point 0 0) (Point 2 2) (Point 2 0) == 1
@@ -217,34 +207,31 @@ let test_mfr2_14 = mfr2 (Point 0.5 9.5) == 10
 
 # Version with outputting points
 
-let rectangle_point left_bottom right_upper =
-    fn point =
-        match left_bottom with
-            Point x1 y1 ->
-                match right_upper with
-                    Point x2 y2 ->
-                        match point with
-                            Point x y ->
-                                if x1 <= x and x <= x2 and y1 <= y and y <= y2 then
-                                    NonEmpty point Empty
-                                else
-                                    Empty
-                        end
-                end
-        end
-
-let circle_point center radius =
-    fn point =
-        match center with
-            Point x1 y1 ->
-                match point with
-                    Point x y ->
-                        if ((x1 - x) ^ 2 + (y1 - y) ^ 2) ^ 0.5 <= radius then
+let rectangle_point left_bottom right_upper ->
+    Point x2 y2 ->
+        fn point ->
+            Point x y ->
+                match left_bottom with
+                    Point x1 y1 ->
+                        if x1 <= x and x <= x2 and y1 <= y and y <= y2 then
                             NonEmpty point Empty
                         else
                             Empty
                 end
         end
+    end
+
+let circle_point center radius =
+    fn point ->
+        Point x y ->
+        match center with
+            Point x1 y1 ->
+                if ((x1 - x) ^ 2 + (y1 - y) ^ 2) ^ 0.5 <= radius then
+                    NonEmpty point Empty
+                else
+                    Empty
+        end
+    end
 
 let fold_points point1 point2 paper =
     fn point =
@@ -254,13 +241,11 @@ let fold_points point1 point2 paper =
         list_fold_left count Empty points
 
 let multi_fold_points lines paper =
-    let fold_helper acc points =
-        match points with
-            LineCoords point1 point2 ->
-                fold_points point1 point2 acc
-        end
-    in
-        list_fold_left fold_helper paper lines
+    let fold_helper acc points ->
+        LineCoords point1 point2 ->
+            fold_points point1 point2 acc
+    end in
+    list_fold_left fold_helper paper lines
 
 
 let r_p = rectangle_point (Point 0 0) (Point 10 10)

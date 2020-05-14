@@ -32,7 +32,7 @@ class VariableAccessNode(Node):
                 RTError(
                     self.pos_start,
                     self.pos_end,
-                    f'"{var_name}" is not defined {value}',
+                    f'"{var_name}" is not defined',
                     context,
                 )
             )

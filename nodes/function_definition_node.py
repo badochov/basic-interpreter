@@ -10,14 +10,14 @@ from nodes.node import Node
 
 if TYPE_CHECKING:
     from context import Context
-    from tokens.lang_token import Token
+    from tokens.lang_string_token import StringToken
 
 
 class FunctionDefinitionNode(Node):
     def __init__(
         self,
-        var_name_token: Optional[Token],
-        arg_token: Optional[Token],
+        var_name_token: Optional[StringToken],
+        arg_token: Optional[StringToken],
         body_node: Node,
         save_name: bool = True,
     ):
@@ -62,11 +62,5 @@ class FunctionDefinitionNode(Node):
             value = val
 
         if self.var_name_token and self.save_name:
-            if not isinstance(self.var_name_token.value, str):
-                return res.failure(
-                    RTError(
-                        self.pos_start, self.pos_end, "Expected identifier", context
-                    )
-                )
             context.symbol_table.set(self.var_name_token.value, value)
         return res.success(value)
