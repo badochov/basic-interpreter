@@ -62,5 +62,5 @@ class FunctionDefinitionNode(Node):
             value = val
 
         if self.var_name_token and self.save_name:
-            context.symbol_table.set(self.var_name_token.value, value)
+            context.set(self.var_name_token.value, value)
         return res.success(value)

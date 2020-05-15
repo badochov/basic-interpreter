@@ -39,12 +39,12 @@ class LangFunction(LangType):
 
     def call(self, context: Context, args: List[LangType]) -> RuntimeResult:
         new_ctx = Context(self.name, SymbolTable(), context, self.pos_start,)
-        new_ctx.symbol_table.add_parent(self.context.symbol_table)
+        new_ctx.add_parent(self.context)
         res = RuntimeResult()
         if not args:
             return res.failure(TooFewArgsError(self.pos_start, self.pos_end, ""))
 
-        new_ctx.symbol_table.set(self.arg_name, args.pop())
+        new_ctx.set(self.arg_name, args.pop())
         result = res.register(self.body_node.visit(new_ctx))
         if res.error or result is None:
             return res

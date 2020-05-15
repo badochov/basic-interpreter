@@ -67,7 +67,7 @@ class MatchCaseNode(Node):
         )
         if not every:
             for i, arg_token in enumerate(self.arg_tokens):
-                new_ctx.symbol_table.set(arg_token.value, self.var.args[i])
+                new_ctx.set(arg_token.value, self.var.args[i])
 
         value = res.register(self.expr_node.visit(new_ctx))
         if value is None or res.error:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING
 
 from errors.rt_error import RTError
@@ -25,7 +26,6 @@ class VariableAccessNode(Node):
     def visit(self, context: Context) -> RuntimeResult:
         res = RuntimeResult()
         var_name = self.var_name_token.value
-
         value = context.get(var_name)
         if not value:
             return res.failure(

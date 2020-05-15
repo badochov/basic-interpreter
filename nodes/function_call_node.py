@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, List
 
 from errors.rt_error import RTError
@@ -74,6 +75,7 @@ class FunctionCallNode(Node):
             )
         else:
             fun_cpy = fun.copy().set_pos(self.pos_start, self.pos_end)
+
             call_res = res.register(fun_cpy.call(context, args))
             if call_res is None or res.error:
                 return res

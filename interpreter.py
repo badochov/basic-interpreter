@@ -15,7 +15,7 @@ with open(file_name, "r") as f:
 results = Basic.run(code, file_name, False)
 for result, error in results:
     if error:
-        print(error)
+        print(error, file=sys.stderr)
     else:
         print(result)
         pass

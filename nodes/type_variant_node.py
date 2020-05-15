@@ -35,6 +35,6 @@ class TypeVariantNode(Node):
             self.pos_end,
             context,
         )
-        context.symbol_table.set(var_name, variant_def)
+        context.set(var_name, variant_def)
 
         return res.success(variant_def)

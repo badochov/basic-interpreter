@@ -135,6 +135,23 @@ let test_quarter1 = quarter (Point 0 0) == 1
 let test_quarter2 = quarter (Point (-1) 1) == 4
 let test_quarter3 = quarter (Point (-1) 0) == 2
 
+let rctg = rectangle (Point (-10) (-10)) (Point 10 10)
+let test_rctg = rctg (Point 0 0) == 1
+let horizontally = fold (Point 0 0) (Point 1 0) rctg
+let test_horizontally1 = horizontally (Point 0 0) == 1
+let test_horizontally2 = horizontally (Point 0 1) == 2
+let test_horizontally3 = horizontally (Point 0 (-1)) == 0
+
+let vertically = fold (Point 0 0) (Point 0 1) rctg
+let test_vertically1 = vertically (Point 0 0) == 1
+let test_vertically2 = vertically (Point(-1) 0) == 2
+let test_vertically2 = vertically (Point 1 0) == 0
+
+let quarter = fold (Point 0 0) (Point 0 1) horizontally
+let test_quarter1 = quarter (Point 0 0) == 1
+let test_quarter2 = quarter (Point (-1) 1) == 4
+let test_quarter3 = quarter (Point (-1) 0) == 2
+
 let r = rectangle (Point 0 0) (Point 10 10)
 
 let c = circle (Point 5 5) 5

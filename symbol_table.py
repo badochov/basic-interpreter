@@ -9,19 +9,16 @@ if TYPE_CHECKING:
 
 
 class SymbolTable:
-    def __init__(self, parent: SymbolTable = None) -> None:
+    def __init__(self, parent: Optional[SymbolTable] = None) -> None:
         self.symbols: Dict[str, Value] = {}
-        self.parents: List[Optional[SymbolTable]] = [parent]
+        self.parent = parent
 
-    def get(self, name: str) -> Union[Value, None]:
+    def get(self, name: str) -> Optional[Value]:
         if name in self.symbols:
             return self.symbols[name]
 
-        for parent in self.parents:
-            if parent:
-                val = parent.get(name)
-                if val:
-                    return val
+        if self.parent:
+            return self.parent.get(name)
         return None
 
     def set(self, name: str, value: Value) -> None:
@@ -31,13 +28,9 @@ class SymbolTable:
     def remove(self, name: str) -> None:
         del self.symbols[name]
 
-    def add_parent(self, table: Optional[SymbolTable]) -> SymbolTable:
-        self.parents.insert(0, table)
-        return self
-
     def __repr__(self) -> str:
         s = ""
         for key, value in self.symbols.items():
             s += str(key) + ": " + str(value) + "\n"
-        parent = "Parent\n" + str(self.parents)
+        parent = "Parent\n" + str(self.parent)
         return s + parent.replace("\n", "\n\t")

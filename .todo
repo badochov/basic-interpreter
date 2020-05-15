@@ -1,6 +1,3 @@
-#TODO -> instead of = to match
-#TODO debug origami, problem is with saving local variables/ switch case when match returns newly defined function
-
 #TODO Tuples
 #TODO Input output
 #TODO Lists

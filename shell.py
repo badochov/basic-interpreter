@@ -11,7 +11,7 @@ def main(debug: bool = False) -> None:
         results = Basic.run(text, "<stdin>", True, debug)
         for result, error in results:
             if error:
-                print(error)
+                print(error, file=sys.stderr)
             else:
                 print(result)
 

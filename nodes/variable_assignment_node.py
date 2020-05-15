@@ -27,6 +27,6 @@ class VariableAssignmentNode(Node):
         if res.error or value is None:
             return res
 
-        context.symbol_table.set(var_name, value)
+        context.set(var_name, value)
 
         return res.success(value)

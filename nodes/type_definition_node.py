@@ -34,6 +34,6 @@ class TypeDefinitionNode(Node):
                 return res
             variants.append(variant)
         type_def = LangTypeDefinition(variants, self.pos_start, self.pos_end, context)
-        context.symbol_table.set(var_name, type_def)
+        context.set(var_name, type_def)
 
         return res.success(type_def)
