@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Callable, TYPE_CHECKING, Union, Tuple, Optional, cast
+from typing import List, Callable, TYPE_CHECKING, Union, Tuple, Optional, NoReturn
 
 from errors.invalid_syntax_error import InvalidSyntaxError
 from keywords import KEYWORDS
@@ -15,7 +15,7 @@ from nodes.type_definition_node import TypeDefinitionNode
 from nodes.type_variant_node import TypeVariantNode
 from nodes.unary_operation_node import UnaryOperationNode
 from nodes.variable_access_node import VariableAccessNode
-from parser.parse_result import ParseResult
+
 from position import mock_position
 from token_types import *
 from tokens.lang_empty_token import EmptyToken
@@ -35,288 +35,204 @@ class Parser:
             TT_EOF, mock_position, mock_position
         )
 
-    def parse(self, repl: bool = False) -> List[ParseResult]:
-        results: List[ParseResult] = []
+    def parse(self, repl: bool = False) -> List[Node]:
+        results: List[Node] = []
         while self.current_token.type != TT_EOF:
             res = self.repl_top_level() if repl else self.top_level()
             results.append(res)
-            if res.error:
-                break
         return results
 
-    def advance(self, res: ParseResult) -> Token:
+    def advance(self) -> Token:
         self.token_index += 1
         if self.token_index < len(self.tokens):
             self.current_token = self.tokens[self.token_index]
-
-        res.register_advancement(self.current_token)
         return self.current_token
 
-    def repl_top_level(self) -> ParseResult:
+    def repl_top_level(self) -> Node:
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["VARIABLE_DECLARATION"]):
             return self.var_decl()
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DECLARATION"]):
             return self.type_decl()
         return self.expression()
 
-    def top_level(self) -> ParseResult:
+    def top_level(self) -> Node:
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["VARIABLE_DECLARATION"]):
             return self.var_decl()
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DECLARATION"]):
             return self.type_decl()
-        return ParseResult().failure(
-            InvalidSyntaxError(
-                self.current_token.pos_start,
-                self.current_token.pos_end,
-                f'Expected "{KEYWORDS["VARIABLE_DECLARATION"]}" or "{KEYWORDS["TYPE_DECLARATION"]}"',
-            )
+        return self._fail_with_invalid_syntax_error(
+            f'Expected "{KEYWORDS["VARIABLE_DECLARATION"]}" or "{KEYWORDS["TYPE_DECLARATION"]}"'
         )
 
-    def type_decl(self) -> ParseResult:
-        res = ParseResult()
+    def type_decl(self) -> TypeDefinitionNode:
 
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DECLARATION"]):
             return self._fail_with_invalid_syntax_error(
-                res, f'Expected "{KEYWORDS["TYPE_DECLARATION"]}"',
+                f'Expected "{KEYWORDS["TYPE_DECLARATION"]}"',
             )
 
-        if not self.advance(res).type == TT_IDENTIFIER:
-            self._fail_with_invalid_syntax_error(res, "Expected type name")
+        if not self.advance().type == TT_IDENTIFIER:
+            return self._fail_with_invalid_syntax_error("Expected type name")
 
         type_name: StringToken = StringToken.as_string_token(self.current_token)
 
-        if self.advance(res).type != TT_EQUALS:
-            return self._fail_with_invalid_syntax_error(res, f'Expected "="',)
-        self.advance(res)
-        variants: List[TypeVariantNode] = []
-        variant = res.register(self._variant_type_identifier())
-        if variant is None or res.error or not isinstance(variant, TypeVariantNode):
-            return res
-        variants.append(variant)
+        if self.advance().type != TT_EQUALS:
+            return self._fail_with_invalid_syntax_error(f'Expected "="',)
+        self.advance()
+        variants: List[TypeVariantNode] = [self._variant_type_identifier()]
 
         while self.current_token.matches(TT_KEYWORD, KEYWORDS["OR"]):
-            self.advance(res)
-            variant = res.register(self._variant_type_identifier())
-            if variant is None or res.error or not isinstance(variant, TypeVariantNode):
-                return res
-            variants.append(variant)
+            self.advance()
+            variants.append(self._variant_type_identifier())
 
-        return res.success(TypeDefinitionNode(type_name, variants))
+        return TypeDefinitionNode(type_name, variants)
 
-    def var_decl(self) -> ParseResult:
-        res = ParseResult()
+    def var_decl(self) -> Node:
 
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS["VARIABLE_DECLARATION"]):
             return self._fail_with_invalid_syntax_error(
-                res, f'Expected "{KEYWORDS["VARIABLE_DECLARATION"]}"',
+                f'Expected "{KEYWORDS["VARIABLE_DECLARATION"]}"',
             )
-        fun_def = res.register(
-            self.function_definition(KEYWORDS["VARIABLE_DECLARATION"], True, TT_EQUALS)
+        return self.function_definition(
+            KEYWORDS["VARIABLE_DECLARATION"], True, TT_EQUALS
         )
-        if res.error or fun_def is None:
-            return res
-        return res.success(fun_def)
 
-    def expression(self) -> ParseResult:
-        res = ParseResult()
+    def expression(self) -> Node:
+
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["VARIABLE_DECLARATION"]):
             return self._binary_operation(
                 self.var_decl, [(TT_KEYWORD, KEYWORDS["IN"])], self.expression
             )
 
-        node = res.register(
-            self._binary_operation(
-                self.logic_expression,
-                [(TT_KEYWORD, KEYWORDS["AND"]), (TT_KEYWORD, KEYWORDS["OR"])],
-            )
+        return self._binary_operation(
+            self.logic_expression,
+            [(TT_KEYWORD, KEYWORDS["AND"]), (TT_KEYWORD, KEYWORDS["OR"])],
         )
-        if res.error or node is None:
-            return self._fail_with_invalid_syntax_error(
-                res,
-                f'Expected "{KEYWORDS["VARIABLE_DECLARATION"]}", int, float, +, - or (',
-            )
-        return res.success(node)
 
-    def logic_expression(self) -> ParseResult:
-        res = ParseResult()
+    def logic_expression(self) -> Node:
 
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["NOT"]):
             token: EmptyToken = EmptyToken.as_empty_token(self.current_token)
-            self.advance(res)
+            self.advance()
 
-            node = res.register(self.logic_expression())
-            if res.error or node is None:
-                return res
-            return res.success(UnaryOperationNode(token, node))
+            return UnaryOperationNode(token, self.logic_expression())
 
-        node = res.register(
-            self._binary_operation(
-                self.arithmetic_expression,
-                [TT_EE, TT_GT, TT_NE, TT_LT, TT_LTE, TT_GTE],
-            )
+        return self._binary_operation(
+            self.arithmetic_expression, [TT_EE, TT_GT, TT_NE, TT_LT, TT_LTE, TT_GTE],
         )
-        if res.error or node is None:
-            return self._fail_with_invalid_syntax_error(
-                res, f'Expected "{KEYWORDS["NOT"]}", int, float, +, - or (',
-            )
-        return res.success(node)
 
-    def arithmetic_expression(self) -> ParseResult:
+    def arithmetic_expression(self) -> Node:
         return self._binary_operation(self.term, [TT_PLUS, TT_MINUS])
 
-    def term(self) -> ParseResult:
+    def term(self) -> Node:
         return self._binary_operation(self.factor, [TT_DIV, TT_MUL])
 
-    def factor(self) -> ParseResult:
-        res = ParseResult()
+    def factor(self) -> Node:
 
         token = self.current_token
 
         if token.is_empty_token() and token.type in (TT_PLUS, TT_MINUS):
-            self.advance(res)
-            factor = res.register(self.factor())
-            if res.error or factor is None:
-                return res
-            return res.success(
-                UnaryOperationNode(EmptyToken.as_empty_token(token), factor)
-            )
+            self.advance()
+
+            return UnaryOperationNode(EmptyToken.as_empty_token(token), self.factor())
 
         return self.power()
 
-    def power(self) -> ParseResult:
+    def power(self) -> Node:
         return self._binary_operation(self.atom, [TT_POW], self.factor)
 
-    def atom(self) -> ParseResult:
-        res = ParseResult()
+    def atom(self) -> Node:
 
         token = self.current_token
 
         if token.type in (TT_IDENTIFIER,):
-            call_node = res.register(self._function_call())
-            if res.error or call_node is None:
-                return res
-            return res.success(call_node)
+            return self._function_call()
         elif token.matches(TT_KEYWORD, KEYWORDS["IF"]):
-            if_expr = res.register(self.if_expression())
-            if res.error or if_expr is None:
-                return res
-            return res.success(if_expr)
+            return self.if_expression()
         elif token.matches(TT_KEYWORD, KEYWORDS["FUN"]):
-            fun_def = res.register(self.function_definition())
-            if res.error or fun_def is None:
-                return res
-            return res.success(fun_def)
+            return self.function_definition()
         elif token.matches(TT_KEYWORD, KEYWORDS["MATCH"]):
-            match_def = res.register(self.match())
-            if res.error or match_def is None:
-                return res
-            return res.success(match_def)
+            return self.match()
         return self.argument()
 
-    def argument(self) -> ParseResult:
-        res = ParseResult()
+    def argument(self) -> Node:
 
         token = self.current_token
 
         if token.type in (TT_FLOAT, TT_INT):
-            self.advance(res)
-            return res.success(NumberNode(NumberToken.as_number_token(token)))
+            self.advance()
+            return NumberNode(NumberToken.as_number_token(token))
         elif token.type in (TT_IDENTIFIER,):
-            self.advance(res)
-            return res.success(VariableAccessNode(StringToken.as_string_token(token)))
+            self.advance()
+            return VariableAccessNode(StringToken.as_string_token(token))
         elif token.type in (TT_LPAREN,):
-            self.advance(res)
-            expr = res.register(self.expression())
-            if res.error or expr is None:
-                return res
+            self.advance()
+            expr = self.expression()
             if self.current_token and self.current_token.type == TT_RPAREN:
-                self.advance(res)
-                return res.success(expr)
-            return res.failure(
-                InvalidSyntaxError(token.pos_start, token.pos_end, "Expected ')'")
-            )
-        return res.failure(
-            InvalidSyntaxError(
-                token.pos_start, token.pos_end, "Expected int, float, variable or ("
-            )
+                self.advance()
+                return expr
+            raise InvalidSyntaxError(token.pos_start, token.pos_end, "Expected ')'")
+
+        raise InvalidSyntaxError(
+            token.pos_start, token.pos_end, "Expected int, float, variable or ("
         )
 
-    def match(self) -> ParseResult:
-        res = ParseResult()
+    def match(self) -> Node:
+
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS["MATCH"]):
             return self._fail_with_invalid_syntax_error(
-                res, f'Expected "{KEYWORDS["MATCH"]}"',
+                f'Expected "{KEYWORDS["MATCH"]}"',
             )
 
-        self.advance(res)
-        expr = res.register(self.expression())
-        if res.error or expr is None:
-            return res
+        self.advance()
+        expr = self.expression()
 
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS["WITH"]):
             return self._fail_with_invalid_syntax_error(
-                res, f'Expected "{KEYWORDS["WITH"]}"',
+                f'Expected "{KEYWORDS["WITH"]}"',
             )
 
-        if self.advance(res).matches(TT_KEYWORD, KEYWORDS["MATCH_OR"]):
-            self.advance(res)
+        if self.advance().matches(TT_KEYWORD, KEYWORDS["MATCH_OR"]):
+            self.advance()
 
-        cases: List[MatchCaseNode] = []
-        case = res.register(self._match_case())
-        if res.error or case is None:
-            return res
-        cases.append(cast(MatchCaseNode, case))
+        cases: List[MatchCaseNode] = [self._match_case()]
+
         while self.current_token.matches(TT_KEYWORD, KEYWORDS["MATCH_OR"]):
-            self.advance(res)
-            case = res.register(self._match_case())
-            if res.error or case is None:
-                return res
-            cases.append(cast(MatchCaseNode, case))
+            self.advance()
+            cases.append(self._match_case())
 
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS["END"]):
             return self._fail_with_invalid_syntax_error(
-                res, f'Expected "{KEYWORDS["END"]}"',
+                f'Expected "{KEYWORDS["END"]}"',
             )
-        self.advance(res)
+        self.advance()
 
-        return res.success(MatchNode(expr, cases))
+        return MatchNode(expr, cases)
 
-    def if_expression(self, keyword_type: str = "IF") -> ParseResult:
-        res = ParseResult()
+    def if_expression(self, keyword_type: str = "IF") -> Node:
+
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS[keyword_type]):
             return self._fail_with_invalid_syntax_error(
-                res, f"Expected {KEYWORDS[keyword_type]}",
+                f"Expected {KEYWORDS[keyword_type]}",
             )
 
-        self.advance(res)
-        condition = res.register(self.expression())
-        if res.error or condition is None:
-            return res
+        self.advance()
+        condition = self.expression()
 
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS["THEN"]):
-            return self._fail_with_invalid_syntax_error(
-                res, f'Expected {KEYWORDS["THEN"]}',
-            )
+            return self._fail_with_invalid_syntax_error(f'Expected {KEYWORDS["THEN"]}',)
 
-        self.advance(res)
+        self.advance()
 
-        expr = res.register(self.expression())
-        if res.error or expr is None:
-            return res
+        expr = self.expression()
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["ELIF"]):
-            node = res.register(self.if_expression("ELIF"))
-            if res.error or node is None:
-                return res
-            return res.success(IfNode(condition, expr, node))
+            return IfNode(condition, expr, self.if_expression("ELIF"))
         elif self.current_token.matches(TT_KEYWORD, KEYWORDS["ELSE"]):
-            self.advance(res)
-            node = res.register(self.expression())
-            if res.error or node is None:
-                return res
-            return res.success(IfNode(condition, expr, node))
+            self.advance()
+            return IfNode(condition, expr, self.expression())
 
         return self._fail_with_invalid_syntax_error(
-            res, f'Expected {KEYWORDS["ELIF"]} or {KEYWORDS["ELSE"]}',
+            f'Expected {KEYWORDS["ELIF"]} or {KEYWORDS["ELSE"]}',
         )
 
     def function_definition(
@@ -325,204 +241,167 @@ class Parser:
         has_name: bool = False,
         end_def_token: str = TT_EQUALS,
         end_def_match_token: str = TT_ARROW,
-    ) -> ParseResult:
-        res = ParseResult()
-        if not self.current_token.matches(TT_KEYWORD, keyword):
-            (self._fail_with_invalid_syntax_error(res, f"Expected {keyword}",))
+    ) -> Node:
 
-        self.advance(res)
+        if not self.current_token.matches(TT_KEYWORD, keyword):
+            return self._fail_with_invalid_syntax_error(f"Expected {keyword}",)
+
+        self.advance()
 
         var_name = None
         if has_name:
             if self.current_token.type != TT_IDENTIFIER:
-                return self._fail_with_invalid_syntax_error(res, "Expected identifier",)
+                return self._fail_with_invalid_syntax_error("Expected identifier",)
 
             var_name = StringToken.as_string_token(self.current_token)
-            self.advance(res)
+            self.advance()
 
-        res.register(self._make_type_hint())
-        if res.error:
-            return res
+        self._make_type_hint()
 
         arg_tokens: List[StringToken] = []
         while self.current_token.type == TT_IDENTIFIER:
             arg_tokens.append(StringToken.as_string_token(self.current_token))
-            self.advance(res)
-
-            res.register(self._make_type_hint())
-            if res.error:
-                return res
+            self.advance()
+            self._make_type_hint()
 
         if self.current_token.type not in (end_def_token, end_def_match_token):
-            return self._fail_with_invalid_syntax_error(
-                res, f'Expected "{end_def_token}"',
-            )
+            return self._fail_with_invalid_syntax_error(f'Expected "{end_def_token}"',)
         if self.current_token.type == end_def_match_token:
             if not arg_tokens:
                 return self._fail_with_invalid_syntax_error(
-                    res, 'Definition with "->" can only be used with arguments.'
+                    'Definition with "->" can only be used with arguments.'
                 )
             self._add_match(arg_tokens[-1])
-        self.advance(res)
-        expr = res.register(self.expression())
-        if res.error or expr is None:
-            return res
-        fun = res.register(Parser._make_function_definition(var_name, arg_tokens, expr))
-        if res.error or fun is None:
-            return res
-        return res.success(fun)
+        self.advance()
+        return Parser._make_function_definition(var_name, arg_tokens, self.expression())
 
     @staticmethod
     def _make_function_definition(
         var_name: Optional[StringToken], args: List[StringToken], body: Node
-    ) -> ParseResult:
-        res = ParseResult()
+    ) -> FunctionDefinitionNode:
+
         id_tokens: List[StringToken] = [var_name, *args] if var_name else args
         if not Parser._check_if_tokens_values_are_distinct(id_tokens):
             pos_start = var_name.pos_start if var_name else args[0].pos_start
-            return res.failure(
-                InvalidSyntaxError(
-                    pos_start,
-                    id_tokens[-1].pos_end,
-                    "Names in this function declaration are not unique",
-                )
+            raise InvalidSyntaxError(
+                pos_start,
+                id_tokens[-1].pos_end,
+                "Names in this function declaration are not unique",
             )
+
         if not args:
-            return res.success(FunctionDefinitionNode(var_name, None, body))
+            return FunctionDefinitionNode(var_name, None, body)
         prev_fun = body
         for arg in reversed(args):
             prev_fun = FunctionDefinitionNode(var_name, arg, prev_fun, False)
-        return res.success(FunctionDefinitionNode(var_name, None, prev_fun))
+        return FunctionDefinitionNode(var_name, None, prev_fun)
 
     @staticmethod
     def _check_if_tokens_values_are_distinct(tokens: List[StringToken]) -> bool:
         ids = list(map(lambda t: t.value, tokens))
         return len(set(ids)) == len(ids)
 
-    def _function_call(self) -> ParseResult:
-        res = ParseResult()
-
+    def _function_call(self) -> Union[FunctionCallNode, VariableAccessNode]:
         if self.current_token.type != TT_IDENTIFIER:
-            return self._fail_with_invalid_syntax_error(res, "Expected identifier",)
+            return self._fail_with_invalid_syntax_error("Expected identifier",)
         var_name = StringToken.as_string_token(self.current_token)
 
-        self.advance(res)
+        self.advance()
 
         arg_tokens: List[Node] = []
         while self.current_token.type in (TT_LPAREN, TT_IDENTIFIER, TT_INT, TT_FLOAT):
-            arg = res.register(self.argument())
-            if arg is None or res.error:
-                return res
-            arg_tokens.append(arg)
+            arg_tokens.append(self.argument())
 
         if arg_tokens:
-            return res.success(FunctionCallNode(var_name, arg_tokens))
-        return res.success(VariableAccessNode(var_name))
+            return FunctionCallNode(var_name, arg_tokens)
+        return VariableAccessNode(var_name)
 
     def _binary_operation(
         self,
-        function: Callable[[], ParseResult],
+        function: Callable[[], Node],
         operands: Union[List[str], List[Tuple[str, str]]],
-        function2: Callable[[], ParseResult] = None,
-    ) -> ParseResult:
+        function2: Callable[[], Node] = None,
+    ) -> Node:
         if function2 is None:
             function2 = function
 
-        res = ParseResult()
-        left = res.register(function())
-        if res.error or left is None:
-            return res
+        left = function()
         while (
             self.current_token.type in operands
             or (self.current_token.type, self.current_token.value) in operands
         ):
             op_token = self.current_token
-            self.advance(res)
-            right = res.register(function2())
-            if res.error or right is None:
-                return res
-            left = BinaryOperationNode(left, op_token, right)
+            self.advance()
+            left = BinaryOperationNode(left, op_token, function2())
 
-        return res.success(left)
+        return left
 
-    def _variant_type_identifier(self) -> ParseResult:
-        res = ParseResult()
-
+    def _variant_type_identifier(self) -> TypeVariantNode:
         if self.current_token.type != TT_IDENTIFIER:
-            return self._fail_with_invalid_syntax_error(
-                res, "Expected variant type name",
-            )
+            return self._fail_with_invalid_syntax_error("Expected variant type name",)
         variant_type_name = StringToken.as_string_token(self.current_token)
-        self.advance(res)
+        self.advance()
 
         args_tokens: List[StringToken] = []
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DESCRIPTION"]):
-            self.advance(res)
+            self.advance()
             while self.current_token.type == TT_IDENTIFIER:
                 args_tokens.append(StringToken.as_string_token(self.current_token))
-                if self.advance(res).type == TT_MUL:
-                    if self.advance(res).type != TT_IDENTIFIER:
+                if self.advance().type == TT_MUL:
+                    if self.advance().type != TT_IDENTIFIER:
                         return self._fail_with_invalid_syntax_error(
-                            res, "Expected type identifier",
+                            "Expected type identifier",
                         )
 
-        return res.success(TypeVariantNode(variant_type_name, args_tokens))
+        return TypeVariantNode(variant_type_name, args_tokens)
 
-    def _match_case(self) -> ParseResult:
-        res = ParseResult()
-
+    def _match_case(self) -> MatchCaseNode:
         if self.current_token.type != TT_IDENTIFIER:
-            return self._fail_with_invalid_syntax_error(res, "Expected type name",)
+            return self._fail_with_invalid_syntax_error("Expected type name",)
         type_name = StringToken.as_string_token(self.current_token)
-        self.advance(res)
+        self.advance()
 
         arg_tokens: List[StringToken] = []
 
         while self.current_token.type == TT_IDENTIFIER:
             arg_tokens.append(StringToken.as_string_token(self.current_token))
-            self.advance(res)
+            self.advance()
 
         if self.current_token.type != TT_ARROW:
-            return self._fail_with_invalid_syntax_error(res, 'Expected "->"')
-        self.advance(res)
+            return self._fail_with_invalid_syntax_error('Expected "->"')
+        self.advance()
 
-        expr_node = res.register(self.expression())
-        if res.error or expr_node is None:
-            return res
-        return res.success(MatchCaseNode(type_name, arg_tokens, expr_node))
+        return MatchCaseNode(type_name, arg_tokens, self.expression())
 
-    def _fail_with_invalid_syntax_error(
-        self, res: ParseResult, msg: str
-    ) -> ParseResult:
-        return res.failure(
+    def _fail_with_invalid_syntax_error(self, msg: str) -> NoReturn:
+        raise (
             InvalidSyntaxError(
                 self.current_token.pos_start, self.current_token.pos_end, msg
             )
         )
 
-    def _make_type_hint(self) -> ParseResult:
-        res = ParseResult()
+    def _make_type_hint(self) -> Optional[Node]:
         if not self.current_token.type == TT_COLON:
-            return res
+            return None
         lparen = 0
-        self.advance(res)
+        self.advance()
         ended = False
         while self.current_token.type in (TT_IDENTIFIER, TT_LPAREN) and not ended:
             if self.current_token == TT_LPAREN:
                 lparen += 1
 
-            if self.advance(res).type == TT_RPAREN:
+            if self.advance().type == TT_RPAREN:
                 lparen -= 1
-                self.advance(res)
+                self.advance()
 
             if self.current_token.type == TT_ARROW:
-                self.advance(res)
+                self.advance()
             else:
                 ended = True
 
         if ended and lparen == 0:
-            return res
-        return self._fail_with_invalid_syntax_error(res, "Expected type hint")
+            return None
+        return self._fail_with_invalid_syntax_error("Expected type hint")
 
     def _add_match(self, variable_name: StringToken) -> None:
         self._add_token(

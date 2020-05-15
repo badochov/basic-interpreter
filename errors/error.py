@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from position import Position
 
 
-class Error:
+class Error(BaseException):
     def __init__(
         self, pos_start: Position, pos_end: Position, error_name: str, details: str
     ):

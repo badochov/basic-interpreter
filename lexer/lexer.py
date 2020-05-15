@@ -28,7 +28,7 @@ class Lexer:
             self.text[self.pos.index] if self.pos.index < len(self.text) else None
         )
 
-    def make_tokens(self) -> Tuple[List[Token], Optional[Error]]:
+    def make_tokens(self) -> List[Token]:
         comment = False
         tokens: List[Token] = []
 
@@ -87,7 +87,7 @@ class Lexer:
             elif self.current_char == "!":
                 token, error = self.make_not_equals()
                 if error or token is None:
-                    return [], error
+                    return []
                 tokens.append(token)
             elif self.current_char.isdigit():
                 tokens.append(self.make_number())
@@ -101,10 +101,10 @@ class Lexer:
                 post_start = self.pos.copy()
                 char = self.current_char
                 self.advance()
-                return [], IllegalCharacterError(post_start, self.pos, char)
+                raise IllegalCharacterError(post_start, self.pos, char)
             self.advance()
         tokens.append(EmptyToken(TT_EOF, self.pos, self.pos))
-        return tokens, None
+        return tokens
 
     def make_number(self) -> Token:
         num = ""

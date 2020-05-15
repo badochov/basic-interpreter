@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from interpreter.runtime_result import RuntimeResult
+from errors.rt_error import RTError
 from keywords import KEYWORDS
 from lang_types.lang_bool import LangBool
+from lang_types.lang_type import LangType
 from nodes.node import Node
 
 if TYPE_CHECKING:
@@ -27,19 +28,17 @@ class IfNode(Node):
             ")"
         )
 
-    def visit(self, context: Context) -> RuntimeResult:
-        res = RuntimeResult()
-        condition = res.register(self.condition_node.visit(context))
-        if res.error or condition is None:
-            return res
+    def visit(self, context: Context) -> LangType:
+        condition = self.condition_node.visit(context)
 
-        if isinstance(condition, LangBool) and condition.value:
-            node = res.register(self.then_node.visit(context))
-            if res.error or node is None:
-                return res
-            return res.success(node)
+        if not isinstance(condition, LangBool):
+            raise RTError(
+                self.condition_node.pos_start,
+                self.condition_node.pos_end,
+                "Expected bool",
+                context,
+            )
+        if condition.value:
+            return self.then_node.visit(context)
 
-        node = res.register(self.else_node.visit(context))
-        if res.error or node is None:
-            return res
-        return res.success(node)
+        return self.else_node.visit(context)

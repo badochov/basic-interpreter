@@ -3,8 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from lang_types.lang_type import LangType
+
 if TYPE_CHECKING:
-    from interpreter.runtime_result import RuntimeResult
     from context import Context
     from position import Position
 
@@ -15,5 +16,5 @@ class Node(ABC):
         self.pos_end = pos_end
 
     @abstractmethod
-    def visit(self, context: Context) -> RuntimeResult:
-        raise NotImplemented
+    def visit(self, context: Context) -> LangType:
+        ...

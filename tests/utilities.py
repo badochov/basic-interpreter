@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING, Any, Type
 
+from errors.error import Error
+
 if TYPE_CHECKING:
     from basic import Basic
     from lang_types.lang_type import LangType
-    from errors.error import Error
 
 
 def run_test(
@@ -16,16 +17,10 @@ def run_test(
     err_type: Optional[Type[Error]] = None,
     value: Optional[Any] = None,
 ) -> None:
-    [(res, err)] = basic.run(code, name, True)
-    print(res, err)
-    if res_type:
-        assert isinstance(res, res_type)
-    else:
-        assert res is None
-    if err_type:
-        assert isinstance(err, err_type)
-    else:
-        assert err is None
-
-    if value:
-        assert res and res.value == value
+    try:
+        [res] = basic.run(code, name, True)
+        assert res_type and isinstance(res, res_type)
+        if value:
+            assert res and res.value == value
+    except Error as err:
+        assert err_type and isinstance(err, err_type)

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 from errors.rt_error import RTError
-from interpreter.runtime_result import RuntimeResult
+
 from lang_types.lang_function import LangFunction
 from lang_types.lang_type import LangType
 from nodes.node import Node
@@ -37,16 +37,8 @@ class FunctionDefinitionNode(Node):
     def __repr__(self) -> str:
         return f"({self.var_name_token or '<anonymous>'}, {self.arg_token}, {self.body_node})"
 
-    def visit(self, context: Context) -> RuntimeResult:
-        res = RuntimeResult()
+    def visit(self, context: Context) -> LangType:
         if self.arg_token:
-            if not isinstance(self.arg_token.value, str):
-                return res.failure(
-                    RTError(
-                        self.pos_start, self.pos_end, "Expected identifier", context
-                    )
-                )
-
             value: LangType = LangFunction(
                 self.var_name_token,
                 self.arg_token.value,
@@ -56,11 +48,8 @@ class FunctionDefinitionNode(Node):
                 context,
             )
         else:
-            val = res.register(self.body_node.visit(context))
-            if val is None or res.error:
-                return res
-            value = val
+            value = self.body_node.visit(context)
 
         if self.var_name_token and self.save_name:
             context.set(self.var_name_token.value, value)
-        return res.success(value)
+        return value

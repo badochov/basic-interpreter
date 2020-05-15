@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from errors.rt_error import RTError
-from interpreter.runtime_result import RuntimeResult
+
 from keywords import KEYWORDS
+from lang_types.lang_type import LangType
 from nodes.node import Node
 from token_types import *
 
@@ -23,56 +24,44 @@ class BinaryOperationNode(Node):
     def __repr__(self) -> str:
         return f"({self.left_node}, {self.operation_token}, {self.right_node})"
 
-    def visit(self, context: Context) -> RuntimeResult:
-        res = RuntimeResult()
-        left = res.register(self.left_node.visit(context))
-        if res.error or left is None:
-            return res
-        right = res.register(self.right_node.visit(context))
-        if res.error or right is None:
-            return res
-        result = None
+    def visit(self, context: Context) -> LangType:
+        left = self.left_node.visit(context)
+        right = self.right_node.visit(context)
 
         if self.operation_token.type == TT_PLUS:
-            result, error = left.added_to(right)
+            result = left.added_to(right)
         elif self.operation_token.type == TT_MINUS:
-            result, error = left.subtracted_by(right)
+            result = left.subtracted_by(right)
         elif self.operation_token.type == TT_MUL:
-            result, error = left.multiplied_by(right)
+            result = left.multiplied_by(right)
         elif self.operation_token.type == TT_DIV:
-            result, error = left.divided_by(right)
+            result = left.divided_by(right)
         elif self.operation_token.type == TT_POW:
-            result, error = left.raised_to_power_by(right)
+            result = left.raised_to_power_by(right)
         elif self.operation_token.type == TT_EE:
-            result, error = left.get_comparison_eq(right)
+            result = left.get_comparison_eq(right)
         elif self.operation_token.type == TT_NE:
-            result, error = left.get_comparison_ne(right)
+            result = left.get_comparison_ne(right)
         elif self.operation_token.type == TT_LT:
-            result, error = left.get_comparison_lt(right)
+            result = left.get_comparison_lt(right)
         elif self.operation_token.type == TT_GT:
-            result, error = left.get_comparison_gt(right)
+            result = left.get_comparison_gt(right)
         elif self.operation_token.type == TT_LTE:
-            result, error = left.get_comparison_lte(right)
+            result = left.get_comparison_lte(right)
         elif self.operation_token.type == TT_GTE:
-            result, error = left.get_comparison_gte(right)
+            result = left.get_comparison_gte(right)
         elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["AND"]):
-            result, error = left.anded_by(right)
+            result = left.anded_by(right)
         elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["OR"]):
-            result, error = left.ored_by(right)
+            result = left.ored_by(right)
         elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["IN"]):
-            result, error = right, res.error
+            result = right
         else:
-            error = RTError(
+            raise RTError(
                 self.pos_start,
                 self.pos_end,
                 f"Operation not found {self.operation_token.type}",
                 context,
             )
 
-        if error:
-            return res.failure(error)
-        if result is None:
-            return res.failure(
-                RTError(self.pos_start, self.pos_end, f"Unknown error", context,)
-            )
-        return res.success(result.set_pos(self.pos_start, self.pos_end))
+        return result.set_pos(self.pos_start, self.pos_end)

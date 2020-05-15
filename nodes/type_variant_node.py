@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from interpreter.runtime_result import RuntimeResult
 from lang_types.type_def import LangVariantTypeDefinition
 from nodes.node import Node
 
@@ -24,8 +23,7 @@ class TypeVariantNode(Node):
     def __repr__(self) -> str:
         return f"({self.var_name_token} of {self.args_token})"
 
-    def visit(self, context: Context) -> RuntimeResult:
-        res = RuntimeResult()
+    def visit(self, context: Context) -> LangVariantTypeDefinition:
         var_name = self.var_name_token.value
 
         variant_def = LangVariantTypeDefinition(
@@ -37,4 +35,4 @@ class TypeVariantNode(Node):
         )
         context.set(var_name, variant_def)
 
-        return res.success(variant_def)
+        return variant_def

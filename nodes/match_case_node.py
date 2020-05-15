@@ -4,13 +4,18 @@ from typing import List, Optional, TYPE_CHECKING
 
 from context import Context
 from errors.rt_error import RTError
-from interpreter.runtime_result import RuntimeResult
+from lang_types.lang_type import LangType
+
 from lang_types.lang_variant_type import LangVariantType
 from nodes.node import Node
 from symbol_table import SymbolTable
 
 if TYPE_CHECKING:
     from tokens.lang_string_token import StringToken
+
+
+class LangNoMatchType(LangType):
+    ...
 
 
 class MatchCaseNode(Node):
@@ -36,29 +41,26 @@ class MatchCaseNode(Node):
     def set_matched_variable(self, var: LangVariantType) -> None:
         self.var = var
 
-    def visit(self, context: Context) -> RuntimeResult:
-        res = RuntimeResult()
+    def visit(self, context: Context) -> LangType:
         assert self.var is not None
         every = self.type_variant_name_token.value == "_"
 
         if every:
             if self.arg_tokens:
-                return res.failure(
-                    RTError(
-                        self.pos_start, self.pos_end, "Unexpected arguments", context
-                    )
+                raise RTError(
+                    self.pos_start, self.pos_end, "Unexpected arguments", context
                 )
+
         elif not self.var.is_of_type(self.type_variant_name_token.value):
-            return res
+            return LangNoMatchType()
         if len(self.arg_tokens) != len(self.var.args) and not every:
-            return res.failure(
-                RTError(
-                    self.pos_start,
-                    self.pos_end,
-                    "Number of arguments doesn't match",
-                    context,
-                )
+            raise RTError(
+                self.pos_start,
+                self.pos_end,
+                "Number of arguments doesn't match",
+                context,
             )
+
         new_ctx = Context(
             f"Case {self.type_variant_name_token.value}",
             SymbolTable(),
@@ -69,7 +71,4 @@ class MatchCaseNode(Node):
             for i, arg_token in enumerate(self.arg_tokens):
                 new_ctx.set(arg_token.value, self.var.args[i])
 
-        value = res.register(self.expr_node.visit(new_ctx))
-        if value is None or res.error:
-            return res
-        return res.success(value)
+        return self.expr_node.visit(new_ctx)

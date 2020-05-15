@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
-from interpreter.runtime_result import RuntimeResult
+
 from keywords import *
 from lang_types.lang_number import LangNumber
+from lang_types.lang_type import LangType
 from nodes.node import Node
 from token_types import *
 
@@ -23,21 +24,13 @@ class UnaryOperationNode(Node):
     def __repr__(self) -> str:
         return f"({self.operation_token} {self.node})"
 
-    def visit(self, context: Context) -> RuntimeResult:
-        res = RuntimeResult()
-        result = res.register(self.node.visit(context))
-        if res.error or result is None:
-            return res
-
-        error = None
+    def visit(self, context: Context) -> LangType:
+        result = self.node.visit(context)
         if self.operation_token.type == TT_MINUS:
-            result, error = result.multiplied_by(
+            result = result.multiplied_by(
                 LangNumber(-1, self.pos_start, self.pos_end, context)
             )
         elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["NOT"]):
-            result, error = result.notted()
-        if error:
-            return res.failure(error)
-        if result is None:
-            return res
-        return res.success(result.set_pos(self.pos_start, self.pos_end))
+            result = result.notted()
+
+        return result.set_pos(self.pos_start, self.pos_end)

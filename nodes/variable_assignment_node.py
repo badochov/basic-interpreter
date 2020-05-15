@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from interpreter.runtime_result import RuntimeResult
+from lang_types.lang_type import LangType
 from nodes.node import Node
 
 if TYPE_CHECKING:
@@ -19,14 +19,11 @@ class VariableAssignmentNode(Node):
         self.pos_start = var_name_token.pos_start
         self.pos_end = var_name_token.pos_end
 
-    def visit(self, context: Context) -> RuntimeResult:
-        res = RuntimeResult()
+    def visit(self, context: Context) -> LangType:
         var_name = self.var_name_token.value
 
-        value = res.register(self.value_node.visit(context))
-        if res.error or value is None:
-            return res
+        value = self.value_node.visit(context)
 
         context.set(var_name, value)
 
-        return res.success(value)
+        return value

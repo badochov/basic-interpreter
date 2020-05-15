@@ -2,6 +2,7 @@ import sys
 from typing import Any
 
 from basic import Basic
+from errors.error import Error
 
 
 def print_error(message: Any) -> None:
@@ -14,13 +15,12 @@ def main(file_name: str) -> None:
     with open(file_name, "r") as f:
         code = f.read()
 
-    results = Basic.run(code, file_name, False)
-    for result, error in results:
-        if error:
-            print_error(error)
-        else:
+    try:
+        results = Basic.run(code, file_name, False)
+        for result in results:
             print(result)
-            pass
+    except Error as err:
+        print_error(err)
 
 
 if __name__ == "__main__":

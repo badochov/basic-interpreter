@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 from errors.rt_error import RTError
-from interpreter.runtime_result import RuntimeResult
+
 from keywords import KEYWORDS
+from lang_types.lang_type import LangType
 from lang_types.lang_variant_type import LangVariantType
-from nodes.match_case_node import MatchCaseNode
+from nodes.match_case_node import MatchCaseNode, LangNoMatchType
 from nodes.node import Node
 
 if TYPE_CHECKING:
@@ -25,21 +26,17 @@ class MatchNode(Node):
             res += f'\n{KEYWORDS["MATCH_OR"]} {case_node}'
         return res + ")"
 
-    def visit(self, context: Context) -> RuntimeResult:
-        res = RuntimeResult()
-        var = res.register(self.var_node.visit(context))
-        if var is None or res.error:
-            return res
+    def visit(self, context: Context) -> LangType:
+        var = self.var_node.visit(context)
         if not isinstance(var, LangVariantType):
-            return res.failure(
-                RTError(self.pos_start, self.pos_end, "Expected variant type", context)
+            raise RTError(
+                self.pos_start, self.pos_end, "Expected variant type", context
             )
+
         for case_node in self.cases_nodes:
             case_node.set_matched_variable(var)
-            case_out = res.register(case_node.visit(context))
-            if res.error:
-                return res
-            if case_out is not None:
-                return res.success(case_out)
+            case_out = case_node.visit(context)
+            if not isinstance(case_out, LangNoMatchType):
+                return case_out
 
-        return res.failure(RTError(self.pos_start, self.pos_end, "No match", context))
+        raise RTError(self.pos_start, self.pos_end, "No match", context)

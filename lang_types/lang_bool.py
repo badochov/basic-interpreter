@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import Tuple, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from errors.error import Error
 from lang_types.lang_type import LangType
 
 if TYPE_CHECKING:
     from position import Position
     from context import Context
+
+    from lang_types.lang_type import CompType
 
 
 class LangBool(LangType):
@@ -27,72 +28,44 @@ class LangBool(LangType):
 
     def get_comparison_eq(self, other: LangType) -> CompType:
         if isinstance(other, LangBool):
-            return (
-                LangBool(
-                    self._value == other.value,
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                self._value == other.value, self.pos_start, other.pos_end, self.context,
             )
 
         return super().get_comparison_eq(other)
 
     def get_comparison_ne(self, other: LangType) -> CompType:
         if isinstance(other, LangBool):
-            return (
-                LangBool(
-                    self._value != other.value,
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                self._value != other.value, self.pos_start, other.pos_end, self.context,
             )
 
         return super().get_comparison_ne(other)
 
     def anded_by(self, other: LangType) -> CompType:
         if isinstance(other, LangBool):
-            return (
-                LangBool(
-                    self._value and other.value,
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                self._value and other.value,
+                self.pos_start,
+                other.pos_end,
+                self.context,
             )
 
         return super().anded_by(other)
 
     def ored_by(self, other: LangType) -> CompType:
         if isinstance(other, LangBool):
-            return (
-                LangBool(
-                    self.value or other.value,
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                self.value or other.value, self.pos_start, other.pos_end, self.context,
             )
 
         return super().ored_by(other)
 
     def notted(self) -> CompType:
-        return (
-            LangBool(not self._value, self.pos_start, self.pos_end, self.context,),
-            None,
-        )
+        return LangBool(not self._value, self.pos_start, self.pos_end, self.context,)
 
     def is_truthy(self) -> bool:
         return self._value
 
     def __repr__(self) -> str:
         return f"{self._value}"
-
-
-if TYPE_CHECKING:
-    CompType = Tuple[Optional[LangBool], Optional[Error]]

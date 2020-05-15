@@ -4,7 +4,6 @@ from typing import Optional, TYPE_CHECKING, List
 
 from context import Context
 from errors.too_few_args_error import TooFewArgsError
-from interpreter.runtime_result import RuntimeResult
 from lang_types.lang_type import LangType
 from nodes.node import Node
 from position import Position
@@ -37,23 +36,17 @@ class LangFunction(LangType):
     def __repr__(self) -> str:
         return f"fn {self.arg_name}"
 
-    def call(self, context: Context, args: List[LangType]) -> RuntimeResult:
+    def call(self, context: Context, args: List[LangType]) -> LangType:
         new_ctx = Context(self.name, SymbolTable(), context, self.pos_start,)
         new_ctx.add_parent(self.context)
-        res = RuntimeResult()
         if not args:
-            return res.failure(TooFewArgsError(self.pos_start, self.pos_end, ""))
+            raise TooFewArgsError(self.pos_start, self.pos_end, "")
 
         new_ctx.set(self.arg_name, args.pop())
-        result = res.register(self.body_node.visit(new_ctx))
-        if res.error or result is None:
-            return res
 
-        result_cpy = result.copy()
+        result_cpy = self.body_node.visit(new_ctx).copy()
         if args:
-            val = res.register(result_cpy.call(new_ctx, args))
-            if val is None or res.error:
-                return res
+            val = result_cpy.call(new_ctx, args)
             result_cpy = val.copy()
 
-        return res.success(result_cpy)
+        return result_cpy

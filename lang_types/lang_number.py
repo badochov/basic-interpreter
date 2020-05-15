@@ -30,159 +30,109 @@ class LangNumber(LangType):
 
     def added_to(self, other: LangType) -> OperType:
         if isinstance(other, LangNumber):
-            return (
-                LangNumber(
-                    self._value + other._value,
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangNumber(
+                self._value + other._value, self.pos_start, other.pos_end, self.context,
             )
-        return None, None
+        return self._not_impl("-")
 
     def multiplied_by(self, other: LangType) -> OperType:
         if isinstance(other, LangNumber):
-            return (
-                LangNumber(
-                    self._value * other._value,
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangNumber(
+                self._value * other._value, self.pos_start, other.pos_end, self.context,
             )
-        return None, None
+        return self._not_impl("*")
 
     def subtracted_by(self, other: LangType) -> OperType:
         if isinstance(other, LangNumber):
-            return (
-                LangNumber(
-                    self._value - other._value,
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangNumber(
+                self._value - other._value, self.pos_start, other.pos_end, self.context,
             )
-        return None, None
+        return self._not_impl("-")
 
     def divided_by(self, other: LangType) -> OperType:
         if isinstance(other, LangNumber):
             if other._value == 0:
-                return (
-                    None,
-                    RTError(
-                        other.pos_start,
-                        other.pos_end,
-                        "Division by zero",
-                        self.context,
-                    ),
+                raise RTError(
+                    other.pos_start, other.pos_end, "Division by zero", self.context,
                 )
-            return (
-                LangNumber(
-                    self._value / other._value,
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+
+            return LangNumber(
+                self._value / other._value, self.pos_start, other.pos_end, self.context,
             )
-        return None, None
+        return self._not_impl("/")
 
     def raised_to_power_by(self, other: LangType) -> OperType:
         if isinstance(other, LangNumber):
-            return (
-                LangNumber(
-                    self._value ** other._value,
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangNumber(
+                self._value ** other._value,
+                self.pos_start,
+                other.pos_end,
+                self.context,
             )
-        return None, None
+        return self._not_impl("^")
 
     def get_comparison_eq(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
-            return (
-                LangBool(
-                    (self._value == other.value),
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                (self._value == other.value),
+                self.pos_start,
+                other.pos_end,
+                self.context,
             )
 
         return super().get_comparison_eq(other)
 
     def get_comparison_ne(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
-            return (
-                LangBool(
-                    (self._value != other.value),
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                (self._value != other.value),
+                self.pos_start,
+                other.pos_end,
+                self.context,
             )
 
         return super().get_comparison_ne(other)
 
     def get_comparison_lt(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
-            return (
-                LangBool(
-                    (self._value < other.value),
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                (self._value < other.value),
+                self.pos_start,
+                other.pos_end,
+                self.context,
             )
 
         return super().get_comparison_lt(other)
 
     def get_comparison_gt(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
-            return (
-                LangBool(
-                    (self._value > other.value),
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                (self._value > other.value),
+                self.pos_start,
+                other.pos_end,
+                self.context,
             )
 
         return super().get_comparison_gt(other)
 
     def get_comparison_lte(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
-            return (
-                LangBool(
-                    (self._value <= other.value),
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                (self._value <= other.value),
+                self.pos_start,
+                other.pos_end,
+                self.context,
             )
 
         return super().get_comparison_lte(other)
 
     def get_comparison_gte(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
-            return (
-                LangBool(
-                    (self._value >= other.value),
-                    self.pos_start,
-                    other.pos_end,
-                    self.context,
-                ),
-                None,
+            return LangBool(
+                (self._value >= other.value),
+                self.pos_start,
+                other.pos_end,
+                self.context,
             )
 
         return super().get_comparison_gte(other)
@@ -192,4 +142,4 @@ class LangNumber(LangType):
 
 
 if TYPE_CHECKING:
-    OperType = Tuple[Optional[LangNumber], Optional[Error]]
+    OperType = LangNumber
