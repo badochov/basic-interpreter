@@ -3,6 +3,7 @@ import readline
 import sys
 
 from basic import Basic
+from file_interpreter import print_error
 
 
 def main(debug: bool = False) -> None:
@@ -11,7 +12,7 @@ def main(debug: bool = False) -> None:
         results = Basic.run(text, "<stdin>", True, debug)
         for result, error in results:
             if error:
-                print(error, file=sys.stderr)
+                print_error(error)
             else:
                 print(result)
 
