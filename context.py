@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from symbol_table import SymbolTable
 
@@ -23,9 +23,8 @@ class Context:
 
         self.symbol_table = symbol_table
 
-    def get(self, name: str) -> Union[Value, None]:
-        val = self.symbol_table.get(name)
-        if val:
+    def get(self, name: str) -> Optional[Value]:
+        if val := self.symbol_table.get(name):
             return val
         for parent in reversed(self.parents):
             if val := parent.get(name):

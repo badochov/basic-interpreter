@@ -7,6 +7,7 @@
 #TODO imports
 #TODO infix operators
 #TODO destructuring
-#TODO remove end from math -> make it force all patterns from type
+#TODO remove end from match -> make it force all patterns from type
+#TODO add asserts
 
 #TODO tests for types, pattern matching, type hinting
