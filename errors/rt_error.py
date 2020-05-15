@@ -28,9 +28,8 @@ class RTError(Error):
     def generate_traceback(self) -> str:
         result = ""
         pos = self.pos_start
-        ctx: Optional[Context] = self.context
-
-        while ctx:
+        q = [self.context]
+        for ctx in q:
             result = (
                 f"  File {pos.file_name}, line {pos.line + 1}, in {ctx.display_name}\n"
                 + result
@@ -38,6 +37,7 @@ class RTError(Error):
             if ctx.parent_entry_pos is None:
                 break
             pos = ctx.parent_entry_pos
-            ctx = ctx.parent
+            for parent in ctx.parents:
+                q.append(parent)
 
         return "Traceback (most recent call last):\n" + result
