@@ -14,9 +14,9 @@ def print_error(message: Any) -> None:
 def main(file_name: str) -> None:
     with open(file_name, "r") as f:
         code = f.read()
-
+    basic = Basic()
     try:
-        results = Basic.run(code, file_name, False)
+        results = basic.run(code, file_name, False)
         for result in results:
             print(result)
     except Error as err:

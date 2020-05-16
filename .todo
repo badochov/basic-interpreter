@@ -1,6 +1,5 @@
 #TODO Tuples
 #TODO Input output
-#TODO Lists
 #TODO strings
 #TODO vscode extension
 #TODO tail recurrence
@@ -9,5 +8,6 @@
 #TODO destructuring
 #TODO remove end from match -> make it force all patterns from type
 #TODO add asserts
+#TODO add checking for repetition of type declarations
 
-#TODO tests for types, pattern matching, type hinting
+#TODO tests for types, pattern matching, type hinting, lists

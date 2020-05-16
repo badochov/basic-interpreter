@@ -1,8 +1,12 @@
-from typing import List
+from __future__ import annotations
 
-from context import Context
+from typing import List, TYPE_CHECKING
+
 from lang_types.lang_type import LangType
-from position import Position
+
+if TYPE_CHECKING:
+    from context import Context
+    from position import Position
 
 
 class LangVariantTypeDefinition(LangType):

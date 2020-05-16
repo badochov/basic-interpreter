@@ -1,18 +1,17 @@
-type List = NonEmpty of Any * List or Empty
 type Coord = Point of float * float or LineCoords of Point * Point
 type Shape = Line of float * float * float
 
 
 let list_fold_left fun acc list ->
     |   Empty -> acc
-    |   NonEmpty head tail ->
+    |   List head tail ->
             list_fold_left fun (fun acc head) tail
     end
 
 let list_join list1 list2 =
     match list1 with
-    |   NonEmpty head tail ->
-            NonEmpty head (list_join tail list2)
+    |   List head tail ->
+            List head (list_join tail list2)
     |   Empty -> list2
     end
 
@@ -86,13 +85,13 @@ let flip_y line point ->
 let points_after_fold line point =
     let side = line_side line point in
     if side == 0 then
-        NonEmpty point Empty
+        [point]
     elif side < 0 then
         Empty
     else
         let x = flip_x line point in
         let y = flip_y line point in
-        NonEmpty point (NonEmpty (Point x y) Empty)
+        [point; Point x y]
 
 let fold point1 point2 paper =
     fn point =
@@ -156,23 +155,25 @@ let r = rectangle (Point 0 0) (Point 10 10)
 
 let c = circle (Point 5 5) 5
 
-let lines1 = NonEmpty (LineCoords (Point 0 0) (Point 10 10))
-        (NonEmpty (LineCoords (Point 5 0) (Point 10 5))
-        (NonEmpty (LineCoords (Point 10 0) (Point 0 10))
-        (NonEmpty (LineCoords (Point 2.5 0) (Point 2.5 10))
-        Empty)))
+let lines1 = [
+                LineCoords (Point 0 0) (Point 10 10);
+                LineCoords (Point 5 0) (Point 10 5);
+                LineCoords (Point 10 0) (Point 0 10);
+                LineCoords (Point 2.5 0) (Point 2.5 10);
+             ]
 
 
-let lines2 = NonEmpty (LineCoords (Point 8 0) (Point 10 2))
-        (NonEmpty (LineCoords (Point 6 0) (Point 10 4))
-        (NonEmpty (LineCoords (Point 4 0) (Point 10 6))
-        (NonEmpty (LineCoords (Point 2 0) (Point 10 8))
-        (NonEmpty (LineCoords (Point 0 0) (Point 10 10))
-        (NonEmpty (LineCoords (Point 0 2) (Point 8 10))
-        (NonEmpty (LineCoords (Point 0 4) (Point 6 10))
-        (NonEmpty (LineCoords (Point 0 6) (Point 4 10))
-        (NonEmpty (LineCoords (Point 0 8) (Point 2 10))
-        Empty))))))))
+let lines2 = [
+                LineCoords (Point 8 0) (Point 10 2);
+                LineCoords (Point 6 0) (Point 10 4);
+                LineCoords (Point 4 0) (Point 10 6);
+                LineCoords (Point 2 0) (Point 10 8);
+                LineCoords (Point 0 0) (Point 10 10);
+                LineCoords (Point 0 2) (Point 8 10);
+                LineCoords (Point 0 4) (Point 6 10);
+                LineCoords (Point 0 6) (Point 4 10);
+                LineCoords (Point 0 8) (Point 2 10);
+            ]
 
 
 let mfr1 = multi_fold lines1 r
@@ -231,7 +232,7 @@ let rectangle_point left_bottom right_upper ->
                 match left_bottom with
                     Point x1 y1 ->
                         if x1 <= x and x <= x2 and y1 <= y and y <= y2 then
-                            NonEmpty point Empty
+                            [point]
                         else
                             Empty
                 end
@@ -244,7 +245,7 @@ let circle_point center radius =
         match center with
             Point x1 y1 ->
                 if ((x1 - x) ^ 2 + (y1 - y) ^ 2) ^ 0.5 <= radius then
-                    NonEmpty point Empty
+                    [point]
                 else
                     Empty
         end

@@ -8,10 +8,11 @@ from file_interpreter import print_error
 
 
 def main(debug: bool = False) -> None:
+    basic = Basic()
     while True:
         text = input("basic > ")
         try:
-            results = Basic.run(text, "<stdin>", True, debug)
+            results = basic.run(text, "<stdin>", True, debug)
             for result in results:
                 print(result)
         except Error as err:

@@ -8,6 +8,7 @@ from nodes.binary_operation_node import BinaryOperationNode
 from nodes.function_call_node import FunctionCallNode
 from nodes.function_definition_node import FunctionDefinitionNode
 from nodes.if_node import IfNode
+from nodes.list_node import ListEndNode, ListNode
 from nodes.match_case_node import MatchCaseNode
 from nodes.match_node import MatchNode
 from nodes.number_node import NumberNode
@@ -61,7 +62,8 @@ class Parser:
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DECLARATION"]):
             return self.type_decl()
         return self._fail_with_invalid_syntax_error(
-            f'Expected "{KEYWORDS["VARIABLE_DECLARATION"]}" or "{KEYWORDS["TYPE_DECLARATION"]}"'
+            f'Expected "{KEYWORDS["VARIABLE_DECLARATION"]}"'
+            f' or "{KEYWORDS["TYPE_DECLARATION"]}"'
         )
 
     def type_decl(self) -> TypeDefinitionNode:
@@ -162,17 +164,19 @@ class Parser:
         if token.type in (TT_FLOAT, TT_INT):
             self.advance()
             return NumberNode(NumberToken.as_number_token(token))
-        elif token.type in (TT_IDENTIFIER,):
+        elif token.type == TT_IDENTIFIER:
             self.advance()
             return VariableAccessNode(StringToken.as_string_token(token))
-        elif token.type in (TT_LPAREN,):
+        elif token.type == TT_LPAREN:
             self.advance()
             expr = self.expression()
             if self.current_token and self.current_token.type == TT_RPAREN:
                 self.advance()
                 return expr
             raise InvalidSyntaxError(token.pos_start, token.pos_end, "Expected ')'")
-
+        elif token.type == TT_LBRACKET:
+            self.advance()
+            return self._make_list()
         raise InvalidSyntaxError(
             token.pos_start, token.pos_end, "Expected int, float, variable or ("
         )
@@ -424,3 +428,23 @@ class Parser:
 
     def _add_token(self, token: Token) -> None:
         self.tokens.insert(self.token_index + 1, token)
+
+    def _make_list(self) -> Union[ListNode, ListEndNode]:
+        values: List[Node] = []
+        should_end = False
+        while self.current_token.type != TT_RBRACKET and not should_end:
+            values.append(self.expression())
+            if self.current_token.type == TT_LIST_SEP:
+                self.advance()
+            else:
+                should_end = True
+        end_token = self.current_token
+        if end_token.type != TT_RBRACKET:
+            self._fail_with_invalid_syntax_error(f'Expected "]"')
+        self.advance()
+        list_node: Union[ListNode, ListEndNode] = ListEndNode(
+            EmptyToken.as_empty_token(end_token)
+        )
+        for value in reversed(values):
+            list_node = ListNode(value, list_node)
+        return list_node

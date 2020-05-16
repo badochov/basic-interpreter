@@ -42,9 +42,9 @@ if-expr         : KEYWORD:IF expr KEYWORD:THEN expr
 fun-def         : KEYWORD:FN (IDENTIFIER)* EQUALS
 
 argument        : INT|FLOAT
-                #: list
+                : list
                 : LPAREN expr RPAREN
                 : IDENTIFIER
                 : IDENTIFIER argument*
 
-#list            : LBRACKET (expr (LIST_SEP expr)*)? RBRACKET
+list            : LBRACKET (expr (LIST_SEP expr)* LIST_SEP?)? RBRACKET
