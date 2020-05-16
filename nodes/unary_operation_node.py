@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
-
 from keywords import *
 from lang_types.lang_number import LangNumber
 from lang_types.lang_type import LangType

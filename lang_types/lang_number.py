@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from typing import Tuple, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from errors.error import Error
 from errors.rt_error import RTError
 from lang_types.lang_bool import LangBool
 from lang_types.lang_type import LangType
@@ -15,11 +14,7 @@ if TYPE_CHECKING:
 
 class LangNumber(LangType):
     def __init__(
-        self,
-        value: float,
-        pos_start: Position = None,
-        pos_end: Position = None,
-        context: Context = None,
+        self, value: float, pos_start: Position, pos_end: Position, context: Context,
     ):
         super().__init__("number", pos_start, pos_end, context)
         self._value = value

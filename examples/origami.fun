@@ -1,4 +1,4 @@
-type Coord = Point of float * float or LineCoords of Point * Point
+type Coord = LineCoords of Point * Point
 type Shape = Line of float * float * float
 
 
@@ -15,11 +15,11 @@ let list_join list1 list2 =
     |   Empty -> list2
     end
 
-let rectangle lb right_upper ->
+let rectangle left_bottom right_upper ->
     Point x2 y2 ->
         fn punkcik ->
             Point x y ->
-                match lb with
+                match left_bottom with
                     Point x1 y1 ->
                         if x1 <= x and x <= x2 and y1 <= y and y <= y2 then
                             1
@@ -91,7 +91,7 @@ let points_after_fold line point =
     else
         let x = flip_x line point in
         let y = flip_y line point in
-        [point; Point x y]
+        [point, Point x y]
 
 let fold point1 point2 paper =
     fn point =
@@ -156,23 +156,23 @@ let r = rectangle (Point 0 0) (Point 10 10)
 let c = circle (Point 5 5) 5
 
 let lines1 = [
-                LineCoords (Point 0 0) (Point 10 10);
-                LineCoords (Point 5 0) (Point 10 5);
-                LineCoords (Point 10 0) (Point 0 10);
-                LineCoords (Point 2.5 0) (Point 2.5 10);
+                LineCoords (Point 0 0) (Point 10 10),
+                LineCoords (Point 5 0) (Point 10 5),
+                LineCoords (Point 10 0) (Point 0 10),
+                LineCoords (Point 2.5 0) (Point 2.5 10),
              ]
 
 
 let lines2 = [
-                LineCoords (Point 8 0) (Point 10 2);
-                LineCoords (Point 6 0) (Point 10 4);
-                LineCoords (Point 4 0) (Point 10 6);
-                LineCoords (Point 2 0) (Point 10 8);
-                LineCoords (Point 0 0) (Point 10 10);
-                LineCoords (Point 0 2) (Point 8 10);
-                LineCoords (Point 0 4) (Point 6 10);
-                LineCoords (Point 0 6) (Point 4 10);
-                LineCoords (Point 0 8) (Point 2 10);
+                LineCoords (Point 8 0) (Point 10 2),
+                LineCoords (Point 6 0) (Point 10 4),
+                LineCoords (Point 4 0) (Point 10 6),
+                LineCoords (Point 2 0) (Point 10 8),
+                LineCoords (Point 0 0) (Point 10 10),
+                LineCoords (Point 0 2) (Point 8 10),
+                LineCoords (Point 0 4) (Point 6 10),
+                LineCoords (Point 0 6) (Point 4 10),
+                LineCoords (Point 0 8) (Point 2 10),
             ]
 
 

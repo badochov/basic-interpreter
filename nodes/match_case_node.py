@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import List, Optional, TYPE_CHECKING
 
-from context import Context
+from context import Context, mock_context
 from errors.rt_error import RTError
 from lang_types.lang_type import LangType
-
 from lang_types.lang_variant_type import LangVariantType
 from nodes.node import Node
+from position import mock_position
 from symbol_table import SymbolTable
 
 if TYPE_CHECKING:
@@ -18,6 +18,7 @@ class LangNoMatchType(LangType):
     ...
 
 
+# TODO add support for tuples
 class MatchCaseNode(Node):
     def __init__(
         self,
@@ -52,7 +53,9 @@ class MatchCaseNode(Node):
                 )
 
         elif not self.var.is_of_type(self.type_variant_name_token.value):
-            return LangNoMatchType()
+            return LangNoMatchType(
+                "no-match", mock_position, mock_position, mock_context
+            )
         if len(self.arg_tokens) != len(self.var.args) and not every:
             raise RTError(
                 self.pos_start,

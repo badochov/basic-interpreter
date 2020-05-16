@@ -14,9 +14,9 @@ class LangVariantTypeDefinition(LangType):
         self,
         name: str,
         args: List[str],
-        pos_start: Position = None,
-        pos_end: Position = None,
-        context: Context = None,
+        pos_start: Position,
+        pos_end: Position,
+        context: Context,
     ):
         super().__init__("variant_type_definition", pos_start, pos_end, context)
         self.name = name
@@ -27,9 +27,9 @@ class LangTypeDefinition(LangType):
     def __init__(
         self,
         variants: List[LangVariantTypeDefinition],
-        pos_start: Position = None,
-        pos_end: Position = None,
-        context: Context = None,
+        pos_start: Position,
+        pos_end: Position,
+        context: Context,
     ):
         super().__init__("type_definition", pos_start, pos_end, context)
         self.variants = variants

@@ -18,14 +18,14 @@ class LangFunction(LangType):
     def __init__(
         self,
         name_token: Optional[Token],
-        arg_name: str,
+        arg_names: List[str],
         body_node: Node,
-        pos_start: Position = None,
-        pos_end: Position = None,
-        context: Context = None,
+        pos_start: Position,
+        pos_end: Position,
+        context: Context,
     ):
         super().__init__("function", pos_start, pos_end, context)
-        self.arg_name = arg_name
+        self.arg_names = arg_names
         self.body_node = body_node
         self.name = (
             name_token.value
@@ -34,7 +34,7 @@ class LangFunction(LangType):
         )
 
     def __repr__(self) -> str:
-        return f"fn {self.arg_name}"
+        return f"fn {self.arg_names}"
 
     def call(self, context: Context, args: List[LangType]) -> LangType:
         new_ctx = Context(self.name, SymbolTable(), context, self.pos_start,)
@@ -42,8 +42,7 @@ class LangFunction(LangType):
         if not args:
             raise TooFewArgsError(self.pos_start, self.pos_end, "")
 
-        new_ctx.set(self.arg_name, args.pop())
-
+        new_ctx.set_multi(self.arg_names, args.pop(), self.pos_start, self.pos_end)
         result_cpy = self.body_node.visit(new_ctx).copy()
         if args:
             val = result_cpy.call(new_ctx, args)

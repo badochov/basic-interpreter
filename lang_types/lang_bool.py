@@ -13,11 +13,7 @@ if TYPE_CHECKING:
 
 class LangBool(LangType):
     def __init__(
-        self,
-        value: bool,
-        pos_start: Position = None,
-        pos_end: Position = None,
-        context: Context = None,
+        self, value: bool, pos_start: Position, pos_end: Position, context: Context,
     ):
         super().__init__("number", pos_start, pos_end, context)
         self._value = value

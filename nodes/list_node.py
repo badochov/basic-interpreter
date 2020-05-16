@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
-from lang_types.lang_number import LangNumber
 from lang_types.lang_variant_type import LangVariantType
 from nodes.node import Node
 from tokens.lang_empty_token import EmptyToken
@@ -23,7 +21,11 @@ class ListNode(Node):
 
     def visit(self, context: Context) -> LangVariantType:
         return LangVariantType(
-            [self.value_node.visit(context), self.tail_node.visit(context)], "List"
+            [self.value_node.visit(context), self.tail_node.visit(context)],
+            "List",
+            self.pos_start,
+            self.pos_end,
+            context,
         )
 
 
@@ -36,4 +38,4 @@ class ListEndNode(Node):
         return f"Empty"
 
     def visit(self, context: Context) -> LangVariantType:
-        return LangVariantType([], "Empty")
+        return LangVariantType([], "Empty", self.pos_start, self.pos_end, context,)

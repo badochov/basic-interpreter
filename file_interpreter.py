@@ -16,7 +16,7 @@ def main(file_name: str) -> None:
         code = f.read()
     basic = Basic()
     try:
-        results = basic.run(code, file_name, False)
+        results = basic.run(code, file_name)
         for result in results:
             print(result)
     except Error as err:

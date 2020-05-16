@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Optional, Tuple, TypeVar, TYPE_CHECKING, List, cast, Any, NoReturn
+from typing import TypeVar, TYPE_CHECKING, List, cast, Any, NoReturn
 
-from context import Context, mock_context
-from errors.error import Error
 from errors.not_impl_error import NotImplError
 from keywords import *
-from position import Position, mock_position
+from position import Position
 
 if TYPE_CHECKING:
+    from context import Context
     from lang_types.lang_bool import LangBool
 
     CompType = LangBool
@@ -20,15 +19,15 @@ T = TypeVar("T", bound="LangType")
 class LangType:
     def __init__(
         self,
-        type_name: str = "type",
-        pos_start: Position = None,
-        pos_end: Position = None,
-        context: Context = None,
+        type_name: str,
+        pos_start: Position,
+        pos_end: Position,
+        context: Context,
         deep_copied: List[str] = None,
     ):
-        self.pos_start = pos_start if pos_start else mock_position
-        self.pos_end = pos_end if pos_end else mock_position
-        self.context = context if context else mock_context
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+        self.context = context
         self.deep_copied = deep_copied if deep_copied else []
         self.type_name = type_name
 

@@ -9,21 +9,22 @@ if TYPE_CHECKING:
     from context import Context
 
 
-class LangVariantType(LangType):
+class LangTuple(LangType):
     def __init__(
         self,
-        args: List[LangType],
-        name: str,
+        values: List[LangType],
         pos_start: Position,
         pos_end: Position,
         context: Context,
     ):
         super().__init__("variant_type", pos_start, pos_end, context)
-        self.args = args
-        self.type_variant_name = name
+        self.values = values
 
     def __repr__(self) -> str:
-        return f"{self.type_variant_name} of {self.args}"
+        return f"Tuple: {self.values}"
 
-    def is_of_type(self, name: str) -> bool:
-        return name == self.type_variant_name
+    def values_count(self) -> int:
+        return len(self.values)
+
+    def nth_value(self, n: int) -> LangType:
+        return self.values[n]
