@@ -87,11 +87,11 @@ let points_after_fold line point =
     if side == 0 then
         [point]
     elif side < 0 then
-        Empty
+        []
     else
         let x = flip_x line point in
         let y = flip_y line point in
-        [point; Point x y]
+        [point, Point x y]
 
 let fold point1 point2 paper =
     fn point =
@@ -156,23 +156,23 @@ let r = rectangle (Point 0 0) (Point 10 10)
 let c = circle (Point 5 5) 5
 
 let lines1 = [
-                LineCoords (Point 0 0) (Point 10 10);
-                LineCoords (Point 5 0) (Point 10 5);
-                LineCoords (Point 10 0) (Point 0 10);
-                LineCoords (Point 2.5 0) (Point 2.5 10);
+                LineCoords (Point 0 0) (Point 10 10),
+                LineCoords (Point 5 0) (Point 10 5),
+                LineCoords (Point 10 0) (Point 0 10),
+                LineCoords (Point 2.5 0) (Point 2.5 10),
              ]
 
 
 let lines2 = [
-                LineCoords (Point 8 0) (Point 10 2);
-                LineCoords (Point 6 0) (Point 10 4);
-                LineCoords (Point 4 0) (Point 10 6);
-                LineCoords (Point 2 0) (Point 10 8);
-                LineCoords (Point 0 0) (Point 10 10);
-                LineCoords (Point 0 2) (Point 8 10);
-                LineCoords (Point 0 4) (Point 6 10);
-                LineCoords (Point 0 6) (Point 4 10);
-                LineCoords (Point 0 8) (Point 2 10);
+                LineCoords (Point 8 0) (Point 10 2),
+                LineCoords (Point 6 0) (Point 10 4),
+                LineCoords (Point 4 0) (Point 10 6),
+                LineCoords (Point 2 0) (Point 10 8),
+                LineCoords (Point 0 0) (Point 10 10),
+                LineCoords (Point 0 2) (Point 8 10),
+                LineCoords (Point 0 4) (Point 6 10),
+                LineCoords (Point 0 6) (Point 4 10),
+                LineCoords (Point 0 8) (Point 2 10),
             ]
 
 
@@ -234,7 +234,7 @@ let rectangle_point left_bottom right_upper ->
                         if x1 <= x and x <= x2 and y1 <= y and y <= y2 then
                             [point]
                         else
-                            Empty
+                            []
                 end
         end
     end
@@ -247,7 +247,7 @@ let circle_point center radius =
                 if ((x1 - x) ^ 2 + (y1 - y) ^ 2) ^ 0.5 <= radius then
                     [point]
                 else
-                    Empty
+                    []
         end
     end
 
@@ -256,7 +256,7 @@ let fold_points point1 point2 paper =
         let count acc pnt = list_join acc (paper pnt) in
         let line = make_line point1 point2 in
         let points = points_after_fold line point in
-        list_fold_left count Empty points
+        list_fold_left count [] points
 
 let multi_fold_points lines paper =
     let fold_helper acc points ->

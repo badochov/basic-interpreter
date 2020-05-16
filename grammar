@@ -45,6 +45,5 @@ argument        : INT|FLOAT
                 : list
                 : LPAREN expr RPAREN
                 : IDENTIFIER
-                : IDENTIFIER argument*
 
 list            : LBRACKET (expr (LIST_SEP expr)* LIST_SEP?)? RBRACKET

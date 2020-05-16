@@ -313,7 +313,13 @@ class Parser:
         self.advance()
 
         arg_tokens: List[Node] = []
-        while self.current_token.type in (TT_LPAREN, TT_IDENTIFIER, TT_INT, TT_FLOAT):
+        while self.current_token.type in (
+            TT_LPAREN,
+            TT_IDENTIFIER,
+            TT_INT,
+            TT_FLOAT,
+            TT_LBRACKET,
+        ):
             arg_tokens.append(self.argument())
 
         if arg_tokens:
