@@ -50,6 +50,7 @@ class Context:
             if not isinstance(value, LangTuple):
                 raise RTError(pos_start, pos_end, "Expected tuple", self)
             if len(names) != value.values_count():
+                print(names)
                 raise RTError(
                     pos_start, pos_end, "Wrong number of arguments to unpack", self,
                 )
