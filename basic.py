@@ -76,6 +76,7 @@ class Basic:
 
         results: List[LangType] = []
         for ast in parser.parse(repl_mode):
+            print(ast)
             context = Context(file_name, self.syntax_table)
             res = ast.visit(context)
             results.append(res)

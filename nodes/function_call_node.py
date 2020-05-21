@@ -64,5 +64,4 @@ class FunctionCallNode(Node):
 
         else:
             fun_cpy = fun.copy().set_pos(self.pos_start, self.pos_end)
-
             return fun_cpy.call(context, args)

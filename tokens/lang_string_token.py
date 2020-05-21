@@ -6,6 +6,9 @@ from tokens.lang_token import Token
 
 
 class StringToken(Token[str]):
+    def is_asterix_token(self) -> bool:
+        return False
+
     def is_string_token(self) -> bool:
         return True
 

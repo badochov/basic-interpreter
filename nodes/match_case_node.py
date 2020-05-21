@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING, Tuple
+from typing import List, Optional, TYPE_CHECKING, Tuple, Union
 
 from context import Context, mock_context
 from lang_types.lang_tuple import LangTuple
@@ -28,7 +28,7 @@ class MatchCaseNode(Node):
         super().__init__(types[0][0].pos_start, expr_node.pos_end)
         self.types = types
         self.expr_node = expr_node
-        self.var: Optional[LangVariantType] = None
+        self.var: Optional[Union[LangTuple, LangVariantType]] = None
 
     def __repr__(self) -> str:
         res = "(("
@@ -40,7 +40,7 @@ class MatchCaseNode(Node):
         res += f") -> {self.expr_node}"
         return res + ")"
 
-    def set_matched_variable(self, var: LangVariantType) -> None:
+    def set_matched_variable(self, var: Union[LangTuple, LangVariantType]) -> None:
         self.var = var
 
     def visit(self, context: Context) -> LangType:

@@ -86,7 +86,12 @@ def test_order() -> None:
     )
     run_test(basic, " let _ = 42 - 6 * 7", "test_order_4", LangNumber, None, 42 - 6 * 7)
     run_test(
-        basic, " let _ = 7 + 2 * (6 + 3) / 3 - 7", "test_order_5", LangNumber, None,
+        basic,
+        " let _ = 7 + 2 * (6 + 3) / 3 - 7",
+        "test_order_5",
+        LangNumber,
+        None,
+        7 + 2 * (6 + 3) / 3 - 7,
     )
     run_test(
         basic,

@@ -41,22 +41,6 @@ class Context:
     def set(self, name: str, value: Value) -> None:
         self.symbol_table.set(name, value)
 
-    def set_multi(
-        self, names: List[str], value: Value, pos_start: Position, pos_end: Position
-    ) -> None:
-        if len(names) == 1:
-            self.set(names[0], value)
-        elif len(names) > 1:
-            if not isinstance(value, LangTuple):
-                raise RTError(pos_start, pos_end, "Expected tuple", self)
-            if len(names) != value.values_count():
-                print(names)
-                raise RTError(
-                    pos_start, pos_end, "Wrong number of arguments to unpack", self,
-                )
-            for i, name in enumerate(names):
-                self.set(name, value.nth_value(i))
-
     def __repr__(self) -> str:
         parent = "Parent\n" + str(self.parents)
         return str(self.symbol_table) + parent.replace("\n", "\n\t")

@@ -40,3 +40,7 @@ class Token(ABC, Generic[T]):
     @abstractmethod
     def is_empty_token(self) -> bool:
         ...
+
+    @abstractmethod
+    def is_asterix_token(self) -> bool:
+        ...

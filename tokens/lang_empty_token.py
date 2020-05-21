@@ -7,6 +7,9 @@ from tokens.lang_token import Token
 
 
 class EmptyToken(Token[None]):
+    def is_asterix_token(self) -> bool:
+        return False
+
     def is_number_token(self) -> bool:
         return False
 

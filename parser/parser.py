@@ -17,8 +17,10 @@ from nodes.type_definition_node import TypeDefinitionNode
 from nodes.type_variant_node import TypeVariantNode
 from nodes.unary_operation_node import UnaryOperationNode
 from nodes.variable_access_node import VariableAccessNode
+from nodes.variable_assignment_node import VariableAssignmentNode
 from position import mock_position
 from token_types import *
+from tokens.lang_asterix_token import AsterixToken
 from tokens.lang_empty_token import EmptyToken
 from tokens.lang_number_token import NumberToken
 from tokens.lang_string_token import StringToken
@@ -252,24 +254,18 @@ class Parser:
 
         self.advance()
 
-        var_names: List[StringToken] = []
+        var_name: Optional[VariableAssignmentNode] = None
+        can_be_function = True
         if has_name:
-            while True:
-                if self.current_token.type != TT_IDENTIFIER:
-                    return self._fail_with_invalid_syntax_error("Expected identifier",)
-                var_names.append(StringToken.as_string_token(self.current_token))
-                self.advance()
-                self._make_type_hint()
-                if self.current_token.type == TT_COMA:
-                    self.advance()
-                else:
-                    break
+            if self.current_token.type != TT_IDENTIFIER:
+                can_be_function = False
+            var_name = self._get_variable_assignment(False)
         else:
             self._make_type_hint()
-        arg_tokens: List[List[StringToken]] = []
-        if len(var_names) < 2:
+        arg_tokens: List[VariableAssignmentNode] = []
+        if can_be_function:
             while self.current_token.type in (TT_IDENTIFIER, TT_LPAREN):
-                arg_tokens.append(self._get_argument_definition())
+                arg_tokens.append(self._get_variable_assignment())
 
         if self.current_token.type not in (end_def_token, end_def_match_token):
             return self._fail_with_invalid_syntax_error(f'Expected "{end_def_token}"',)
@@ -280,65 +276,123 @@ class Parser:
                 )
             self._add_match(arg_tokens[-1])
         self.advance()
-        return Parser._make_function_definition(var_names, arg_tokens, self._tuple())
+        return Parser._make_function_definition(var_name, arg_tokens, self._tuple())
 
-    def _get_argument_definition(self) -> List[StringToken]:
-        if self.current_token.type == TT_IDENTIFIER:
-            arg = [StringToken.as_string_token(self.current_token)]
-            self.advance()
-        elif self.current_token.type == TT_LPAREN:
-            arg = self._make_destruct_tuple()
-        else:
-            return self._fail_with_invalid_syntax_error("Expected identifier")
-        self._make_type_hint()
-        return arg
+    def _get_variable_assignment(
+        self, tuple_in_paren: bool = True, is_list: bool = False,
+    ) -> VariableAssignmentNode:
+        names: List[Union[StringToken, AsterixToken, VariableAssignmentNode]] = []
+        was_asterix = False
+        in_paren = False
 
-    def _make_destruct_tuple(self) -> List[StringToken]:
-        if self.current_token.type != TT_LPAREN:
-            return self._fail_with_invalid_syntax_error('Expected "("')
-        self.advance()
-        names: List[StringToken] = []
-        should_end = False
-        while self.current_token.type != TT_RPAREN and not should_end:
-            if self.current_token.type != TT_IDENTIFIER:
-                return self._fail_with_invalid_syntax_error("Expected identifier")
-            names.append(StringToken.as_string_token(self.current_token))
-            self.advance()
-            self._make_type_hint()
+        while True:
+            if self.current_token.type == TT_IDENTIFIER:
+                names.append(StringToken.as_string_token(self.current_token))
+                self.advance()
+                self._make_type_hint()
+            elif self.current_token.type == TT_MUL:
+                if was_asterix:
+                    return self._fail_with_invalid_syntax_error(
+                        'Unexpected multiple "*"'
+                    )
+                was_asterix = True
+                asterix_token = self.current_token
+                self.advance()
+                if self.current_token.type == TT_IDENTIFIER:
+                    self.advance()
+                    if is_list:
+                        names.append(
+                            AsterixToken.from_string_token(
+                                StringToken.as_string_token(self.current_token)
+                            )
+                        )
+                    else:
+                        return self._fail_with_invalid_syntax_error('Unexpected "*"')
+                else:
+                    names.append(
+                        AsterixToken(
+                            asterix_token.pos_start, asterix_token.pos_end, "_"
+                        )
+                    )
+            elif self.current_token.type == TT_LBRACKET:
+                self.advance()
+                names.append(self._get_variable_assignment(True, True))
+                if self.current_token.type == TT_RBRACKET:
+                    self.advance()
+                else:
+                    return self._fail_with_invalid_syntax_error('Expected "]"')
+            elif self.current_token.type == TT_LPAREN:
+                self.advance()
+                names.append(self._get_variable_assignment(False, False))
+                if self.current_token.type == TT_RPAREN:
+                    self.advance()
+                else:
+                    return self._fail_with_invalid_syntax_error('Expected ")"')
+            else:
+                self._fail_with_invalid_syntax_error("Expected name")
             if self.current_token.type == TT_COMA:
                 self.advance()
             else:
-                should_end = True
-        self.advance()
-        if not names:
-            return self._fail_with_invalid_syntax_error("Expected arguments")
-        return names
+                break
+
+        if len(names) > 1:
+            if not in_paren and tuple_in_paren:
+                return self._fail_with_invalid_syntax_error(
+                    "This tuple was expected to be in parentheses"
+                )
+
+        return VariableAssignmentNode(names, is_list)
+
+    # def _make_destruct_tuple(self) -> List[StringToken]:
+    #     if self.current_token.type != TT_LPAREN:
+    #         return self._fail_with_invalid_syntax_error('Expected "("')
+    #     self.advance()
+    #     names: List[StringToken] = []
+    #     should_end = False
+    #     while self.current_token.type != TT_RPAREN and not should_end:
+    #         if self.current_token.type != TT_IDENTIFIER:
+    #             return self._fail_with_invalid_syntax_error("Expected identifier")
+    #         names.append(StringToken.as_string_token(self.current_token))
+    #         self.advance()
+    #         self._make_type_hint()
+    #         if self.current_token.type == TT_COMA:
+    #             self.advance()
+    #         else:
+    #             should_end = True
+    #     self.advance()
+    #     if not names:
+    #         return self._fail_with_invalid_syntax_error("Expected arguments")
+    #     return names
 
     @staticmethod
     def _make_function_definition(
-        var_names: List[StringToken], args: List[List[StringToken]], body: Node
+        var_name: Optional[VariableAssignmentNode],
+        args: List[VariableAssignmentNode],
+        body: Node,
     ) -> FunctionDefinitionNode:
-        id_tokens: List[StringToken] = [
-            *var_names,
-            *[name for arg in args for name in arg],
+        names: List[str] = [
+            *([name for name in var_name.get_names()] if var_name else []),
+            *[name for arg in args for name in arg.get_names()],
         ]
-        if not Parser._check_if_tokens_values_are_distinct(id_tokens):
+        if not Parser._check_if_names_are_distinct(names):
             raise InvalidSyntaxError(
-                var_names[0].pos_start if var_names else args[0][0].pos_start,
-                id_tokens[-1].pos_end,
+                var_name.pos_start if var_name else args[0].pos_start,
+                (var_name.pos_end if var_name else mock_position)
+                if not args
+                else args[-1].pos_end,
                 "Names in this function declaration are not unique",
             )
 
         if not args:
-            return FunctionDefinitionNode(var_names, [], body)
+            return FunctionDefinitionNode(var_name, None, body)
         prev_fun = body
         for arg in reversed(args):
-            prev_fun = FunctionDefinitionNode(var_names, arg, prev_fun, False)
-        return FunctionDefinitionNode(var_names, [], prev_fun)
+            prev_fun = FunctionDefinitionNode(var_name, arg, prev_fun, False)
+        return FunctionDefinitionNode(var_name, None, prev_fun)
 
     @staticmethod
-    def _check_if_tokens_values_are_distinct(tokens: List[StringToken]) -> bool:
-        ids = [token.value for token in tokens if token.value != "_"]
+    def _check_if_names_are_distinct(names: List[str]) -> bool:
+        ids = list(filter(lambda s: s != "_", names))
         return len(set(ids)) == len(ids)
 
     def _function_call(self) -> Union[FunctionCallNode, VariableAccessNode]:
@@ -466,14 +520,15 @@ class Parser:
             return None
         return self._fail_with_invalid_syntax_error("Expected type hint")
 
-    def _add_match(self, variable_name: List[StringToken]) -> None:
-        pos_start = variable_name[0].pos_start
-        pos_end = variable_name[-1].pos_end
+    def _add_match(self, variable_name: VariableAssignmentNode) -> None:
+        pos_start = variable_name.pos_start
+        pos_end = variable_name.pos_end
         self._add_token(StringToken(TT_KEYWORD, pos_start, pos_end, KEYWORDS["WITH"],))
-        for i, token in enumerate(reversed(variable_name)):
-            if i:
-                self._add_token(EmptyToken(TT_COMA, pos_start, pos_end,))
-            self._add_token(token)
+        names = variable_name.get_names()
+        if len(names) != 1:
+            raise InvalidSyntaxError(pos_start, pos_end, '"->" with invalid argument')
+        for name in names:
+            self._add_token(StringToken(TT_KEYWORD, pos_start, pos_end, name))
 
         self._add_token(StringToken(TT_KEYWORD, pos_start, pos_end, KEYWORDS["MATCH"],))
 
