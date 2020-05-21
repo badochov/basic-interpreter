@@ -70,7 +70,7 @@ class MatchCaseNode(Node):
 
     def _handle_tuple(self, context: Context) -> LangType:
         assert isinstance(self.var, LangTuple)
-        type_names = map(lambda type_desc: type_desc[0].values, self.types)
+        type_names = map(lambda type_desc: type_desc[0].value, self.types)
         if not self.var.is_of_type(type_names):
             return LangNoMatchType.instance()
         new_ctx = Context(
