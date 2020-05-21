@@ -10,6 +10,4 @@ if TYPE_CHECKING:
 
 class InvalidSyntaxError(Error):
     def __init__(self, pos_start: Position, pos_end: Position, details: str):
-        self.pos_start = pos_start
-        self.pos_end = pos_end
-        self.message = "Illegal Syntax:" + details
+        super().__init__(pos_start, pos_end, "Invalid Syntax", details)

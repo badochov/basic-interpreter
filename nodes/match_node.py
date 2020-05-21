@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 from errors.rt_error import RTError
-
 from keywords import KEYWORDS
+from lang_types.lang_tuple import LangTuple
 from lang_types.lang_type import LangType
 from lang_types.lang_variant_type import LangVariantType
 from nodes.match_case_node import MatchCaseNode, LangNoMatchType
@@ -28,7 +28,7 @@ class MatchNode(Node):
 
     def visit(self, context: Context) -> LangType:
         var = self.var_node.visit(context)
-        if not isinstance(var, LangVariantType):
+        if not isinstance(var, LangVariantType) and not isinstance(var, LangTuple):
             raise RTError(
                 self.pos_start, self.pos_end, "Expected variant type", context
             )

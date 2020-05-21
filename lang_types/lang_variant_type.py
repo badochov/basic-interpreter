@@ -14,9 +14,9 @@ class LangVariantType(LangType):
         self,
         args: List[LangType],
         name: str,
-        pos_start: Position = None,
-        pos_end: Position = None,
-        context: Context = None,
+        pos_start: Position,
+        pos_end: Position,
+        context: Context,
     ):
         super().__init__("variant_type", pos_start, pos_end, context)
         self.args = args

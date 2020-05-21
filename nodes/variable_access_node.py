@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from errors.rt_error import RTError
 from lang_types.lang_type import LangType
-
 from lang_types.lang_variant_type import LangVariantType
 from lang_types.type_def import LangVariantTypeDefinition
 from nodes.node import Node

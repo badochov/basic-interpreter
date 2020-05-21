@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from errors.rt_error import RTError
-from lang_types.lang_type import LangType
 from lang_types.type_def import LangVariantTypeDefinition, LangTypeDefinition
 from nodes.node import Node
 from nodes.type_variant_node import TypeVariantNode

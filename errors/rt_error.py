@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from errors.error import Error
 from errors.string_with_arrows import string_with_arrows

@@ -1,4 +1,4 @@
-repl-top-level  : expr | top-lvl
+repl-top-level  : tuple | top-lvl
 
 top-lvl         : type-decl | var-decl
 
@@ -7,7 +7,13 @@ variant-type-id : IDENTIFIER (KEYWORD:TYPE_DESCRIPTION IDENTIFIER (MUL IDENTIFIE
 type-decl       : KEYWORD:TYPE_DECLARATION IDENTIFIER EQ
                         variant-type-id (KEYWORD:OR variant-type-id)*
 
-var-decl        : KEYWORD:VARIABLE_DECLARATION IDENTIFIER (IDENTIFIER )* EQ expr
+decl-arg        : (IDENTIFIER|destruct-tuple (COLON type-hint)
+
+var-decl        : KEYWORD:VARIABLE_DECLARATION IDENTIFIER (COMA type-hint)?
+                    (decl-arg* EQ tuple)|
+                    (decl-arg+ ARROW match-case+ KEYWORD:END))
+
+tuple           : expr (COMA expr)*
 
 expr            : var-decl KEYWORD:IN expr
                 : logic-expr ((KEYWORD:OR|KEYWORD:AND) logic-expr)*
@@ -30,20 +36,27 @@ atom            : if-expr
                 : argument
                 : match
 
-match-case      : IDENTIFIER IDENTIFIER* ARROW expr
+match-case      : IDENTIFIER IDENTIFIER* ARROW tuple
 
-match           : KEYWORD:MATCH expr KEYWORD:WITH  match-case+ KEYWORD:END
+match           : KEYWORD:MATCH tuple KEYWORD:WITH  match-case+ KEYWORD:END
 
 
-if-expr         : KEYWORD:IF expr KEYWORD:THEN expr
-                  (KEYWORD:ELIF expr KEYWORD:THEN expr)*
-                  KEYWORD:ELSE expr
+if-expr         : KEYWORD:IF expr KEYWORD:THEN tuple
+                  (KEYWORD:ELIF expr KEYWORD:THEN tuple)*
+                  KEYWORD:ELSE tuple
 
-fun-def         : KEYWORD:FN (IDENTIFIER)* EQUALS
+fun-def         : KEYWORD:FN ((decl-arg* EQUALS tuple)|(decl-arg+ ARROW match-case+ KEYWORD:END) )
 
 argument        : INT|FLOAT
                 : list
-                : LPAREN expr RPAREN
-                : IDENTIFIER
+                : LPAREN tuple RPAREN
+                : IDENTIFIER argument*
 
-list            : LBRACKET (expr (LIST_SEP expr)* LIST_SEP?)? RBRACKET
+list            : LBRACKET (tuple (LIST_SEP tuple)* LIST_SEP?)? RBRACKET
+
+destruct-tuple  : LPAREN IDENTIFIER (COMA IDENTIFIER)* RPAREN
+
+type-hint       : LPAREN type-hint RPAREN
+                : type-hint ARROW type-hint
+                : destruct-tuple
+                : IDENTIFIER

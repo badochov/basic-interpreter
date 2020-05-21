@@ -12,11 +12,11 @@ from nodes.list_node import ListEndNode, ListNode
 from nodes.match_case_node import MatchCaseNode
 from nodes.match_node import MatchNode
 from nodes.number_node import NumberNode
+from nodes.tuple_node import TupleNode
 from nodes.type_definition_node import TypeDefinitionNode
 from nodes.type_variant_node import TypeVariantNode
 from nodes.unary_operation_node import UnaryOperationNode
 from nodes.variable_access_node import VariableAccessNode
-
 from position import mock_position
 from token_types import *
 from tokens.lang_empty_token import EmptyToken
@@ -54,7 +54,7 @@ class Parser:
             return self.var_decl()
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["TYPE_DECLARATION"]):
             return self.type_decl()
-        return self.expression()
+        return self._tuple()
 
     def top_level(self) -> Node:
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["VARIABLE_DECLARATION"]):
@@ -103,7 +103,7 @@ class Parser:
 
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["VARIABLE_DECLARATION"]):
             return self._binary_operation(
-                self.var_decl, [(TT_KEYWORD, KEYWORDS["IN"])], self.expression
+                self.var_decl, [(TT_KEYWORD, KEYWORDS["IN"])], self._tuple
             )
 
         return self._binary_operation(
@@ -169,7 +169,7 @@ class Parser:
             return VariableAccessNode(StringToken.as_string_token(token))
         elif token.type == TT_LPAREN:
             self.advance()
-            expr = self.expression()
+            expr = self._tuple()
             if self.current_token and self.current_token.type == TT_RPAREN:
                 self.advance()
                 return expr
@@ -189,7 +189,7 @@ class Parser:
             )
 
         self.advance()
-        expr = self.expression()
+        expr = self._tuple()
 
         if not self.current_token.matches(TT_KEYWORD, KEYWORDS["WITH"]):
             return self._fail_with_invalid_syntax_error(
@@ -228,12 +228,12 @@ class Parser:
 
         self.advance()
 
-        expr = self.expression()
+        expr = self._tuple()
         if self.current_token.matches(TT_KEYWORD, KEYWORDS["ELIF"]):
             return IfNode(condition, expr, self.if_expression("ELIF"))
         elif self.current_token.matches(TT_KEYWORD, KEYWORDS["ELSE"]):
             self.advance()
-            return IfNode(condition, expr, self.expression())
+            return IfNode(condition, expr, self._tuple())
 
         return self._fail_with_invalid_syntax_error(
             f'Expected {KEYWORDS["ELIF"]} or {KEYWORDS["ELSE"]}',
@@ -252,21 +252,24 @@ class Parser:
 
         self.advance()
 
-        var_name = None
+        var_names: List[StringToken] = []
         if has_name:
-            if self.current_token.type != TT_IDENTIFIER:
-                return self._fail_with_invalid_syntax_error("Expected identifier",)
-
-            var_name = StringToken.as_string_token(self.current_token)
-            self.advance()
-
-        self._make_type_hint()
-
-        arg_tokens: List[StringToken] = []
-        while self.current_token.type == TT_IDENTIFIER:
-            arg_tokens.append(StringToken.as_string_token(self.current_token))
-            self.advance()
+            while True:
+                if self.current_token.type != TT_IDENTIFIER:
+                    return self._fail_with_invalid_syntax_error("Expected identifier",)
+                var_names.append(StringToken.as_string_token(self.current_token))
+                self.advance()
+                self._make_type_hint()
+                if self.current_token.type == TT_COMA:
+                    self.advance()
+                else:
+                    break
+        else:
             self._make_type_hint()
+        arg_tokens: List[List[StringToken]] = []
+        if len(var_names) < 2:
+            while self.current_token.type in (TT_IDENTIFIER, TT_LPAREN):
+                arg_tokens.append(self._get_argument_definition())
 
         if self.current_token.type not in (end_def_token, end_def_match_token):
             return self._fail_with_invalid_syntax_error(f'Expected "{end_def_token}"',)
@@ -277,32 +280,65 @@ class Parser:
                 )
             self._add_match(arg_tokens[-1])
         self.advance()
-        return Parser._make_function_definition(var_name, arg_tokens, self.expression())
+        return Parser._make_function_definition(var_names, arg_tokens, self._tuple())
+
+    def _get_argument_definition(self) -> List[StringToken]:
+        if self.current_token.type == TT_IDENTIFIER:
+            arg = [StringToken.as_string_token(self.current_token)]
+            self.advance()
+        elif self.current_token.type == TT_LPAREN:
+            arg = self._make_destruct_tuple()
+        else:
+            return self._fail_with_invalid_syntax_error("Expected identifier")
+        self._make_type_hint()
+        return arg
+
+    def _make_destruct_tuple(self) -> List[StringToken]:
+        if self.current_token.type != TT_LPAREN:
+            return self._fail_with_invalid_syntax_error('Expected "("')
+        self.advance()
+        names: List[StringToken] = []
+        should_end = False
+        while self.current_token.type != TT_RPAREN and not should_end:
+            if self.current_token.type != TT_IDENTIFIER:
+                return self._fail_with_invalid_syntax_error("Expected identifier")
+            names.append(StringToken.as_string_token(self.current_token))
+            self.advance()
+            self._make_type_hint()
+            if self.current_token.type == TT_COMA:
+                self.advance()
+            else:
+                should_end = True
+        self.advance()
+        if not names:
+            return self._fail_with_invalid_syntax_error("Expected arguments")
+        return names
 
     @staticmethod
     def _make_function_definition(
-        var_name: Optional[StringToken], args: List[StringToken], body: Node
+        var_names: List[StringToken], args: List[List[StringToken]], body: Node
     ) -> FunctionDefinitionNode:
-
-        id_tokens: List[StringToken] = [var_name, *args] if var_name else args
+        id_tokens: List[StringToken] = [
+            *var_names,
+            *[name for arg in args for name in arg],
+        ]
         if not Parser._check_if_tokens_values_are_distinct(id_tokens):
-            pos_start = var_name.pos_start if var_name else args[0].pos_start
             raise InvalidSyntaxError(
-                pos_start,
+                var_names[0].pos_start if var_names else args[0][0].pos_start,
                 id_tokens[-1].pos_end,
                 "Names in this function declaration are not unique",
             )
 
         if not args:
-            return FunctionDefinitionNode(var_name, None, body)
+            return FunctionDefinitionNode(var_names, [], body)
         prev_fun = body
         for arg in reversed(args):
-            prev_fun = FunctionDefinitionNode(var_name, arg, prev_fun, False)
-        return FunctionDefinitionNode(var_name, None, prev_fun)
+            prev_fun = FunctionDefinitionNode(var_names, arg, prev_fun, False)
+        return FunctionDefinitionNode(var_names, [], prev_fun)
 
     @staticmethod
     def _check_if_tokens_values_are_distinct(tokens: List[StringToken]) -> bool:
-        ids = list(map(lambda t: t.value, tokens))
+        ids = [token.value for token in tokens if token.value != "_"]
         return len(set(ids)) == len(ids)
 
     def _function_call(self) -> Union[FunctionCallNode, VariableAccessNode]:
@@ -365,23 +401,39 @@ class Parser:
 
         return TypeVariantNode(variant_type_name, args_tokens)
 
+    # TODO change to support tuples
     def _match_case(self) -> MatchCaseNode:
-        if self.current_token.type != TT_IDENTIFIER:
-            return self._fail_with_invalid_syntax_error("Expected type name",)
-        type_name = StringToken.as_string_token(self.current_token)
-        self.advance()
-
-        arg_tokens: List[StringToken] = []
-
-        while self.current_token.type == TT_IDENTIFIER:
-            arg_tokens.append(StringToken.as_string_token(self.current_token))
+        in_paren = False
+        if self.current_token.type == TT_LPAREN:
+            self.advance()
+            in_paren = True
+        types: List[Tuple[StringToken, List[StringToken]]] = []
+        while True:
+            if self.current_token.type != TT_IDENTIFIER:
+                return self._fail_with_invalid_syntax_error("Expected type name",)
+            type_name = StringToken.as_string_token(self.current_token)
             self.advance()
 
+            arg_tokens: List[StringToken] = []
+
+            while self.current_token.type == TT_IDENTIFIER:
+                arg_tokens.append(StringToken.as_string_token(self.current_token))
+                self.advance()
+
+            types.append((type_name, arg_tokens))
+            if self.current_token.type == TT_COMA:
+                self.advance()
+            else:
+                break
+        if in_paren:
+            if self.current_token.type != TT_RPAREN:
+                return self._fail_with_invalid_syntax_error('Expected ")"')
+            self.advance()
         if self.current_token.type != TT_ARROW:
             return self._fail_with_invalid_syntax_error('Expected "->"')
         self.advance()
 
-        return MatchCaseNode(type_name, arg_tokens, self.expression())
+        return MatchCaseNode(types, self._tuple())
 
     def _fail_with_invalid_syntax_error(self, msg: str) -> NoReturn:
         raise (
@@ -390,6 +442,7 @@ class Parser:
             )
         )
 
+    # TODO support for tuples
     def _make_type_hint(self) -> Optional[Node]:
         if not self.current_token.type == TT_COLON:
             return None
@@ -413,24 +466,16 @@ class Parser:
             return None
         return self._fail_with_invalid_syntax_error("Expected type hint")
 
-    def _add_match(self, variable_name: StringToken) -> None:
-        self._add_token(
-            StringToken(
-                TT_KEYWORD,
-                variable_name.pos_start,
-                variable_name.pos_end,
-                KEYWORDS["WITH"],
-            )
-        )
-        self._add_token(variable_name)
-        self._add_token(
-            StringToken(
-                TT_KEYWORD,
-                variable_name.pos_start,
-                variable_name.pos_end,
-                KEYWORDS["MATCH"],
-            )
-        )
+    def _add_match(self, variable_name: List[StringToken]) -> None:
+        pos_start = variable_name[0].pos_start
+        pos_end = variable_name[-1].pos_end
+        self._add_token(StringToken(TT_KEYWORD, pos_start, pos_end, KEYWORDS["WITH"],))
+        for i, token in enumerate(reversed(variable_name)):
+            if i:
+                self._add_token(EmptyToken(TT_COMA, pos_start, pos_end,))
+            self._add_token(token)
+
+        self._add_token(StringToken(TT_KEYWORD, pos_start, pos_end, KEYWORDS["MATCH"],))
 
     def _add_token(self, token: Token) -> None:
         self.tokens.insert(self.token_index + 1, token)
@@ -454,3 +499,12 @@ class Parser:
         for value in reversed(values):
             list_node = ListNode(value, list_node)
         return list_node
+
+    def _tuple(self) -> Node:
+        nodes: List[Node] = [self.expression()]
+        while self.current_token.type == TT_COMA:
+            self.advance()
+            nodes.append(self.expression())
+        if len(nodes) == 1:
+            return nodes[0]
+        return TupleNode(nodes)

@@ -1,13 +1,16 @@
 #TODO Tuples
+
 #TODO Input output
 #TODO strings
 #TODO vscode extension
 #TODO tail recurrence
 #TODO imports
 #TODO infix operators
-#TODO destructuring
+#TODO destructuring variant type and list, * for lists and tuples
+#TODO make destructuring nested
 #TODO remove end from match -> make it force all patterns from type
 #TODO add asserts
 #TODO add checking for repetition of type declarations
+#TODO add variant type comparison
 
-#TODO tests for types, pattern matching, type hinting, lists
+#TODO tests for types, pattern matching, type hinting, anonymous functions
