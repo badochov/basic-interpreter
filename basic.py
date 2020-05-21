@@ -3,13 +3,11 @@ from __future__ import annotations
 from sys import getrecursionlimit, setrecursionlimit
 from typing import TYPE_CHECKING, List
 
-from context import Context, mock_context
+from context import Context
 from lang_types.lang_bool import LangBool
-from lang_types.lang_number import LangNumber
 from lang_types.type_def import LangVariantTypeDefinition, LangTypeDefinition
 from lexer.lexer import Lexer
 from parser.parser import Parser
-from position import mock_position
 from symbol_table import SymbolTable
 
 if TYPE_CHECKING:
@@ -22,41 +20,32 @@ setrecursionlimit(getrecursionlimit() * 1000)
 class Basic:
     def __init__(self) -> None:
         self.syntax_table = SymbolTable()
+        self.syntax_table.set(LangBool.true_name(), LangBool.true_def())
+        self.syntax_table.set(LangBool.false_name(), LangBool.false_def())
+
         self.syntax_table.set(
-            "true", LangBool(True, mock_position, mock_position, mock_context)
+            LangVariantTypeDefinition.some_type_name(),
+            LangVariantTypeDefinition.some_type_def(),
         )
         self.syntax_table.set(
-            "false", LangBool(False, mock_position, mock_position, mock_context)
+            LangVariantTypeDefinition.none_type_name(),
+            LangVariantTypeDefinition.none_type_def(),
+        )
+        self.syntax_table.set(
+            LangTypeDefinition.option_type_name(), LangTypeDefinition.option_type_def()
         )
 
-        some = LangVariantTypeDefinition(
-            "Some", ["Any"], mock_position, mock_position, mock_context
-        )
-        none = LangVariantTypeDefinition(
-            "None", [], mock_position, mock_position, mock_context
-        )
-        self.syntax_table.set("Some", some)
-        self.syntax_table.set("None", none)
         self.syntax_table.set(
-            "Option",
-            LangTypeDefinition(
-                [some, none], mock_position, mock_position, mock_context
-            ),
+            LangVariantTypeDefinition.list_type_name(),
+            LangVariantTypeDefinition.list_type_def(),
         )
-
-        head = LangVariantTypeDefinition(
-            "List", ["Any", "List"], mock_position, mock_position, mock_context,
-        )
-        empty = LangVariantTypeDefinition(
-            "Empty", [], mock_position, mock_position, mock_context
-        )
-        self.syntax_table.set("List", head)
-        self.syntax_table.set("Empty", empty)
         self.syntax_table.set(
-            "LinkedList",
-            LangTypeDefinition(
-                [head, empty], mock_position, mock_position, mock_context
-            ),
+            LangVariantTypeDefinition.empty_list_type_name(),
+            LangVariantTypeDefinition.empty_list_type_def(),
+        )
+        self.syntax_table.set(
+            LangTypeDefinition.linked_list_type_name(),
+            LangTypeDefinition.linked_list_type_def(),
         )
 
     def run(
@@ -76,7 +65,6 @@ class Basic:
 
         results: List[LangType] = []
         for ast in parser.parse(repl_mode):
-            print(ast)
             context = Context(file_name, self.syntax_table)
             res = ast.visit(context)
             results.append(res)

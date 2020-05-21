@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from context import mock_context
 from lang_types.lang_type import LangType
+from position import mock_position
 
 if TYPE_CHECKING:
     from position import Position
     from context import Context
-
     from lang_types.lang_type import CompType
 
 
@@ -65,3 +66,19 @@ class LangBool(LangType):
 
     def __repr__(self) -> str:
         return f"{self._value}"
+
+    @staticmethod
+    def true_name() -> str:
+        return "true"
+
+    @staticmethod
+    def false_name() -> str:
+        return "false"
+
+    @staticmethod
+    def false_def() -> LangBool:
+        return LangBool(False, mock_position, mock_position, mock_context)
+
+    @staticmethod
+    def true_def() -> LangBool:
+        return LangBool(True, mock_position, mock_position, mock_context)

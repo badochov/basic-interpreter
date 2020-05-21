@@ -299,7 +299,6 @@ class Parser:
                 asterix_token = self.current_token
                 self.advance()
                 if self.current_token.type == TT_IDENTIFIER:
-                    self.advance()
                     if is_list:
                         names.append(
                             AsterixToken.from_string_token(
@@ -308,6 +307,7 @@ class Parser:
                         )
                     else:
                         return self._fail_with_invalid_syntax_error('Unexpected "*"')
+                    self.advance()
                 else:
                     names.append(
                         AsterixToken(
@@ -336,7 +336,7 @@ class Parser:
                 break
 
         if len(names) > 1:
-            if not in_paren and tuple_in_paren:
+            if not in_paren and tuple_in_paren and not is_list:
                 return self._fail_with_invalid_syntax_error(
                     "This tuple was expected to be in parentheses"
                 )
@@ -455,7 +455,6 @@ class Parser:
 
         return TypeVariantNode(variant_type_name, args_tokens)
 
-    # TODO change to support tuples
     def _match_case(self) -> MatchCaseNode:
         in_paren = False
         if self.current_token.type == TT_LPAREN:
@@ -504,7 +503,7 @@ class Parser:
         self.advance()
         ended = False
         while self.current_token.type in (TT_IDENTIFIER, TT_LPAREN) and not ended:
-            if self.current_token == TT_LPAREN:
+            if self.current_token.type == TT_LPAREN:
                 lparen += 1
 
             if self.advance().type == TT_RPAREN:

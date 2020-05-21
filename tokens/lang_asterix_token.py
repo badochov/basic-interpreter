@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import cast, TYPE_CHECKING
 
-from tokens.lang_token import Token
-
 from token_types import TT_ASTERIX
+from tokens.lang_token import Token
 
 if TYPE_CHECKING:
     from tokens.lang_string_token import StringToken

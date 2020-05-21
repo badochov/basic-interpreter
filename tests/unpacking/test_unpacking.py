@@ -46,21 +46,21 @@ def test_correct_unpacking() -> None:
     )
     run_test_correct(
         basic,
-        "let a, b, c = 1, 2, 3 a == 1 b == 2, c == 3",
+        "let a, b, c = 1, 2, 3 a == 1 b == 2 c == 3",
         "correct_unpacking2",
         [LangTuple, LangBool, LangBool, LangBool],
         [..., True, True, True],
     )
     run_test_correct(
         basic,
-        "let a, (b, c) = 1, (2, 3) a == 1 b == 2, c == 3",
+        "let a, (b, c) = 1, (2, 3) a == 1 b == 2 c == 3",
         "correct_unpacking3",
         [LangTuple, LangBool, LangBool, LangBool],
         [..., True, True, True],
     )
     run_test_correct(
         basic,
-        "let a, (b, (c, d)) = 1, (2, (3, 4)) a == 1 b == 2, c == 3 d == 4",
+        "let a, (b, (c, d)) = 1, (2, (3, 4)) a == 1 b == 2 c == 3 d == 4",
         "correct_unpacking4",
         [LangTuple, LangBool, LangBool, LangBool, LangBool],
         [..., True, True, True, True],
@@ -95,10 +95,10 @@ def test_correct_unpacking() -> None:
     )
     run_test_correct(
         basic,
-        "let a, *, b = 1, 2, 3 a == 3",
+        "let a, *, b = 1, 2, 3 a == 1 b== 3",
         "correct_unpacking8",
-        [LangTuple, LangBool],
-        [..., True],
+        [LangTuple, LangBool, LangBool],
+        [..., True, True],
     )
     run_test_correct(
         basic,
@@ -130,24 +130,24 @@ def test_correct_unpacking() -> None:
     )
     run_test_correct(
         basic,
-        "let [a] == [1] a == 1",
+        "let [a] = [1] a == 1",
         "correct_unpacking11",
         [LangVariantType, LangBool],
-        [..., 1],
+        [..., True],
     )
     run_test_correct(
         basic,
-        "let [a, [b]] == [1, [2]] a == 1 b == 2",
+        "let [a, [b]] = [1, [2]] a == 1 b == 2",
         "correct_unpacking12",
         [LangVariantType, LangBool, LangBool],
-        [..., 1, 2],
+        [..., True, True],
     )
     run_test_correct(
         basic,
-        "let [a, *b] == [1, 2, 3] a == 1 b",
+        "let [a, *b] = [1, 2, 3] a == 1 b",
         "correct_unpacking13",
         [LangVariantType, LangBool, LangVariantType],
-        [..., 1, ...],
+        [..., True, ...],
     )
     run_test_correct(
         basic,
@@ -160,6 +160,6 @@ def test_correct_unpacking() -> None:
         basic,
         "let (a, [b, c]) = (1, [2, 3]) (a) (b) (c)",
         "correct_unpacking15",
-        [LangVariantType, LangNumber, LangNumber, LangNumber],
+        [LangTuple, LangNumber, LangNumber, LangNumber],
         [..., 1, 2, 3],
     )

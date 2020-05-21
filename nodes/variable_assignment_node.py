@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Union, Optional
 
 from lang_types.lang_tuple import LangTuple
+from lang_types.lang_variant_type import LangVariantType
+from nodes.match_case_node import LangNoMatchType
 from nodes.node import Node
 from tokens.lang_asterix_token import AsterixToken
 from tokens.lang_token import Token
@@ -25,7 +27,7 @@ class VariableAssignmentNode(Node):
         self.is_list = is_list
 
     def __repr__(self) -> str:
-        return f"UMPALUMP({self.names})"
+        return f"({self.names})"
 
     def set_value(self, value: LangType) -> None:
         self.value = value
@@ -43,37 +45,64 @@ class VariableAssignmentNode(Node):
         assert self.value is not None
         asterix_pos = self._asterix_position()
 
+        val: Union[LangType, ListWrapper] = self.value
         if self.is_list:
-            assert False
+            if not isinstance(self.value, LangVariantType):
+                return self._fail_with("Expected list", context)
+            try:
+                val = ListWrapper(LangVariantType.parse_list(self.value))
+            except TypeError:
+                return self._fail_with("Expected list", context)
 
         if len(self.names) == 1:
             if isinstance(self.names[0], VariableAssignmentNode):
                 self.names[0].set_value(self.value)
                 self.names[0].visit(context)
             else:
-                context.set(self.names[0].value, self.value)
+                if isinstance(val, ListWrapper):
+                    if len(self.names) < val.values_count():
+                        if asterix_pos == -1:
+                            return self._fail_with(
+                                "Too little arguments to unpack", context
+                            )
 
+                    else:
+                        context.set(self.names[0].value, val.values[0])
+                        return self.value
+                context.set(self.names[0].value, self.value)
         else:
-            if not isinstance(self.value, LangTuple):
+            if not isinstance(val, LangTuple) and not isinstance(val, ListWrapper):
                 return self._fail_with("Expected tuple", context)
             if asterix_pos != -1:
-                if len(self.names) - 1 > self.value.values_count():
+                if len(self.names) - 1 > val.values_count():
                     return self._fail_with(
                         "Wrong number of arguments to unpack", context
                     )
-                self._handle_tuple_names(self.names[0:asterix_pos], context)
-                start_pos_tuple = (
-                    self.value.values_count() - len(self.names) + asterix_pos + 1
-                )
-                self._handle_tuple_names(
-                    self.names[asterix_pos + 1 :], context, start_pos_tuple
-                )
+                self._handle_names(self.names[0:asterix_pos], context, val)
+                end_pos = val.values_count() - len(self.names) + asterix_pos + 1
+                if isinstance(val, ListWrapper):
+                    self._handle_names(
+                        [self.names[asterix_pos]],
+                        context,
+                        ListWrapper(
+                            [
+                                LangVariantType.make_list(
+                                    val.values[asterix_pos:end_pos],
+                                    self.pos_start,
+                                    self.pos_end,
+                                    context,
+                                )
+                            ]
+                        ),
+                    )
+
+                self._handle_names(self.names[asterix_pos + 1 :], context, val, end_pos)
             else:
-                if len(self.names) != self.value.values_count():
+                if len(self.names) != val.values_count():
                     return self._fail_with(
                         "Wrong number of arguments to unpack", context
                     )
-                self._handle_tuple_names(self.names, context)
+                self._handle_names(self.names, context, val)
         return self.value
 
     def _asterix_position(self) -> int:
@@ -82,18 +111,28 @@ class VariableAssignmentNode(Node):
                 return i
         return -1
 
-    def _handle_tuple_names(
-        self,
+    @staticmethod
+    def _handle_names(
         names: List[Union[AsterixToken, StringToken, VariableAssignmentNode]],
         context: Context,
+        val: Union[LangTuple, ListWrapper],
         start: int = 0,
     ) -> None:
-        if TYPE_CHECKING:
-            assert isinstance(self.value, LangTuple)
         for i, name in enumerate(names, start=start):
-            value = self.value.nth_value(i)
+            value = val.nth_value(i)
             if isinstance(name, VariableAssignmentNode):
                 name.set_value(value)
                 name.visit(context)
             else:
                 context.set(name.value, value)
+
+
+class ListWrapper:
+    def __init__(self, values: List[LangType]):
+        self.values = values
+
+    def nth_value(self, i: int) -> LangType:
+        return self.values[i]
+
+    def values_count(self) -> int:
+        return len(self.values)

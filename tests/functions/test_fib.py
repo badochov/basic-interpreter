@@ -1,7 +1,7 @@
 from basic import Basic
 from lang_types.lang_function import LangFunction
 from lang_types.lang_number import LangNumber
-from tests.utilities import run_test, run_test_correct
+from tests.utilities import run_test_correct
 
 
 def fib(n: int, a: int = 0, b: int = 1) -> int:

@@ -1,4 +1,5 @@
-#TODO Tuples
+#TODO Tuples -> operations
+#TODO add variant types to destructuring
 
 #TODO Input output
 #TODO strings
@@ -6,8 +7,6 @@
 #TODO tail recurrence
 #TODO imports
 #TODO infix operators
-#TODO destructuring variant type and list, * for lists and tuples
-#TODO make destructuring nested
 #TODO remove end from match -> make it force all patterns from type
 #TODO add asserts
 #TODO add checking for repetition of type declarations

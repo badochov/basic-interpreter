@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional
 
-from errors.rt_error import RTError
-from lang_types.lang_tuple import LangTuple
 from symbol_table import SymbolTable
 
 if TYPE_CHECKING:

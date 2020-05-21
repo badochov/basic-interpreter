@@ -5,12 +5,12 @@ from typing import List, Optional, TYPE_CHECKING, Tuple, Union
 from context import Context, mock_context
 from lang_types.lang_tuple import LangTuple
 from lang_types.lang_type import LangType
-from lang_types.lang_variant_type import LangVariantType
 from nodes.node import Node
 from position import mock_position
 from symbol_table import SymbolTable
 
 if TYPE_CHECKING:
+    from lang_types.lang_variant_type import LangVariantType
     from tokens.lang_string_token import StringToken
 
 
@@ -70,7 +70,7 @@ class MatchCaseNode(Node):
 
     def _handle_tuple(self, context: Context) -> LangType:
         assert isinstance(self.var, LangTuple)
-        type_names = map(lambda type_desc: type_desc[0].value, self.types)
+        type_names = map(lambda type_desc: type_desc[0].values, self.types)
         if not self.var.is_of_type(type_names):
             return LangNoMatchType.instance()
         new_ctx = Context(
