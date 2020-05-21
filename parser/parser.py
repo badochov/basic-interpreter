@@ -401,23 +401,39 @@ class Parser:
 
         return TypeVariantNode(variant_type_name, args_tokens)
 
+    # TODO change to support tuples
     def _match_case(self) -> MatchCaseNode:
-        if self.current_token.type != TT_IDENTIFIER:
-            return self._fail_with_invalid_syntax_error("Expected type name",)
-        type_name = StringToken.as_string_token(self.current_token)
-        self.advance()
-
-        arg_tokens: List[StringToken] = []
-
-        while self.current_token.type == TT_IDENTIFIER:
-            arg_tokens.append(StringToken.as_string_token(self.current_token))
+        in_paren = False
+        if self.current_token.type == TT_LPAREN:
+            self.advance()
+            in_paren = True
+        types: List[Tuple[StringToken, List[StringToken]]] = []
+        while True:
+            if self.current_token.type != TT_IDENTIFIER:
+                return self._fail_with_invalid_syntax_error("Expected type name",)
+            type_name = StringToken.as_string_token(self.current_token)
             self.advance()
 
+            arg_tokens: List[StringToken] = []
+
+            while self.current_token.type == TT_IDENTIFIER:
+                arg_tokens.append(StringToken.as_string_token(self.current_token))
+                self.advance()
+
+            types.append((type_name, arg_tokens))
+            if self.current_token.type == TT_COMA:
+                self.advance()
+            else:
+                break
+        if in_paren:
+            if self.current_token.type != TT_RPAREN:
+                return self._fail_with_invalid_syntax_error('Expected ")"')
+            self.advance()
         if self.current_token.type != TT_ARROW:
             return self._fail_with_invalid_syntax_error('Expected "->"')
         self.advance()
 
-        return MatchCaseNode(type_name, arg_tokens, self._tuple())
+        return MatchCaseNode(types, self._tuple())
 
     def _fail_with_invalid_syntax_error(self, msg: str) -> NoReturn:
         raise (
@@ -426,6 +442,7 @@ class Parser:
             )
         )
 
+    # TODO support for tuples
     def _make_type_hint(self) -> Optional[Node]:
         if not self.current_token.type == TT_COLON:
             return None

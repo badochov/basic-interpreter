@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NoReturn
 
+from errors.rt_error import RTError
 from lang_types.lang_type import LangType
 
 if TYPE_CHECKING:
@@ -18,3 +19,6 @@ class Node(ABC):
     @abstractmethod
     def visit(self, context: Context) -> LangType:
         ...
+
+    def _fail_with(self, msg: str, context: Context) -> NoReturn:
+        raise RTError(self.pos_start, self.pos_end, msg, context)

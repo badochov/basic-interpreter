@@ -40,7 +40,6 @@ class LangType:
         self.context = context
         return self
 
-    # todo improve copy
     def copy(self: T) -> T:
         cls = type(self)
         result = cast(T, cls.__new__(cls))

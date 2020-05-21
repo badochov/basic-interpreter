@@ -23,9 +23,6 @@ class Basic:
     def __init__(self) -> None:
         self.syntax_table = SymbolTable()
         self.syntax_table.set(
-            "null", LangNumber(0, mock_position, mock_position, mock_context)
-        )
-        self.syntax_table.set(
             "true", LangBool(True, mock_position, mock_position, mock_context)
         )
         self.syntax_table.set(

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, Tuple
 
 from context import Context, mock_context
-from errors.rt_error import RTError
+from lang_types.lang_tuple import LangTuple
 from lang_types.lang_type import LangType
 from lang_types.lang_variant_type import LangVariantType
 from nodes.node import Node
@@ -15,63 +15,71 @@ if TYPE_CHECKING:
 
 
 class LangNoMatchType(LangType):
-    ...
+    @staticmethod
+    def instance() -> LangNoMatchType:
+        return LangNoMatchType("no-match", mock_position, mock_position, mock_context)
 
 
 # TODO add support for tuples
 class MatchCaseNode(Node):
     def __init__(
-        self,
-        type_variant_name_token: StringToken,
-        arg_tokens: List[StringToken],
-        expr_node: Node,
+        self, types: List[Tuple[StringToken, List[StringToken]]], expr_node: Node,
     ):
-        super().__init__(type_variant_name_token.pos_start, expr_node.pos_end)
-        self.type_variant_name_token = type_variant_name_token
-        self.arg_tokens = arg_tokens
+        super().__init__(types[0][0].pos_start, expr_node.pos_end)
+        self.types = types
         self.expr_node = expr_node
         self.var: Optional[LangVariantType] = None
 
     def __repr__(self) -> str:
-        res = "(" + f"{self.expr_node}("
-        for case_node in self.arg_tokens:
-            res += f"{case_node},"
-
-        return ")" + res + ")"
+        res = "(("
+        for type_desc in self.types:
+            res += f"{type_desc[0]}("
+            for case_node in type_desc[1]:
+                res += f"{case_node},"
+            res += ", "
+        res += f") -> {self.expr_node}"
+        return res + ")"
 
     def set_matched_variable(self, var: LangVariantType) -> None:
         self.var = var
 
     def visit(self, context: Context) -> LangType:
         assert self.var is not None
-        every = self.type_variant_name_token.value == "_"
+
+        type_name = self.types[0][0].value
+        arg_tokens = self.types[0][1]
+
+        new_ctx = Context(f"Case {type_name}", SymbolTable(), context, self.pos_start,)
+        every = type_name == "_"
 
         if every:
-            if self.arg_tokens:
-                raise RTError(
-                    self.pos_start, self.pos_end, "Unexpected arguments", context
-                )
+            if arg_tokens:
+                return self._fail_with("Unexpected arguments", context)
+        else:
+            if isinstance(self.var, LangTuple):
+                return self._handle_tuple(context)
+            if not self.var.is_of_type(type_name):
+                return LangNoMatchType.instance()
+            if len(arg_tokens) != len(self.var.args):
+                return self._fail_with("Number of arguments doesn't match", context,)
 
-        elif not self.var.is_of_type(self.type_variant_name_token.value):
-            return LangNoMatchType(
-                "no-match", mock_position, mock_position, mock_context
-            )
-        if len(self.arg_tokens) != len(self.var.args) and not every:
-            raise RTError(
-                self.pos_start,
-                self.pos_end,
-                "Number of arguments doesn't match",
-                context,
-            )
-
-        new_ctx = Context(
-            f"Case {self.type_variant_name_token.value}",
-            SymbolTable(),
-            context,
-            self.pos_start,
-        )
-        if not every:
-            for i, arg_token in enumerate(self.arg_tokens):
+            for i, arg_token in enumerate(arg_tokens):
                 new_ctx.set(arg_token.value, self.var.args[i])
 
+        return self.expr_node.visit(new_ctx)
+
+    def _handle_tuple(self, context: Context) -> LangType:
+        assert isinstance(self.var, LangTuple)
+        type_names = map(lambda type_desc: type_desc[0].value, self.types)
+        if not self.var.is_of_type(type_names):
+            return LangNoMatchType.instance()
+        new_ctx = Context(
+            f"Case {list(type_names)}", SymbolTable(), context, self.pos_start,
+        )
+        for i, (_, arg_tokens) in enumerate(self.types):
+            var_args = self.var.nth_value_args(i)
+            if len(arg_tokens) != len(var_args):
+                return self._fail_with("Number of arguments doesn't match", context,)
+            for j, arg_token in enumerate(arg_tokens):
+                new_ctx.set(arg_token.value, var_args[j])
         return self.expr_node.visit(new_ctx)

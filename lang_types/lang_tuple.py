@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Iterable
 
 from lang_types.lang_type import LangType
+from lang_types.lang_variant_type import LangVariantType
 
 if TYPE_CHECKING:
     from position import Position
@@ -28,3 +29,14 @@ class LangTuple(LangType):
 
     def nth_value(self, n: int) -> LangType:
         return self.values[n]
+
+    def is_of_type(self, names: Iterable[str]) -> bool:
+        for i, name in enumerate(names):
+            value = self.nth_value(i)
+            if not isinstance(value, LangVariantType) or not value.is_of_type(name):
+                return False
+        return True
+
+    def nth_value_args(self, n: int) -> List[LangType]:
+        value = self.nth_value(n)
+        return value.args if isinstance(value, LangVariantType) else []
