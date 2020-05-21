@@ -1,4 +1,4 @@
-# basic-interpreter
-Interpreter for language similar to basic
+# Fun Lang Interpreter
+Fun Lang Interpreter. Fun Lang is my own FUNctional LANGuage.
 
-It's made following this [guide](https://www.youtube.com/playlist?list=PLZQftyCk7_SdoVexSmwy_tBgs7P0b97yD)
+It was started by following first episodes of this [guide](https://www.youtube.com/playlist?list=PLZQftyCk7_SdoVexSmwy_tBgs7P0b97yD).
