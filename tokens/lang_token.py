@@ -10,6 +10,8 @@ T = TypeVar("T")
 
 
 class Token(ABC, Generic[T]):
+    __slots__ = ["type", "value", "pos_start", "pos_end"]
+
     def __init__(
         self, type_: str, pos_start: Position, pos_end: Position, value: T,
     ) -> None:

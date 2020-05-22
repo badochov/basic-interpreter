@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class TypeVariantNode(Node):
+    __slots__ = ["var_name_token", "args_token"]
+
     def __init__(
         self, var_name_token: StringToken, args_tokens: List[StringToken],
     ):

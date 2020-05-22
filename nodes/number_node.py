@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class NumberNode(Node):
+    __slots__ = ["token"]
+
     def __init__(self, token: NumberToken):
         super().__init__(token.pos_start, token.pos_end)
         self.token = token

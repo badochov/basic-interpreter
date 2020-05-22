@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 
 class MatchNode(Node):
+    __slots__ = ["var_node", "cases_nodes"]
+
     def __init__(self, var_node: Node, cases_nodes: List[MatchCaseNode]):
         super().__init__(var_node.pos_start, cases_nodes[-1].pos_end)
         self.var_node = var_node

@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class FunctionDefinitionNode(Node):
+    __slots__ = ["var_name_node", "arg_name_node", "body_node", "save_name"]
+
     def __init__(
         self,
         var_name_node: Optional[VariableAssignmentNode],

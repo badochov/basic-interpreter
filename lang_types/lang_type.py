@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import deepcopy, copy
 from typing import TypeVar, TYPE_CHECKING, List, cast, Any, NoReturn, Optional
 
 from errors.type_errors import RTTypeError
@@ -16,6 +16,8 @@ T = TypeVar("T", bound="LangType")
 
 
 class LangType:
+    __slots__ = ["deep_copied", "type_name"]
+
     def __init__(
         self, type_name: str, deep_copied: Optional[List[str]] = None,
     ):
@@ -23,14 +25,7 @@ class LangType:
         self.type_name = type_name
 
     def copy(self: T) -> T:
-        cls = type(self)
-        result = cast(T, cls.__new__(cls))
-        for key, value in self.__dict__.items():
-            if key in self.deep_copied:
-                setattr(result, key, deepcopy(value))
-            else:
-                setattr(result, key, value)
-        return result
+        return copy(self)
 
     def added_to(self, other: LangType) -> OperType:
         return self._not_impl("+")

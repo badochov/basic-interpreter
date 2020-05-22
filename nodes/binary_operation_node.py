@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 
 class BinaryOperationNode(Node):
+    __slots__ = ["left_node", "operation_token", "right_node"]
+
     def __init__(self, left_node: Node, operation_token: Token, right_node: Node):
         super().__init__(left_node.pos_start, right_node.pos_end)
         self.left_node = left_node

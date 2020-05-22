@@ -7,18 +7,20 @@ from lang_types.lang_variant_type import LangVariantType
 
 
 class LangTuple(LangType):
+    __slots__ = ["_values"]
+
     def __init__(self, values: List[LangType]):
         super().__init__("variant_type")
-        self.values = values
+        self._values = values
 
     def __repr__(self) -> str:
-        return f"Tuple: {self.values}"
+        return f"Tuple: {self._values}"
 
     def values_count(self) -> int:
-        return len(self.values)
+        return len(self._values)
 
     def nth_value(self, n: int) -> LangType:
-        return self.values[n]
+        return self._values[n]
 
     def is_of_type(self, names: Iterable[str]) -> bool:
         for i, name in enumerate(names):

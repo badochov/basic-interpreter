@@ -7,6 +7,8 @@ from lang_types.type_def import LangVariantTypeDefinition
 
 
 class LangVariantType(LangType):
+    __slots__ = ["args", "type_variant_name"]
+
     def __init__(self, args: List[LangType], name: str):
         super().__init__("variant_type")
         self.args = args

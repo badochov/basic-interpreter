@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class LangFunction(LangType):
+    __slots__ = ["name", "body_node", "context", "pos_start", "arg"]
+
     def __init__(
         self,
         name: Optional[str],

@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class TypeDefinitionNode(Node):
+    __slots__ = ["var_name_token", "variant_nodes"]
+
     def __init__(
         self, var_name_token: StringToken, variant_nodes: List[TypeVariantNode]
     ) -> None:

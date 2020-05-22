@@ -24,6 +24,8 @@ class VariableType(Enum):
 
 
 class VariableAssignmentNode(Node):
+    __slots__ = ["type_name", "names", "value", "var_type"]
+
     def __init__(
         self,
         names: NamesType,

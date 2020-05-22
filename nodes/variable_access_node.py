@@ -15,9 +15,10 @@ if TYPE_CHECKING:
 
 
 class VariableAccessNode(Node):
+    __slots__ = ["var_name_token"]
+
     def __init__(self, var_name_token: StringToken):
-        pos_end = var_name_token.pos_end
-        super().__init__(var_name_token.pos_start, pos_end)
+        super().__init__(var_name_token.pos_start, var_name_token.pos_end)
         self.var_name_token = var_name_token
 
     def __repr__(self) -> str:

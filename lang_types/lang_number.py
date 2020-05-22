@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class LangNumber(LangType):
+    __slots__ = ["_value"]
+
     def __init__(self, value: float):
         super().__init__("number")
         self._value = value

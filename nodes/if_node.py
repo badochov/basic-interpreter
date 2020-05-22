@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
 
 class IfNode(Node):
+    __slots__ = ["condition_node", "then_node", "else_node"]
+
     def __init__(self, condition_node: Node, then_node: Node, else_node: Node):
         super().__init__(condition_node.pos_start, else_node.pos_end)
         self.condition_node = condition_node

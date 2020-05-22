@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 
 class UnaryOperationNode(Node):
+    __slots__ = ["operation_token", "node"]
+
     def __init__(self, operation_token: Union[EmptyToken, StringToken], node: Node):
         super().__init__(operation_token.pos_start, node.pos_end)
         self.operation_token = operation_token

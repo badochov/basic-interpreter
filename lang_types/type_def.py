@@ -6,6 +6,8 @@ from lang_types.lang_type import LangType
 
 
 class LangVariantTypeDefinition(LangType):
+    __slots__ = ["name", "args"]
+
     def __init__(self, name: str, args: List[str]):
         super().__init__("variant_type_definition")
         self.name = name
@@ -53,6 +55,8 @@ class LangVariantTypeDefinition(LangType):
 
 
 class LangTypeDefinition(LangType):
+    __slots__ = ["variants"]
+
     def __init__(
         self, variants: List[LangVariantTypeDefinition],
     ):

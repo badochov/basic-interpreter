@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 
 class FunctionCallNode(Node):
+    __slots__ = ["fun_name_token", "arg_nodes"]
+
     def __init__(self, fun_name_token: StringToken, arg_nodes: List[Node]):
 
         super().__init__(fun_name_token.pos_start, arg_nodes[-1].pos_end)

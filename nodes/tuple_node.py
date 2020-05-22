@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 
 
 class TupleNode(Node):
+    __slots__ = ["arg_nodes"]
+
     def __init__(self, arg_nodes: List[Node]):
         super().__init__(arg_nodes[0].pos_start, arg_nodes[-1].pos_end)
         self.arg_nodes = arg_nodes

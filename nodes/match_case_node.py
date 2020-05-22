@@ -22,6 +22,8 @@ class LangNoMatchType(LangType):
 
 # TODO add support for tuples
 class MatchCaseNode(Node):
+    __slots__ = ["types", "expr_node", "var"]
+
     def __init__(
         self,
         types: List[Tuple[StringToken, List[VariableAssignmentNode]]],

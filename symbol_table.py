@@ -9,6 +9,8 @@ if TYPE_CHECKING:
 
 
 class SymbolTable:
+    __slots__ = ["symbols", "parent"]
+
     def __init__(self, parent: Optional[SymbolTable] = None) -> None:
         self.symbols: Dict[str, Value] = {}
         self.parent = parent

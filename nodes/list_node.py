@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class ListNode(Node):
+    __slots__ = ["value_node", "tail_node"]
+
     def __init__(self, value_node: Node, tail_node: Node):
         super().__init__(value_node.pos_start, tail_node.pos_end)
         self.value_node = value_node

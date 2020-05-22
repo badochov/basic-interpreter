@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class Node(ABC):
+    __slots__ = ["pos_start", "pos_end"]
+
     def __init__(self, pos_start: Position, pos_end: Position):
         self.pos_start = pos_start
         self.pos_end = pos_end

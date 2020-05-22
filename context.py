@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 
 
 class Context:
+    __slots__ = ["display_name", "parents", "parent_entry_pos", "symbol_table"]
+
     def __init__(
         self,
         display_name: str,
