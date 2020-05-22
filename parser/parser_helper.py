@@ -193,7 +193,7 @@ class ParserHelper:
         if self.parser.current_token.type == TT_RBRACKET:
             self.parser.advance()
         else:
-            return self.parser.fail_with_invalid_syntax_error('Expected "]"')
+            self.parser.fail_with_invalid_syntax_error('Expected "]"')
 
     def _handle_tuple(self, names: NamesType) -> None:
         self.parser.advance()
@@ -203,4 +203,4 @@ class ParserHelper:
         if self.parser.current_token.type == TT_RPAREN:
             self.parser.advance()
         else:
-            return self.parser.fail_with_invalid_syntax_error('Expected ")"')
+            self.parser.fail_with_invalid_syntax_error('Expected ")"')

@@ -50,36 +50,26 @@ def test_integer_equals() -> None:
     basic = Basic()
 
     run_test(
-        basic,
-        " let _ = 4 != +2",
-        "test_positive_integer_equals",
-        LangBool,
-        None,
-        4 != 2,
+        basic, s := "4 != +2", "test_positive_integer_equals", LangBool, None, eval(s),
     )
     run_test(
         basic,
-        " let _ = 4 != 4",
+        s := "4 != 4",
         "test_positive_integer_not_equals",
         LangBool,
         None,
-        (4 != 4),
+        eval(s),
     )
     run_test(
         basic,
-        " let _ = -4 != -2",
+        s := "-4 != -2",
         "test_negative_integer_not_equals",
         LangBool,
         None,
-        (-4 != -2),
+        eval(s),
     )
     run_test(
-        basic,
-        " let _ = 4 != -2",
-        "test_mixed_integer_not_equals",
-        LangBool,
-        None,
-        (4 != -2),
+        basic, s := "4 != -2", "test_mixed_integer_not_equals", LangBool, None, eval(s),
     )
 
 
