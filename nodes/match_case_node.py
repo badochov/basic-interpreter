@@ -6,6 +6,7 @@ from context import Context, mock_context
 from lang_types.lang_tuple import LangTuple
 from lang_types.lang_type import LangType
 from nodes.node import Node
+from nodes.variable_assignment_node import VariableAssignmentNode, VariableType
 from position import mock_position
 from symbol_table import SymbolTable
 
@@ -23,7 +24,9 @@ class LangNoMatchType(LangType):
 # TODO add support for tuples
 class MatchCaseNode(Node):
     def __init__(
-        self, types: List[Tuple[StringToken, List[StringToken]]], expr_node: Node,
+        self,
+        types: List[Tuple[StringToken, List[VariableAssignmentNode]]],
+        expr_node: Node,
     ):
         super().__init__(types[0][0].pos_start, expr_node.pos_end)
         self.types = types
@@ -60,13 +63,16 @@ class MatchCaseNode(Node):
                 return self._handle_tuple(context)
             if not self.var.is_of_type(type_name):
                 return LangNoMatchType.instance()
-            if len(arg_tokens) != len(self.var.args):
-                return self._fail_with("Number of arguments doesn't match", context,)
-
-            for i, arg_token in enumerate(arg_tokens):
-                new_ctx.set(arg_token.value, self.var.args[i])
-
+            node = self._convert_nth_value_to_assignment_node(self.types[0])
+            node.set_value(self.var)
+            node.visit(context)
         return self.expr_node.visit(new_ctx)
+
+    @staticmethod
+    def _convert_nth_value_to_assignment_node(
+        type_: Tuple[StringToken, List[VariableAssignmentNode]]
+    ) -> VariableAssignmentNode:
+        return VariableAssignmentNode([type_[0], *type_[1]], VariableType.VariantType)
 
     def _handle_tuple(self, context: Context) -> LangType:
         assert isinstance(self.var, LangTuple)
@@ -76,10 +82,9 @@ class MatchCaseNode(Node):
         new_ctx = Context(
             f"Case {list(type_names)}", SymbolTable(), context, self.pos_start,
         )
-        for i, (_, arg_tokens) in enumerate(self.types):
-            var_args = self.var.nth_value_args(i)
-            if len(arg_tokens) != len(var_args):
-                return self._fail_with("Number of arguments doesn't match", context,)
-            for j, arg_token in enumerate(arg_tokens):
-                new_ctx.set(arg_token.value, var_args[j])
+        node = VariableAssignmentNode(
+            [self._convert_nth_value_to_assignment_node(value) for value in self.types]
+        )
+        node.set_value(self.var)
+        node.visit(context)
         return self.expr_node.visit(new_ctx)

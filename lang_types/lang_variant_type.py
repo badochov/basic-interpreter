@@ -62,3 +62,6 @@ class LangVariantType(LangType):
             )
 
         return res
+
+    def get_args(self) -> List[LangType]:
+        return self.args

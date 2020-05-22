@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 
 class Position:
     def __init__(
@@ -11,7 +13,7 @@ class Position:
         self.file_name = file_name
         self.file_content = file_content
 
-    def advance(self, current_char: str = None) -> Position:
+    def advance(self, current_char: Optional[str] = None) -> Position:
         self.index += 1
         self.column += 1
 

@@ -17,7 +17,7 @@ from nodes.type_definition_node import TypeDefinitionNode
 from nodes.type_variant_node import TypeVariantNode
 from nodes.unary_operation_node import UnaryOperationNode
 from nodes.variable_access_node import VariableAccessNode
-from nodes.variable_assignment_node import VariableAssignmentNode
+from nodes.variable_assignment_node import VariableAssignmentNode, VariableType
 from position import mock_position
 from token_types import *
 from tokens.lang_asterix_token import AsterixToken
@@ -28,6 +28,7 @@ from tokens.lang_string_token import StringToken
 if TYPE_CHECKING:
     from tokens.lang_token import Token
     from nodes.node import Node
+    from nodes.variable_assignment_node import NamesType
 
 
 class Parser:
@@ -148,7 +149,6 @@ class Parser:
     def atom(self) -> Node:
 
         token = self.current_token
-
         if token.type in (TT_IDENTIFIER,):
             return self._function_call()
         elif token.matches(TT_KEYWORD, KEYWORDS["IF"]):
@@ -180,7 +180,7 @@ class Parser:
             self.advance()
             return self._make_list()
         raise InvalidSyntaxError(
-            token.pos_start, token.pos_end, "Expected int, float, variable or ("
+            token.pos_start, token.pos_end, 'Expected int, float, variable or "("'
         )
 
     def match(self) -> Node:
@@ -214,6 +214,106 @@ class Parser:
         self.advance()
 
         return MatchNode(expr, cases)
+
+    def _get_variable_assignment(
+        self,
+        tuple_in_paren: bool = True,
+        var_type: VariableType = VariableType.Tuple,
+        can_be_variant_type: bool = False,
+        can_be_empty: bool = False,
+        in_paren: bool = False,
+    ) -> VariableAssignmentNode:
+        names: NamesType = []
+        was_asterix = False
+        break_on_coma = (
+            var_type is VariableType.Tuple and tuple_in_paren and not in_paren
+        )
+        while True:
+            if self.current_token.type == TT_IDENTIFIER:
+                name_token = StringToken.as_string_token(self.current_token)
+                self.advance()
+                if can_be_variant_type:
+                    args = self._get_variant_type_args()
+
+                    if args:
+                        names.append(
+                            VariableAssignmentNode(
+                                [name_token, *args], VariableType.VariantType
+                            )
+                        )
+                    else:
+                        names.append(name_token)
+
+                else:
+                    names.append(name_token)
+                    self._make_type_hint()
+            elif self.current_token.type == TT_MUL:
+                if was_asterix:
+                    return self._fail_with_invalid_syntax_error(
+                        'Unexpected multiple "*"'
+                    )
+                was_asterix = True
+                asterix_token = self.current_token
+                self.advance()
+                if self.current_token.type == TT_IDENTIFIER:
+                    if var_type is VariableType.List:
+                        names.append(
+                            AsterixToken.from_string_token(
+                                StringToken.as_string_token(self.current_token)
+                            )
+                        )
+                    else:
+                        return self._fail_with_invalid_syntax_error('Unexpected "*"')
+                    self.advance()
+                else:
+                    names.append(
+                        AsterixToken(
+                            asterix_token.pos_start, asterix_token.pos_end, "_"
+                        )
+                    )
+            elif self.current_token.type == TT_LBRACKET:
+                self.advance()
+                names.append(
+                    self._get_variable_assignment(True, VariableType.List, True)
+                )
+                if self.current_token.type == TT_RBRACKET:
+                    self.advance()
+                else:
+                    return self._fail_with_invalid_syntax_error('Expected "]"')
+            elif self.current_token.type == TT_LPAREN:
+                self.advance()
+                names.append(
+                    self._get_variable_assignment(
+                        False, VariableType.Tuple, True, False, True
+                    )
+                )
+                if self.current_token.type == TT_RPAREN:
+                    self.advance()
+                else:
+                    return self._fail_with_invalid_syntax_error('Expected ")"')
+            else:
+                if not can_be_empty:
+                    return self._fail_with_invalid_syntax_error("Expected name")
+                break
+            if self.current_token.type == TT_COMA:
+                if break_on_coma:
+                    break
+                self.advance()
+            else:
+                break
+
+        if len(names) > 1:
+            if not in_paren and tuple_in_paren and var_type is not VariableType.List:
+                return self._fail_with_invalid_syntax_error(
+                    "This tuple was expected to be in parentheses"
+                )
+        if (
+            len(names) == 1
+            and isinstance(names[0], VariableAssignmentNode)
+            and var_type is VariableType.Tuple
+        ):
+            return names[0]
+        return VariableAssignmentNode(names, var_type)
 
     def if_expression(self, keyword_type: str = "IF") -> Node:
 
@@ -265,10 +365,10 @@ class Parser:
         arg_tokens: List[VariableAssignmentNode] = []
         if can_be_function:
             while self.current_token.type in (TT_IDENTIFIER, TT_LPAREN):
-                arg_tokens.append(self._get_variable_assignment())
+                arg_tokens.append(self._get_variable_assignment(True))
 
         if self.current_token.type not in (end_def_token, end_def_match_token):
-            return self._fail_with_invalid_syntax_error(f'Expected "{end_def_token}"',)
+            return self._fail_with_invalid_syntax_error(f'Expected "{end_def_token}"')
         if self.current_token.type == end_def_match_token:
             if not arg_tokens:
                 return self._fail_with_invalid_syntax_error(
@@ -277,92 +377,6 @@ class Parser:
             self._add_match(arg_tokens[-1])
         self.advance()
         return Parser._make_function_definition(var_name, arg_tokens, self._tuple())
-
-    def _get_variable_assignment(
-        self, tuple_in_paren: bool = True, is_list: bool = False,
-    ) -> VariableAssignmentNode:
-        names: List[Union[StringToken, AsterixToken, VariableAssignmentNode]] = []
-        was_asterix = False
-        in_paren = False
-
-        while True:
-            if self.current_token.type == TT_IDENTIFIER:
-                names.append(StringToken.as_string_token(self.current_token))
-                self.advance()
-                self._make_type_hint()
-            elif self.current_token.type == TT_MUL:
-                if was_asterix:
-                    return self._fail_with_invalid_syntax_error(
-                        'Unexpected multiple "*"'
-                    )
-                was_asterix = True
-                asterix_token = self.current_token
-                self.advance()
-                if self.current_token.type == TT_IDENTIFIER:
-                    if is_list:
-                        names.append(
-                            AsterixToken.from_string_token(
-                                StringToken.as_string_token(self.current_token)
-                            )
-                        )
-                    else:
-                        return self._fail_with_invalid_syntax_error('Unexpected "*"')
-                    self.advance()
-                else:
-                    names.append(
-                        AsterixToken(
-                            asterix_token.pos_start, asterix_token.pos_end, "_"
-                        )
-                    )
-            elif self.current_token.type == TT_LBRACKET:
-                self.advance()
-                names.append(self._get_variable_assignment(True, True))
-                if self.current_token.type == TT_RBRACKET:
-                    self.advance()
-                else:
-                    return self._fail_with_invalid_syntax_error('Expected "]"')
-            elif self.current_token.type == TT_LPAREN:
-                self.advance()
-                names.append(self._get_variable_assignment(False, False))
-                if self.current_token.type == TT_RPAREN:
-                    self.advance()
-                else:
-                    return self._fail_with_invalid_syntax_error('Expected ")"')
-            else:
-                self._fail_with_invalid_syntax_error("Expected name")
-            if self.current_token.type == TT_COMA:
-                self.advance()
-            else:
-                break
-
-        if len(names) > 1:
-            if not in_paren and tuple_in_paren and not is_list:
-                return self._fail_with_invalid_syntax_error(
-                    "This tuple was expected to be in parentheses"
-                )
-
-        return VariableAssignmentNode(names, is_list)
-
-    # def _make_destruct_tuple(self) -> List[StringToken]:
-    #     if self.current_token.type != TT_LPAREN:
-    #         return self._fail_with_invalid_syntax_error('Expected "("')
-    #     self.advance()
-    #     names: List[StringToken] = []
-    #     should_end = False
-    #     while self.current_token.type != TT_RPAREN and not should_end:
-    #         if self.current_token.type != TT_IDENTIFIER:
-    #             return self._fail_with_invalid_syntax_error("Expected identifier")
-    #         names.append(StringToken.as_string_token(self.current_token))
-    #         self.advance()
-    #         self._make_type_hint()
-    #         if self.current_token.type == TT_COMA:
-    #             self.advance()
-    #         else:
-    #             should_end = True
-    #     self.advance()
-    #     if not names:
-    #         return self._fail_with_invalid_syntax_error("Expected arguments")
-    #     return names
 
     @staticmethod
     def _make_function_definition(
@@ -388,7 +402,7 @@ class Parser:
         prev_fun = body
         for arg in reversed(args):
             prev_fun = FunctionDefinitionNode(var_name, arg, prev_fun, False)
-        return FunctionDefinitionNode(var_name, None, prev_fun)
+        return FunctionDefinitionNode(var_name, None, prev_fun, var_name is not None)
 
     @staticmethod
     def _check_if_names_are_distinct(names: List[str]) -> bool:
@@ -420,7 +434,7 @@ class Parser:
         self,
         function: Callable[[], Node],
         operands: Union[List[str], List[Tuple[str, str]]],
-        function2: Callable[[], Node] = None,
+        function2: Optional[Callable[[], Node]] = None,
     ) -> Node:
         if function2 is None:
             function2 = function
@@ -435,6 +449,22 @@ class Parser:
             left = BinaryOperationNode(left, op_token, function2())
 
         return left
+
+    def _get_variant_type_args(self) -> List[VariableAssignmentNode]:
+        args: List[VariableAssignmentNode] = []
+        was_asterix_in_variant_type = False
+        while arg := self._get_variable_assignment(can_be_empty=True):
+            if arg.is_empty():
+                break
+            if len(arg.names) == 1 and isinstance(arg.names[0], AsterixToken):
+                if was_asterix_in_variant_type:
+                    return self._fail_with_invalid_syntax_error(
+                        'Unexpected multiple "*"'
+                    )
+                else:
+                    was_asterix_in_variant_type = True
+            args.append(arg)
+        return args
 
     def _variant_type_identifier(self) -> TypeVariantNode:
         if self.current_token.type != TT_IDENTIFIER:
@@ -460,20 +490,14 @@ class Parser:
         if self.current_token.type == TT_LPAREN:
             self.advance()
             in_paren = True
-        types: List[Tuple[StringToken, List[StringToken]]] = []
+        types: List[Tuple[StringToken, List[VariableAssignmentNode]]] = []
         while True:
             if self.current_token.type != TT_IDENTIFIER:
                 return self._fail_with_invalid_syntax_error("Expected type name",)
             type_name = StringToken.as_string_token(self.current_token)
             self.advance()
 
-            arg_tokens: List[StringToken] = []
-
-            while self.current_token.type == TT_IDENTIFIER:
-                arg_tokens.append(StringToken.as_string_token(self.current_token))
-                self.advance()
-
-            types.append((type_name, arg_tokens))
+            types.append((type_name, self._get_variant_type_args()))
             if self.current_token.type == TT_COMA:
                 self.advance()
             else:
@@ -527,9 +551,9 @@ class Parser:
         if len(names) != 1:
             raise InvalidSyntaxError(pos_start, pos_end, '"->" with invalid argument')
         for name in names:
-            self._add_token(StringToken(TT_KEYWORD, pos_start, pos_end, name))
+            self._add_token(StringToken(TT_IDENTIFIER, pos_start, pos_end, name))
 
-        self._add_token(StringToken(TT_KEYWORD, pos_start, pos_end, KEYWORDS["MATCH"],))
+        self._add_token(StringToken(TT_KEYWORD, pos_start, pos_end, KEYWORDS["MATCH"]))
 
     def _add_token(self, token: Token) -> None:
         self.tokens.insert(self.token_index + 1, token)

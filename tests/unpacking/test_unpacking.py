@@ -16,6 +16,9 @@ def test_incorrect_syntax() -> None:
     run_test_invalid_syntax_error(
         basic, "let a, *args = (1, 2)", "tuple_group_with_name",
     )
+    run_test_invalid_syntax_error(
+        basic, "let a, *, * = (1, 2)", "tuple_with_two_asterixes",
+    )
     run_test_invalid_syntax_error(basic, "let a [a, (b, _])", "random_invalid_syntax")
 
 
@@ -144,6 +147,13 @@ def test_correct_unpacking() -> None:
     )
     run_test_correct(
         basic,
+        "let [[a]] = [[1]] a == 1",
+        "correct_unpacking12.1",
+        [LangVariantType, LangBool],
+        [..., True],
+    )
+    run_test_correct(
+        basic,
         "let [a, *b] = [1, 2, 3] a == 1 b",
         "correct_unpacking13",
         [LangVariantType, LangBool, LangVariantType],
@@ -162,4 +172,18 @@ def test_correct_unpacking() -> None:
         "correct_unpacking15",
         [LangTuple, LangNumber, LangNumber, LangNumber],
         [..., 1, 2, 3],
+    )
+    run_test_correct(
+        basic,
+        "let (Some a) = (Some 1) a",
+        "correct_unpacking16",
+        [LangVariantType, LangNumber],
+        [..., 1],
+    )
+    run_test_correct(
+        basic,
+        "let (Some (Some a)) = (Some (Some 8)) (a)",
+        "correct_unpacking17",
+        [LangVariantType, LangNumber],
+        [..., 8],
     )

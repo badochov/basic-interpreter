@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TypeVar, TYPE_CHECKING, List, cast, Any, NoReturn
+from typing import TypeVar, TYPE_CHECKING, List, cast, Any, NoReturn, Optional
 
 from errors.not_impl_error import NotImplError
 from keywords import *
@@ -23,7 +23,7 @@ class LangType:
         pos_start: Position,
         pos_end: Position,
         context: Context,
-        deep_copied: List[str] = None,
+        deep_copied: Optional[List[str]] = None,
     ):
         self.pos_start = pos_start
         self.pos_end = pos_end
