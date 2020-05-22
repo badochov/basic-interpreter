@@ -127,6 +127,7 @@ class ParserHelper:
         args: List[VariableAssignmentNode],
         body: Node,
     ) -> FunctionDefinitionNode:
+        assert var_name or args
         names: List[str] = [
             *([name for name in var_name.get_names()] if var_name else []),
             *[name for arg in args for name in arg.get_names()],
@@ -145,9 +146,8 @@ class ParserHelper:
         prev_fun = body
         last = len(args)
         for i, arg in enumerate(reversed(args), start=1):
-            prev_fun = FunctionDefinitionNode(
-                var_name, arg, prev_fun, var_name is not None if i == last else False
-            )
+            save_name = var_name is not None if i == last else False
+            prev_fun = FunctionDefinitionNode(var_name, arg, prev_fun, save_name)
         return cast(FunctionDefinitionNode, prev_fun)
 
     @staticmethod

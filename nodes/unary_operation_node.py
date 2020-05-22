@@ -6,7 +6,7 @@ from errors.type_errors import RTTypeError
 from keywords import *
 from lang_types.lang_function import LangFunction
 from lang_types.lang_number import LangNumber
-from lang_types.lang_type import LangType
+from lang_types.lang_type import LangType, multiply
 from nodes.node import Node
 from token_types import *
 
@@ -31,7 +31,7 @@ class UnaryOperationNode(Node):
         result = self.node.visit(context)
         try:
             if self.operation_token.type == TT_MINUS:
-                result = result.multiplied_by(LangNumber(-1))
+                result = multiply(result, LangNumber(-1))
             elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["NOT"]):
                 result = result.notted()
         except RTTypeError as e:

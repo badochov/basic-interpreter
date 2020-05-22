@@ -22,7 +22,7 @@ class LangNumber(LangType):
     def value(self) -> float:
         return self._value
 
-    def added_to(self, other: LangType) -> OperType:
+    def added_by(self, other: LangType) -> OperType:
         if isinstance(other, LangNumber):
             return LangNumber(self._value + other._value)
         return self._not_impl("-")
@@ -50,41 +50,41 @@ class LangNumber(LangType):
             return LangNumber(self._value ** other._value)
         return self._not_impl("^")
 
-    def get_comparison_eq(self, other: LangType) -> CompType:
+    def get_comparison_eq_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value == other.value))
 
-        return super().get_comparison_eq(other)
+        return super().get_comparison_eq_by(other)
 
-    def get_comparison_ne(self, other: LangType) -> CompType:
+    def get_comparison_ne_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value != other.value))
 
-        return super().get_comparison_ne(other)
+        return super().get_comparison_ne_by(other)
 
-    def get_comparison_lt(self, other: LangType) -> CompType:
+    def get_comparison_lt_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value < other.value))
 
-        return super().get_comparison_lt(other)
+        return super().get_comparison_lt_by(other)
 
-    def get_comparison_gt(self, other: LangType) -> CompType:
+    def get_comparison_gt_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value > other.value))
 
-        return super().get_comparison_gt(other)
+        return super().get_comparison_gt_by(other)
 
-    def get_comparison_lte(self, other: LangType) -> CompType:
+    def get_comparison_lte_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value <= other.value))
 
-        return super().get_comparison_lte(other)
+        return super().get_comparison_lte_by(other)
 
-    def get_comparison_gte(self, other: LangType) -> CompType:
+    def get_comparison_gte_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value >= other.value))
 
-        return super().get_comparison_gte(other)
+        return super().get_comparison_gte_by(other)
 
     def __repr__(self) -> str:
         return f"{self._value}"

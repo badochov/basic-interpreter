@@ -19,17 +19,17 @@ class LangBool(LangType):
     def value(self) -> bool:
         return self._value
 
-    def get_comparison_eq(self, other: LangType) -> CompType:
+    def get_comparison_eq_by(self, other: LangType) -> CompType:
         if isinstance(other, LangBool):
             return LangBool(self._value == other.value)
 
-        return super().get_comparison_eq(other)
+        return super().get_comparison_eq_by(other)
 
-    def get_comparison_ne(self, other: LangType) -> CompType:
+    def get_comparison_ne_by(self, other: LangType) -> CompType:
         if isinstance(other, LangBool):
             return LangBool(self._value != other.value)
 
-        return super().get_comparison_ne(other)
+        return super().get_comparison_ne_by(other)
 
     def anded_by(self, other: LangType) -> CompType:
         if isinstance(other, LangBool):

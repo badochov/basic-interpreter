@@ -5,7 +5,22 @@ from typing import TYPE_CHECKING
 from errors.type_errors import RTTypeError
 from keywords import KEYWORDS
 from lang_types.lang_function import LangFunction
-from lang_types.lang_type import LangType
+from lang_types.lang_type import (
+    LangType,
+    add,
+    subtract,
+    multiply,
+    divide,
+    raise_to_power,
+    get_comparison_eq,
+    get_comparison_ne,
+    get_comparison_lt,
+    get_comparison_gt,
+    get_comparison_lte,
+    get_comparison_gte,
+    anded,
+    ored,
+)
 from nodes.node import Node
 from token_types import *
 
@@ -31,31 +46,33 @@ class BinaryOperationNode(Node):
         right = self.right_node.visit(context)
         try:
             if self.operation_token.type == TT_PLUS:
-                result = left.added_to(right)
+                print(left, right)
+                result = add(left, right)
+                print(result)
             elif self.operation_token.type == TT_MINUS:
-                result = left.subtracted_by(right)
+                result = subtract(left, right)
             elif self.operation_token.type == TT_MUL:
-                result = left.multiplied_by(right)
+                result = multiply(left, right)
             elif self.operation_token.type == TT_DIV:
-                result = left.divided_by(right)
+                result = divide(left, right)
             elif self.operation_token.type == TT_POW:
-                result = left.raised_to_power_by(right)
+                result = raise_to_power(left, right)
             elif self.operation_token.type == TT_EE:
-                result = left.get_comparison_eq(right)
+                result = get_comparison_eq(left, right)
             elif self.operation_token.type == TT_NE:
-                result = left.get_comparison_ne(right)
+                result = get_comparison_ne(left, right)
             elif self.operation_token.type == TT_LT:
-                result = left.get_comparison_lt(right)
+                result = get_comparison_lt(left, right)
             elif self.operation_token.type == TT_GT:
-                result = left.get_comparison_gt(right)
+                result = get_comparison_gt(left, right)
             elif self.operation_token.type == TT_LTE:
-                result = left.get_comparison_lte(right)
+                result = get_comparison_lte(left, right)
             elif self.operation_token.type == TT_GTE:
-                result = left.get_comparison_gte(right)
+                result = get_comparison_gte(left, right)
             elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["AND"]):
-                result = left.anded_by(right)
+                result = anded(left, right)
             elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["OR"]):
-                result = left.ored_by(right)
+                result = ored(left, right)
             elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["IN"]):
                 result = right
             else:
