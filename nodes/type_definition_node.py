@@ -28,7 +28,7 @@ class TypeDefinitionNode(Node):
         variants: List[LangVariantTypeDefinition] = []
         for variant_node in self.variant_nodes:
             variants.append(variant_node.visit(context))
-        type_def = LangTypeDefinition(variants, self.pos_start, self.pos_end, context)
+        type_def = LangTypeDefinition(variants)
         context.set(var_name, type_def)
 
         return type_def

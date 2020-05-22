@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import List, Optional, TYPE_CHECKING, Tuple, Union
 
-from context import Context, mock_context
+from context import Context
 from lang_types.lang_tuple import LangTuple
 from lang_types.lang_type import LangType
 from nodes.node import Node
 from nodes.variable_assignment_node import VariableAssignmentNode, VariableType
-from position import mock_position
 from symbol_table import SymbolTable
 
 if TYPE_CHECKING:
@@ -18,7 +17,7 @@ if TYPE_CHECKING:
 class LangNoMatchType(LangType):
     @staticmethod
     def instance() -> LangNoMatchType:
-        return LangNoMatchType("no-match", mock_position, mock_position, mock_context)
+        return LangNoMatchType("no-match")
 
 
 # TODO add support for tuples

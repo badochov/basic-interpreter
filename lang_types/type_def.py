@@ -1,26 +1,13 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List
 
-from context import mock_context
 from lang_types.lang_type import LangType
-from position import mock_position
-
-if TYPE_CHECKING:
-    from context import Context
-    from position import Position
 
 
 class LangVariantTypeDefinition(LangType):
-    def __init__(
-        self,
-        name: str,
-        args: List[str],
-        pos_start: Position,
-        pos_end: Position,
-        context: Context,
-    ):
-        super().__init__("variant_type_definition", pos_start, pos_end, context)
+    def __init__(self, name: str, args: List[str]):
+        super().__init__("variant_type_definition")
         self.name = name
         self.args = args
 
@@ -43,53 +30,33 @@ class LangVariantTypeDefinition(LangType):
     @staticmethod
     def some_type_def() -> LangVariantTypeDefinition:
         return LangVariantTypeDefinition(
-            LangVariantTypeDefinition.some_type_name(),
-            ["Any"],
-            mock_position,
-            mock_position,
-            mock_context,
+            LangVariantTypeDefinition.some_type_name(), ["Any"],
         )
 
     @staticmethod
     def none_type_def() -> LangVariantTypeDefinition:
         return LangVariantTypeDefinition(
-            LangVariantTypeDefinition.none_type_name(),
-            [],
-            mock_position,
-            mock_position,
-            mock_context,
+            LangVariantTypeDefinition.none_type_name(), [],
         )
 
     @staticmethod
     def list_type_def() -> LangVariantTypeDefinition:
         return LangVariantTypeDefinition(
-            LangVariantTypeDefinition.list_type_name(),
-            ["Any", "List"],
-            mock_position,
-            mock_position,
-            mock_context,
+            LangVariantTypeDefinition.list_type_name(), ["Any", "List"],
         )
 
     @staticmethod
     def empty_list_type_def() -> LangVariantTypeDefinition:
         return LangVariantTypeDefinition(
-            LangVariantTypeDefinition.empty_list_type_name(),
-            [],
-            mock_position,
-            mock_position,
-            mock_context,
+            LangVariantTypeDefinition.empty_list_type_name(), [],
         )
 
 
 class LangTypeDefinition(LangType):
     def __init__(
-        self,
-        variants: List[LangVariantTypeDefinition],
-        pos_start: Position,
-        pos_end: Position,
-        context: Context,
+        self, variants: List[LangVariantTypeDefinition],
     ):
-        super().__init__("type_definition", pos_start, pos_end, context)
+        super().__init__("type_definition")
         self.variants = variants
 
     @staticmethod
@@ -107,9 +74,6 @@ class LangTypeDefinition(LangType):
                 LangVariantTypeDefinition.none_type_def(),
                 LangVariantTypeDefinition.some_type_def(),
             ],
-            mock_position,
-            mock_position,
-            mock_context,
         )
 
     @staticmethod
@@ -119,7 +83,4 @@ class LangTypeDefinition(LangType):
                 LangVariantTypeDefinition.list_type_def(),
                 LangVariantTypeDefinition.empty_list_type_def(),
             ],
-            mock_position,
-            mock_position,
-            mock_context,
         )

@@ -3,9 +3,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TypeVar, TYPE_CHECKING, List, cast, Any, NoReturn, Optional
 
-from errors.not_impl_error import NotImplError
+from errors.type_errors import RTTypeError
 from keywords import *
-from position import Position
 
 if TYPE_CHECKING:
     from context import Context
@@ -18,27 +17,10 @@ T = TypeVar("T", bound="LangType")
 
 class LangType:
     def __init__(
-        self,
-        type_name: str,
-        pos_start: Position,
-        pos_end: Position,
-        context: Context,
-        deep_copied: Optional[List[str]] = None,
+        self, type_name: str, deep_copied: Optional[List[str]] = None,
     ):
-        self.pos_start = pos_start
-        self.pos_end = pos_end
-        self.context = context
         self.deep_copied = deep_copied if deep_copied else []
         self.type_name = type_name
-
-    def set_pos(self: T, pos_start: Position, pos_end: Position) -> T:
-        self.pos_start = pos_start
-        self.pos_end = pos_end
-        return self
-
-    def set_context(self: T, context: Context) -> T:
-        self.context = context
-        return self
 
     def copy(self: T) -> T:
         cls = type(self)
@@ -92,11 +74,13 @@ class LangType:
     def notted(self) -> CompType:
         return self._not_impl(f'KEYWORD:{KEYWORDS["NOT"]}')
 
-    def call(self, context: Context, args: List[LangType]) -> LangType:
-        raise NotImplError(self.pos_start, self.pos_end, "Call")
+    def call(
+        self, context: Context, args: List[LangType], add_parent: bool = True
+    ) -> LangType:
+        return self._not_impl("Call")
 
     def _not_impl(self, error_msg: str) -> NoReturn:
-        raise NotImplError(self.pos_start, self.pos_end, error_msg)
+        raise RTTypeError("Not implemented:" + error_msg)
 
     @property
     def value(self) -> Any:

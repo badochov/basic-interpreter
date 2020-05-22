@@ -21,11 +21,7 @@ class ListNode(Node):
 
     def visit(self, context: Context) -> LangVariantType:
         return LangVariantType(
-            [self.value_node.visit(context), self.tail_node.visit(context)],
-            "List",
-            self.pos_start,
-            self.pos_end,
-            context,
+            [self.value_node.visit(context), self.tail_node.visit(context)], "List",
         )
 
 
@@ -38,4 +34,4 @@ class ListEndNode(Node):
         return f"Empty"
 
     def visit(self, context: Context) -> LangVariantType:
-        return LangVariantType([], "Empty", self.pos_start, self.pos_end, context,)
+        return LangVariantType([], "Empty")

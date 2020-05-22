@@ -27,11 +27,7 @@ class TypeVariantNode(Node):
         var_name = self.var_name_token.value
 
         variant_def = LangVariantTypeDefinition(
-            var_name,
-            list(map(lambda token: token.value, self.args_token)),
-            self.pos_start,
-            self.pos_end,
-            context,
+            var_name, list(map(lambda token: token.value, self.args_token)),
         )
         context.set(var_name, variant_def)
 

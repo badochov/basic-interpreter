@@ -20,29 +20,38 @@ class LangFunction(LangType):
         arg: VariableAssignmentNode,
         body_node: Node,
         pos_start: Position,
-        pos_end: Position,
         context: Context,
     ):
-        super().__init__("function", pos_start, pos_end, context)
+        super().__init__("function")
+        self.pos_start = pos_start
+        self.context = context
         self.arg = arg
         self.body_node = body_node
         self.name = name if name else "<anonymous>"
 
+    def set_context(self, context: Context) -> LangFunction:
+        self.context = context
+        return self
+
     def __repr__(self) -> str:
         return f"fn {self.arg}"
 
-    def call(self, context: Context, args: List[LangType]) -> LangType:
+    def set_pos(self, pos_start: Position) -> LangFunction:
+        self.pos_start = pos_start
+        return self
+
+    def call(
+        self, context: Context, args: List[LangType], add_parent: bool = True
+    ) -> LangType:
         new_ctx = Context(self.name, SymbolTable(), context, self.pos_start,)
-        new_ctx.add_parent(self.context)
+        if add_parent:
+            new_ctx.add_parent(self.context)
 
         self.arg.set_value(args.pop())
         self.arg.visit(new_ctx)
         result_cpy = self.body_node.visit(new_ctx).copy()
         if args:
-            val = result_cpy.call(new_ctx, args)
+            val = result_cpy.call(new_ctx, args, False)
             result_cpy = val.copy()
 
         return result_cpy
-
-
-# (UMPALUMP([IDENTIFIER:fib_pom])(None) -> (UMPALUMP([IDENTIFIER:fib_pom])(UMPALUMP([IDENTIFIER:a])) -> (UMPALUMP([IDENTIFIER:fib_pom])(UMPALUMP([IDENTIFIER:b])) -> (UMPALUMP([IDENTIFIER:fib_pom])(UMPALUMP([IDENTIFIER:n])) -> (if ((IDENTIFIER:n), EE, INT:0) then (IDENTIFIER:a) else (IDENTIFIER:fib_pom, [(IDENTIFIER:b), ((IDENTIFIER:a), PLUS, (IDENTIFIER:b)), ((IDENTIFIER:n), MINUS, INT:1)]))))))

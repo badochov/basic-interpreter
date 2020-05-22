@@ -19,4 +19,4 @@ class NumberNode(Node):
         return f"{self.token}"
 
     def visit(self, context: Context) -> LangNumber:
-        return LangNumber(self.token.value, self.pos_start, self.pos_end, context)
+        return LangNumber(self.token.value)

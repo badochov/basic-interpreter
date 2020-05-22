@@ -45,7 +45,6 @@ class FunctionDefinitionNode(Node):
                 self.arg_name_node,
                 self.body_node,
                 self.pos_start,
-                self.pos_end,
                 context,
             )
         else:

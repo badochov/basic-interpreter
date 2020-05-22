@@ -58,10 +58,10 @@ class FunctionCallNode(Node):
                     context,
                 )
 
-            return LangVariantType(
-                list(reversed(args)), name, self.pos_start, self.pos_end, context,
-            )
+            return LangVariantType(list(reversed(args)), name)
 
         else:
-            fun_cpy = fun.copy().set_pos(self.pos_start, self.pos_end)
+            if not isinstance(fun, LangFunction):
+                return self._fail_with("Expected function", context)
+            fun_cpy = fun.copy().set_pos(self.pos_start)
             return fun_cpy.call(context, args)

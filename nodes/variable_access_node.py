@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from errors.rt_error import RTError
+from lang_types.lang_function import LangFunction
 from lang_types.lang_type import LangType
 from lang_types.lang_variant_type import LangVariantType
 from lang_types.type_def import LangVariantTypeDefinition
@@ -32,9 +33,7 @@ class VariableAccessNode(Node):
 
         if isinstance(value, LangVariantTypeDefinition):
             if len(value.args) == 0:
-                return LangVariantType(
-                    [], var_name, self.pos_start, self.pos_end, context
-                )
+                return LangVariantType([], var_name)
             else:
                 raise RTError(
                     self.pos_start,
@@ -44,4 +43,6 @@ class VariableAccessNode(Node):
                 )
 
         else:
-            return value.copy().set_pos(self.pos_start, self.pos_end)
+            if isinstance(value, LangFunction):
+                return value.copy().set_pos(self.pos_start)
+            return value.copy()

@@ -101,14 +101,7 @@ class VariableAssignmentNode(Node):
                 [self.names[asterix_pos]],
                 context,
                 ListWrapper(
-                    [
-                        LangVariantType.make_list(
-                            val.values[asterix_pos:end_pos],
-                            self.pos_start,
-                            self.pos_end,
-                            context,
-                        )
-                    ]
+                    [LangVariantType.make_list(val.values[asterix_pos:end_pos],)]
                 ),
             )
 
@@ -149,8 +142,7 @@ class VariableAssignmentNode(Node):
         return self.value
 
 
-if TYPE_CHECKING:
-    NamesType = List[Union[VariableAssignmentNode, StringToken, AsterixToken]]
+NamesType = List[Union[VariableAssignmentNode, StringToken, AsterixToken]]
 
 
 class ListWrapper:

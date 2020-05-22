@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, cast
 
 from errors.invalid_syntax_error import InvalidSyntaxError
 from nodes.function_definition_node import FunctionDefinitionNode
@@ -8,12 +8,15 @@ from token_types import *
 from position import mock_position
 from tokens.lang_asterix_token import AsterixToken
 from tokens.lang_string_token import StringToken
-from nodes.variable_assignment_node import VariableAssignmentNode, VariableType
+from nodes.variable_assignment_node import (
+    VariableAssignmentNode,
+    VariableType,
+    NamesType,
+)
 
 if TYPE_CHECKING:
     from parser.parser import Parser
     from nodes.node import Node
-    from nodes.variable_assignment_node import NamesType
 
 
 class ParserHelper:
@@ -130,9 +133,12 @@ class ParserHelper:
         if not args:
             return FunctionDefinitionNode(var_name, None, body)
         prev_fun = body
-        for arg in reversed(args):
-            prev_fun = FunctionDefinitionNode(var_name, arg, prev_fun, False)
-        return FunctionDefinitionNode(var_name, None, prev_fun, var_name is not None)
+        last = len(args)
+        for i, arg in enumerate(reversed(args), start=1):
+            prev_fun = FunctionDefinitionNode(
+                var_name, arg, prev_fun, var_name is not None if i == last else False
+            )
+        return cast(FunctionDefinitionNode, prev_fun)
 
     @staticmethod
     def _check_if_names_are_distinct(names: List[str]) -> bool:
@@ -148,7 +154,9 @@ class ParserHelper:
             if args:
                 return names.append(
                     VariableAssignmentNode(
-                        args, VariableType.VariantType, name_token.value
+                        cast(NamesType, args),
+                        VariableType.VariantType,
+                        name_token.value,
                     )
                 )
 

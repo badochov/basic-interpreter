@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
+from errors.type_errors import RTTypeError
 from keywords import *
+from lang_types.lang_function import LangFunction
 from lang_types.lang_number import LangNumber
 from lang_types.lang_type import LangType
 from nodes.node import Node
@@ -25,11 +27,14 @@ class UnaryOperationNode(Node):
 
     def visit(self, context: Context) -> LangType:
         result = self.node.visit(context)
-        if self.operation_token.type == TT_MINUS:
-            result = result.multiplied_by(
-                LangNumber(-1, self.pos_start, self.pos_end, context)
-            )
-        elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["NOT"]):
-            result = result.notted()
+        try:
+            if self.operation_token.type == TT_MINUS:
+                result = result.multiplied_by(LangNumber(-1))
+            elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["NOT"]):
+                result = result.notted()
+        except RTTypeError as e:
+            return self._fail_with(e.message, context)
 
-        return result.set_pos(self.pos_start, self.pos_end)
+        if isinstance(result, LangFunction):
+            result.set_pos(self.pos_start,)
+        return result

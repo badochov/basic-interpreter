@@ -18,9 +18,4 @@ class TupleNode(Node):
         return f"({self.arg_nodes})"
 
     def visit(self, context: Context) -> LangTuple:
-        return LangTuple(
-            list(map(lambda node: node.visit(context), self.arg_nodes)),
-            self.pos_start,
-            self.pos_end,
-            context,
-        )
+        return LangTuple(list(map(lambda node: node.visit(context), self.arg_nodes)))

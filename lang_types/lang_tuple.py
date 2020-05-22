@@ -1,24 +1,14 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING, Iterable
+from typing import List, Iterable
 
 from lang_types.lang_type import LangType
 from lang_types.lang_variant_type import LangVariantType
 
-if TYPE_CHECKING:
-    from position import Position
-    from context import Context
-
 
 class LangTuple(LangType):
-    def __init__(
-        self,
-        values: List[LangType],
-        pos_start: Position,
-        pos_end: Position,
-        context: Context,
-    ):
-        super().__init__("variant_type", pos_start, pos_end, context)
+    def __init__(self, values: List[LangType]):
+        super().__init__("variant_type")
         self.values = values
 
     def __repr__(self) -> str:
