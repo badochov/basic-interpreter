@@ -85,29 +85,39 @@ class ParserHelper:
             args.append(arg)
         return args
 
-    # TODO support for tuples, lists
     def make_type_hint(self) -> Optional[Node]:
         if not self.parser.current_token.type == TT_COLON:
             return None
-        lparen = 0
+        paren = []
         self.parser.advance()
         ended = False
         while (
-            self.parser.current_token.type in (TT_IDENTIFIER, TT_LPAREN) and not ended
+            self.parser.current_token.type in (TT_IDENTIFIER, TT_LPAREN, TT_LBRACKET)
+            and not ended
         ):
-            if self.parser.current_token.type == TT_LPAREN:
-                lparen += 1
+            if self.parser.current_token.type in (TT_LPAREN, TT_LBRACKET):
+                paren.append(self.parser.current_token.type)
 
             if self.parser.advance().type == TT_RPAREN:
-                lparen -= 1
+                if paren and paren[-1] == TT_LPAREN:
+                    paren.pop()
+                else:
+                    return self.parser.fail_with_invalid_syntax_error('Unexpected ")"')
                 self.parser.advance()
 
-            if self.parser.current_token.type == TT_ARROW:
+            if self.parser.advance().type == TT_RBRACKET:
+                if paren and paren[-1] == TT_LBRACKET:
+                    paren.pop()
+                else:
+                    return self.parser.fail_with_invalid_syntax_error('Unexpected ")"')
+                self.parser.advance()
+
+            if self.parser.current_token.type in (TT_ARROW, TT_COMA):
                 self.parser.advance()
             else:
                 ended = True
 
-        if ended and lparen == 0:
+        if ended and not paren:
             return None
         return self.parser.fail_with_invalid_syntax_error("Expected type hint")
 
