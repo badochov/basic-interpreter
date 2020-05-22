@@ -25,19 +25,18 @@ class VariableType(Enum):
 
 class VariableAssignmentNode(Node):
     def __init__(
-        self, names: NamesType, var_type: VariableType = VariableType.Tuple,
+        self,
+        names: NamesType,
+        var_type: VariableType = VariableType.Tuple,
+        type_name: Optional[str] = None,
     ):
         if names:
             super().__init__(names[0].pos_start, names[-1].pos_end)
         else:
             super().__init__(mock_position, mock_position)
-        if var_type is VariableType.VariantType:
-            assert isinstance(names[0], StringToken)
-            self.type_name: Optional[str] = names[0].value
-            self.names = names[1:]
-        else:
-            self.type_name = None
-            self.names = names
+
+        self.type_name = type_name
+        self.names = names
         self.value: Optional[LangType] = None
         self.var_type = var_type
 
@@ -61,23 +60,6 @@ class VariableAssignmentNode(Node):
 
     def visit(self, context: Context) -> LangType:
         assert self.value is not None
-        asterix_pos = self._asterix_position()
-
-        val: Union[LangType, ListWrapper] = self.value
-        if self.var_type is VariableType.List:
-            if not isinstance(self.value, LangVariantType):
-                return self._fail_with("Expected list", context)
-            try:
-                val = ListWrapper(LangVariantType.parse_list(self.value))
-            except TypeError:
-                return self._fail_with("Expected list", context)
-        elif self.var_type is VariableType.VariantType:
-            if not isinstance(self.value, LangVariantType):
-                return self._fail_with("Expected variant_type", context)
-            if not self.value.is_of_type(self.type_name or ""):
-                return self._fail_with("Type mismatch", context)
-
-            val = ListWrapper(self.value.get_args())
 
         if len(self.names) == 1 and self.var_type is VariableType.Tuple:
             if isinstance(self.names[0], VariableAssignmentNode):
@@ -86,33 +68,11 @@ class VariableAssignmentNode(Node):
             else:
                 context.set(self.names[0].value, self.value)
         else:
-            if not isinstance(val, LangTuple) and not isinstance(val, ListWrapper):
-                return self._fail_with("Expected tuple", context)
-            if asterix_pos != -1:
-                if len(self.names) - 1 > val.values_count():
-                    return self._fail_with(
-                        "Wrong number of arguments to unpack", context
-                    )
-                self._handle_names(self.names[0:asterix_pos], context, val)
-                end_pos = val.values_count() - len(self.names) + asterix_pos + 1
-                if isinstance(val, ListWrapper):
-                    self._handle_names(
-                        [self.names[asterix_pos]],
-                        context,
-                        ListWrapper(
-                            [
-                                LangVariantType.make_list(
-                                    val.values[asterix_pos:end_pos],
-                                    self.pos_start,
-                                    self.pos_end,
-                                    context,
-                                )
-                            ]
-                        ),
-                    )
+            val: Union[LangType, ListWrapper] = self._get_value(context)
 
-                self._handle_names(self.names[asterix_pos + 1 :], context, val, end_pos)
-            else:
+            if not isinstance(val, LangTuple) and not isinstance(val, ListWrapper):
+                return self._fail_with("Unexpected type", context)
+            if not self._handle_asterix(val, context):
                 if len(self.names) != val.values_count():
                     return self._fail_with(
                         "Wrong number of arguments to unpack", context
@@ -125,6 +85,35 @@ class VariableAssignmentNode(Node):
             if isinstance(name, AsterixToken):
                 return i
         return -1
+
+    def _handle_asterix(
+        self, val: Union[ListWrapper, LangTuple], context: Context
+    ) -> bool:
+        asterix_pos = self._asterix_position()
+        if asterix_pos == -1:
+            return False
+        if len(self.names) - 1 > val.values_count():
+            return self._fail_with("Wrong number of arguments to unpack", context)
+        self._handle_names(self.names[0:asterix_pos], context, val)
+        end_pos = val.values_count() - len(self.names) + asterix_pos + 1
+        if isinstance(val, ListWrapper):
+            self._handle_names(
+                [self.names[asterix_pos]],
+                context,
+                ListWrapper(
+                    [
+                        LangVariantType.make_list(
+                            val.values[asterix_pos:end_pos],
+                            self.pos_start,
+                            self.pos_end,
+                            context,
+                        )
+                    ]
+                ),
+            )
+
+        self._handle_names(self.names[asterix_pos + 1 :], context, val, end_pos)
+        return True
 
     @staticmethod
     def _handle_names(
@@ -140,6 +129,24 @@ class VariableAssignmentNode(Node):
                 name.visit(context)
             else:
                 context.set(name.value, value)
+
+    def _get_value(self, context: Context) -> Union[ListWrapper, LangType]:
+        assert self.value
+        if self.var_type is VariableType.List:
+            if not isinstance(self.value, LangVariantType):
+                return self._fail_with("Expected list", context)
+            try:
+                return ListWrapper(LangVariantType.parse_list(self.value))
+            except TypeError:
+                return self._fail_with("Expected list", context)
+        elif self.var_type is VariableType.VariantType:
+            if not isinstance(self.value, LangVariantType):
+                return self._fail_with("Expected variant_type", context)
+            if not self.value.is_of_type(self.type_name or ""):
+                return self._fail_with("Type mismatch", context)
+
+            return ListWrapper(self.value.get_args())
+        return self.value
 
 
 if TYPE_CHECKING:

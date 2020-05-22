@@ -72,7 +72,9 @@ class MatchCaseNode(Node):
     def _convert_nth_value_to_assignment_node(
         type_: Tuple[StringToken, List[VariableAssignmentNode]]
     ) -> VariableAssignmentNode:
-        return VariableAssignmentNode([type_[0], *type_[1]], VariableType.VariantType)
+        return VariableAssignmentNode(
+            list(type_[1]), VariableType.VariantType, type_[0].value
+        )
 
     def _handle_tuple(self, context: Context) -> LangType:
         assert isinstance(self.var, LangTuple)
