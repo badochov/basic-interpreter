@@ -7,11 +7,10 @@ from typing import (
     TYPE_CHECKING,
     List,
     Any,
-    NoReturn,
     Callable,
+    Union,
 )
 
-from errors.type_errors import RTTypeError
 from keywords import *
 
 
@@ -19,10 +18,6 @@ if TYPE_CHECKING:
     from context import Context
     from lang_types.lang_bool import LangBool
 
-    CompType = LangBool
-
-else:
-    CompType = ""
 
 T = TypeVar("T", bound="LangType")
 
@@ -122,8 +117,8 @@ class LangType(ABC):
     ) -> LangType:
         return self._not_impl("call")
 
-    def _not_impl(self, error_msg: str) -> NoReturn:
-        raise RTTypeError("Not implemented: " + error_msg)
+    def _not_impl(self, error_msg: str) -> NotImplementedOperationType:
+        return NotImplementedOperationType("Not implemented: " + error_msg)
 
     @property
     def value(self) -> Any:
@@ -133,19 +128,19 @@ class LangType(ABC):
 def _try_oper(
     oper_by: OperFunction, oper_from: OperFunction, other: LangType,
 ) -> OperType:
-    try:
-        return oper_by(other)
-    except RTTypeError:
-        return oper_from(other)
+    if not not_implemented(res := oper_by(other)):
+        return res
+
+    return oper_from(other)
 
 
 def _try_logic_oper(
     oper_by: CompFunction, oper_from: CompFunction, other: LangType,
 ) -> CompType:
-    try:
-        return oper_by(other)
-    except RTTypeError:
-        return oper_from(other)
+    if not not_implemented(res := oper_by(other)):
+        return res
+
+    return oper_from(other)
 
 
 def add(first: LangType, second: LangType) -> OperType:
@@ -212,8 +207,19 @@ def ored(first: LangType, second: LangType) -> CompType:
     return _try_logic_oper(first.ored_by, first.ored_from, second)
 
 
+def not_implemented(lang_type: LangType) -> bool:
+    return isinstance(lang_type, NotImplementedOperationType)
+
+
+class NotImplementedOperationType(LangType):
+    def __init__(self, msg: str) -> None:
+        super().__init__("NotImplementedType")
+        self.msg = msg
+
+
 if TYPE_CHECKING:
     OperType = LangType
 
+    CompType = Union[LangBool, NotImplementedOperationType]
     OperFunction = Callable[[LangType], OperType]
     CompFunction = Callable[[LangType], CompType]

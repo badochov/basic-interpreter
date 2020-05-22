@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from errors.type_errors import RTTypeError
 from lang_types.lang_bool import LangBool
-from lang_types.lang_type import LangType
-
+from lang_types.lang_type import LangType, NotImplementedOperationType
 
 if TYPE_CHECKING:
     from lang_types.lang_type import CompType
@@ -91,4 +90,4 @@ class LangNumber(LangType):
 
 
 if TYPE_CHECKING:
-    OperType = LangNumber
+    OperType = Union[LangNumber, NotImplementedOperationType]

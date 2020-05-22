@@ -130,10 +130,9 @@ class VariableAssignmentNode(Node):
         if self.var_type is VariableType.List:
             if not isinstance(self.value, LangVariantType):
                 return self._fail_with("Expected list", context)
-            try:
-                return ListWrapper(LangVariantType.parse_list(self.value))
-            except TypeError:
+            if (value := LangVariantType.parse_list(self.value)) is None:
                 return self._fail_with("Expected list", context)
+            return ListWrapper(value)
         elif self.var_type is VariableType.VariantType:
             if not isinstance(self.value, LangVariantType):
                 return self._fail_with("Expected variant_type", context)

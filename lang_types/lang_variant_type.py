@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Optional
 
 from lang_types.lang_type import LangType
 from lang_types.type_def import LangVariantTypeDefinition
@@ -21,16 +21,18 @@ class LangVariantType(LangType):
         return name == self.type_variant_name
 
     @staticmethod
-    def parse_list(variant_type: LangVariantType) -> List[LangType]:
+    def parse_list(variant_type: LangVariantType) -> Optional[List[LangType]]:
         if variant_type.is_of_type(LangVariantTypeDefinition.list_type_name()):
             head = [variant_type.args[0]]
             tail = variant_type.args[1]
             if isinstance(tail, LangVariantType):
-                head.extend(LangVariantType.parse_list(tail))
+                if (t_list := LangVariantType.parse_list(tail)) is None:
+                    return None
+                head.extend(t_list)
                 return head
         elif variant_type.is_of_type(LangVariantTypeDefinition.empty_list_type_name()):
             return []
-        raise TypeError
+        return None
 
     @staticmethod
     def make_list(values: List[LangType]) -> LangVariantType:

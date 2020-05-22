@@ -1,5 +1,6 @@
 #TODO Tuples -> operations
 
+#TODO remove as many exceptions as possible
 #TODO improve error messages from function -> if function has multiple arguments it's displayed multiple times
 #TODO change functions so they can have more than one value for optimization
 #TODO Input output

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from errors.type_errors import RTTypeError
 from keywords import KEYWORDS
@@ -20,6 +20,8 @@ from lang_types.lang_type import (
     get_comparison_gte,
     anded,
     ored,
+    NotImplementedOperationType,
+    not_implemented,
 )
 from nodes.node import Node
 from token_types import *
@@ -46,9 +48,7 @@ class BinaryOperationNode(Node):
         right = self.right_node.visit(context)
         try:
             if self.operation_token.type == TT_PLUS:
-                print(left, right)
                 result = add(left, right)
-                print(result)
             elif self.operation_token.type == TT_MINUS:
                 result = subtract(left, right)
             elif self.operation_token.type == TT_MUL:
@@ -81,6 +81,10 @@ class BinaryOperationNode(Node):
                 )
         except RTTypeError as e:
             return self._fail_with(e.message, context)
+        if not_implemented(result):
+            return self._fail_with(
+                cast(NotImplementedOperationType, result).msg, context
+            )
 
         if isinstance(result, LangFunction):
             result.set_pos(self.pos_start)
