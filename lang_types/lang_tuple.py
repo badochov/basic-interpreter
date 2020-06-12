@@ -58,47 +58,47 @@ class LangTuple(LangType):
 
     @_valid_args
     def added_by(self, other: LangType) -> OperType:
-        return self._not_impl("+")
+        return self.perform_operation(self, other, "add")
 
     @_valid_args
     def multiplied_by(self, other: LangType) -> OperType:
-        return self._not_impl("*")
+        return self.perform_operation(self, other, "multiply")
 
     @_valid_args
     def subtracted_by(self, other: LangType) -> OperType:
-        return self._not_impl("-")
+        return self.perform_operation(self, other, "subtract")
 
     @_valid_args
     def divided_by(self, other: LangType) -> OperType:
-        return self._not_impl("/")
+        return self.perform_operation(self, other, "divide")
 
     @_valid_args
     def raised_to_power_by(self, other: LangType) -> OperType:
-        return self._not_impl("^")
+        return self.perform_operation(self, other, "raise_to_power")
 
     @_valid_args
     def added_from(self, other: LangType) -> OperType:
-        return self._not_impl("+")
+        return self.perform_operation(self, other, "add", False)
 
     @_valid_args
     def multiplied_from(self, other: LangType) -> OperType:
-        return self._not_impl("*")
+        return self.perform_operation(self, other, "multiply", False)
 
     @_valid_args
     def subtracted_from(self, other: LangType) -> OperType:
-        return self._not_impl("-")
+        return self.perform_operation(self, other, "subtract", False)
 
     @_valid_args
     def divided_from(self, other: LangType) -> OperType:
-        return self._not_impl("/")
+        return self.perform_operation(self, other, "divide", False)
 
     @_valid_args
     def raised_to_power_from(self, other: LangType) -> OperType:
-        return self._not_impl("^")
+        return self.perform_operation(self, other, "raise_to_power", False)
 
     @_valid_args
     def get_comparison_eq_by(self, other: LangType) -> CompType:
-        return LangTuple.compare(self, other, "get_comparison_eq_by")
+        return LangTuple.compare(self, other, "get_comparison_eq")
 
     @_valid_args
     def get_comparison_ne_by(self, other: LangType) -> CompType:
@@ -109,19 +109,19 @@ class LangTuple(LangType):
 
     @_valid_args
     def get_comparison_lt_by(self, other: LangType) -> CompType:
-        return LangTuple.compare(self, other, "get_comparison_lt_by")
+        return LangTuple.compare(self, other, "get_comparison_lt")
 
     @_valid_args
     def get_comparison_lte_by(self, other: LangType) -> CompType:
-        return LangTuple.compare(self, other, "get_comparison_lte_by")
+        return LangTuple.compare(self, other, "get_comparison_lte")
 
     @_valid_args
     def get_comparison_gt_by(self, other: LangType) -> CompType:
-        return LangTuple.compare(self, other, "get_comparison_gt_by")
+        return LangTuple.compare(self, other, "get_comparison_gt")
 
     @_valid_args
     def get_comparison_gte_by(self, other: LangType) -> CompType:
-        return LangTuple.compare(self, other, "get_comparison_gte_by")
+        return LangTuple.compare(self, other, "get_comparison_gte")
 
     # @_valid_args
     # def anded_by(self, other: LangType) -> CompType:

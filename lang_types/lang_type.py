@@ -152,9 +152,11 @@ class LangType(ABC):
 
     @staticmethod
     def _comp_type_negation(comp_res: CompType) -> CompType:
-        if isinstance(comp_res, LangBool):
-            return comp_res.notted()
-        return comp_res
+        if isinstance(comp_res, NotImplementedOperationType) or isinstance(
+            comp_res, IllegalOperationType
+        ):
+            return comp_res
+        return comp_res.notted()
 
     @staticmethod
     def _try_oper(

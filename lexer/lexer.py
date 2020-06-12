@@ -89,6 +89,7 @@ class Lexer:
                 if error or token is None:
                     return []
                 tokens.append(token)
+                continue
             elif self.current_char.isdigit():
                 tokens.append(self.make_number())
                 continue

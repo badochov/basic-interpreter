@@ -48,11 +48,14 @@ def test_wrong_logic_operator() -> None:
 
 def test_integer_logic_operator() -> None:
     basic = Basic()
+    run_test(
+        basic, "1!=1", "basic_test", LangBool, None, (eval("1!=1")),
+    )
 
     for name, operator in OPERATORS.items():
         run_test(
             basic,
-            " let _ = 4 " + operator + " +2",
+            "4 " + operator + " +2",
             "test_positive_integer" + name,
             LangBool,
             None,
@@ -60,7 +63,7 @@ def test_integer_logic_operator() -> None:
         )
         run_test(
             basic,
-            " let _ = 4 " + operator + " 4",
+            "4 " + operator + " 4",
             "test_positive_integer_" + name,
             LangBool,
             None,
@@ -68,7 +71,7 @@ def test_integer_logic_operator() -> None:
         )
         run_test(
             basic,
-            " let _ = -4 " + operator + " -2",
+            "-4 " + operator + " -2",
             "test_negative_" + name,
             LangBool,
             None,
@@ -76,7 +79,7 @@ def test_integer_logic_operator() -> None:
         )
         run_test(
             basic,
-            " let _ = 4 " + operator + " -2",
+            "4 " + operator + " -2",
             "test_mixed_" + name,
             LangBool,
             None,
