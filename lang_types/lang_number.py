@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
-from errors.type_errors import RTTypeError
 from lang_types.lang_bool import LangBool
-from lang_types.lang_type import LangType, NotImplementedOperationType
+from lang_types.lang_type import (
+    LangType,
+    NotImplementedOperationType,
+    IllegalOperationType,
+)
 
 if TYPE_CHECKING:
     from lang_types.lang_type import CompType
@@ -36,10 +39,10 @@ class LangNumber(LangType):
             return LangNumber(self._value - other._value)
         return self._not_impl("-")
 
-    def divided_by(self, other: LangType) -> OperType:
+    def divided_by(self, other: LangType) -> Union[OperType, IllegalOperationType]:
         if isinstance(other, LangNumber):
             if other._value == 0:
-                raise RTTypeError("Division by zero")
+                return IllegalOperationType("Division by zero")
 
             return LangNumber(self._value / other._value)
         return self._not_impl("/")
@@ -53,37 +56,31 @@ class LangNumber(LangType):
         if isinstance(other, LangNumber):
             return LangBool((self._value == other.value))
 
-        return super().get_comparison_eq_by(other)
-
-    def get_comparison_ne_by(self, other: LangType) -> CompType:
-        if isinstance(other, LangNumber):
-            return LangBool((self._value != other.value))
-
-        return super().get_comparison_ne_by(other)
+        return super().get_comparison_eq(other)
 
     def get_comparison_lt_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value < other.value))
 
-        return super().get_comparison_lt_by(other)
+        return super().get_comparison_lt(other)
 
     def get_comparison_gt_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value > other.value))
 
-        return super().get_comparison_gt_by(other)
+        return super().get_comparison_gt(other)
 
     def get_comparison_lte_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value <= other.value))
 
-        return super().get_comparison_lte_by(other)
+        return super().get_comparison_lte(other)
 
     def get_comparison_gte_by(self, other: LangType) -> CompType:
         if isinstance(other, LangNumber):
             return LangBool((self._value >= other.value))
 
-        return super().get_comparison_gte_by(other)
+        return super().get_comparison_gte(other)
 
     def __repr__(self) -> str:
         return f"{self._value}"

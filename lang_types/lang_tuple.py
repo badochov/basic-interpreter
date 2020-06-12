@@ -1,14 +1,32 @@
 from __future__ import annotations
 
-from typing import List, Iterable, TYPE_CHECKING
+from typing import List, Iterable, TYPE_CHECKING, Callable, TypeVar, cast
 
-from lang_types.lang_type import LangType
+from lang_types.lang_bool import LangBool
+from lang_types.lang_type import (
+    LangType,
+    IllegalOperationType,
+    NotImplementedOperationType,
+)
 from lang_types.lang_variant_type import LangVariantType
-
-from keywords import KEYWORDS
 
 if TYPE_CHECKING:
     from lang_types.lang_type import OperType, CompType
+
+    T = TypeVar("T", CompType, OperType)
+
+
+def _valid_args(
+    func: Callable[[LangTuple, LangType], T]
+) -> Callable[[LangTuple, LangType], T]:
+    def check_variant_type(self: LangTuple, other: LangType) -> T:
+        if isinstance(other, LangTuple) and other.values_count() != self.values_count():
+            return IllegalOperationType(
+                "Tuples must have the same number of arguments for comparison"
+            )
+        return func(self, other)
+
+    return check_variant_type
 
 
 class LangTuple(LangType):
@@ -38,80 +56,117 @@ class LangTuple(LangType):
         value = self.nth_value(n)
         return value.args if isinstance(value, LangVariantType) else []
 
+    @_valid_args
     def added_by(self, other: LangType) -> OperType:
         return self._not_impl("+")
 
+    @_valid_args
     def multiplied_by(self, other: LangType) -> OperType:
         return self._not_impl("*")
 
+    @_valid_args
     def subtracted_by(self, other: LangType) -> OperType:
         return self._not_impl("-")
 
+    @_valid_args
     def divided_by(self, other: LangType) -> OperType:
         return self._not_impl("/")
 
+    @_valid_args
     def raised_to_power_by(self, other: LangType) -> OperType:
         return self._not_impl("^")
 
-    def get_comparison_eq_by(self, other: LangType) -> CompType:
-        return self._not_impl("==")
-
-    def get_comparison_ne_by(self, other: LangType) -> CompType:
-        return self._not_impl("!=")
-
-    def get_comparison_lt_by(self, other: LangType) -> CompType:
-        return self._not_impl("<")
-
-    def get_comparison_gt_by(self, other: LangType) -> CompType:
-        return self._not_impl(">")
-
-    def get_comparison_lte_by(self, other: LangType) -> CompType:
-        return self._not_impl("<=")
-
-    def get_comparison_gte_by(self, other: LangType) -> CompType:
-        return self._not_impl(">=")
-
-    def anded_by(self, other: LangType) -> CompType:
-        return self._not_impl(f'KEYWORD:{KEYWORDS["AND"]}')
-
-    def ored_by(self, other: LangType) -> CompType:
-        return self._not_impl(f'KEYWORD:{KEYWORDS["OR"]}')
-
+    @_valid_args
     def added_from(self, other: LangType) -> OperType:
         return self._not_impl("+")
 
+    @_valid_args
     def multiplied_from(self, other: LangType) -> OperType:
         return self._not_impl("*")
 
+    @_valid_args
     def subtracted_from(self, other: LangType) -> OperType:
         return self._not_impl("-")
 
+    @_valid_args
     def divided_from(self, other: LangType) -> OperType:
         return self._not_impl("/")
 
+    @_valid_args
     def raised_to_power_from(self, other: LangType) -> OperType:
         return self._not_impl("^")
 
-    def get_comparison_eq_from(self, other: LangType) -> CompType:
-        return self._not_impl("==")
+    @_valid_args
+    def get_comparison_eq_by(self, other: LangType) -> CompType:
+        return LangTuple.compare(self, other, "get_comparison_eq_by")
 
-    def get_comparison_ne_from(self, other: LangType) -> CompType:
-        return self._not_impl("!=")
+    @_valid_args
+    def get_comparison_ne_by(self, other: LangType) -> CompType:
+        eq = self.get_comparison_eq(other)
+        if isinstance(eq, LangBool):
+            return eq.notted()
+        return eq
 
-    def get_comparison_lt_from(self, other: LangType) -> CompType:
-        return self._not_impl("<")
+    @_valid_args
+    def get_comparison_lt_by(self, other: LangType) -> CompType:
+        return LangTuple.compare(self, other, "get_comparison_lt_by")
 
-    def get_comparison_gt_from(self, other: LangType) -> CompType:
-        return self._not_impl(">")
+    @_valid_args
+    def get_comparison_lte_by(self, other: LangType) -> CompType:
+        return LangTuple.compare(self, other, "get_comparison_lte_by")
 
-    def get_comparison_lte_from(self, other: LangType) -> CompType:
-        return self._not_impl("<=")
+    @_valid_args
+    def get_comparison_gt_by(self, other: LangType) -> CompType:
+        return LangTuple.compare(self, other, "get_comparison_gt_by")
 
-    def get_comparison_gte_from(self, other: LangType) -> CompType:
-        return self._not_impl(">=")
+    @_valid_args
+    def get_comparison_gte_by(self, other: LangType) -> CompType:
+        return LangTuple.compare(self, other, "get_comparison_gte_by")
 
-    def anded_from(self, other: LangType) -> CompType:
-        return self._not_impl(f'KEYWORD:{KEYWORDS["AND"]}')
+    # @_valid_args
+    # def anded_by(self, other: LangType) -> CompType:
+    #     return LangTuple.compare(self, other, "anded")
+    #
+    # @_valid_args
+    # def ored_by(self, other: LangType) -> CompType:
+    #     return LangTuple.compare(self, other, "anded")
 
-    def ored_from(self, other: LangType) -> CompType:
-        return self._not_impl(f'KEYWORD:{KEYWORDS["OR"]}')
+    @staticmethod
+    def compare(first: LangTuple, second: LangType, method: str) -> CompType:
+        if isinstance(second, LangTuple):
+            second_values = second._values
+        else:
+            second_values = [second] * len(first._values)
+
+        for first_arg, second_arg in zip(first._values, second_values):
+            res = cast(CompType, getattr(first_arg, method)(second_arg))
+            if isinstance(res, LangBool):
+                if res.is_truthy():
+                    continue
+            return res
+
+        return LangBool.true_def()
+
+    @staticmethod
+    def perform_operation(
+        first: LangTuple, second: LangType, method: str, by: bool = True
+    ) -> OperType:
+        if isinstance(second, LangTuple):
+            second_values = second._values
+        else:
+            second_values = [second] * len(first._values)
+
+        res_values: List[LangType] = []
+        for first_arg, second_arg in zip(first._values, second_values):
+            if by:
+                res = cast(CompType, getattr(first_arg, method)(second_arg))
+            else:
+                res = cast(CompType, getattr(second_arg, method)(first_arg))
+            if isinstance(res, IllegalOperationType) or isinstance(
+                res, NotImplementedOperationType
+            ):
+                return res
+
+            res_values.append(res)
+
+        return LangTuple(res_values)

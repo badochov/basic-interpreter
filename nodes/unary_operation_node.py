@@ -2,15 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union, cast
 
-from errors.type_errors import RTTypeError
 from keywords import *
 from lang_types.lang_function import LangFunction
 from lang_types.lang_number import LangNumber
 from lang_types.lang_type import (
     LangType,
-    multiply,
-    not_implemented,
     NotImplementedOperationType,
+    IllegalOperationType,
 )
 from nodes.node import Node
 from token_types import *
@@ -36,13 +34,16 @@ class UnaryOperationNode(Node):
         result = self.node.visit(context)
 
         if self.operation_token.type == TT_MINUS:
-            result = multiply(result, LangNumber(-1))
+            result = result.multiply(LangNumber(-1))
         elif self.operation_token.matches(TT_KEYWORD, KEYWORDS["NOT"]):
             result = result.notted()
-        if not_implemented(result):
-            return self._fail_with(
-                cast(NotImplementedOperationType, result).msg, context
-            )
+        if not LangType.valid(result):
+            if LangType.not_implemented(result):
+                return self._fail_with(
+                    cast(NotImplementedOperationType, result).msg, context
+                )
+            if LangType.illegal_operation(result):
+                return self._fail_with(cast(IllegalOperationType, result).msg, context)
 
         if isinstance(result, LangFunction):
             result.set_pos(self.pos_start,)

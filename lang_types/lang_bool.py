@@ -23,25 +23,19 @@ class LangBool(LangType):
         if isinstance(other, LangBool):
             return LangBool(self._value == other.value)
 
-        return super().get_comparison_eq_by(other)
+        return super().get_comparison_eq(other)
 
-    def get_comparison_ne_by(self, other: LangType) -> CompType:
-        if isinstance(other, LangBool):
-            return LangBool(self._value != other.value)
-
-        return super().get_comparison_ne_by(other)
-
-    def anded_by(self, other: LangType) -> CompType:
+    def anded(self, other: LangType) -> CompType:
         if isinstance(other, LangBool):
             return LangBool(self._value and other.value)
 
-        return super().anded_by(other)
+        return super().anded(other)
 
-    def ored_by(self, other: LangType) -> CompType:
+    def ored(self, other: LangType) -> CompType:
         if isinstance(other, LangBool):
             return LangBool(self.value or other.value)
 
-        return super().ored_by(other)
+        return super().ored(other)
 
     def notted(self) -> CompType:
         return LangBool(not self._value)

@@ -9,6 +9,8 @@ from typing import (
     Any,
     Callable,
     Union,
+    final,
+    Optional,
 )
 
 from keywords import *
@@ -49,9 +51,6 @@ class LangType(ABC):
     def get_comparison_eq_by(self, other: LangType) -> CompType:
         return self._not_impl("==")
 
-    def get_comparison_ne_by(self, other: LangType) -> CompType:
-        return self._not_impl("!=")
-
     def get_comparison_lt_by(self, other: LangType) -> CompType:
         return self._not_impl("<")
 
@@ -63,12 +62,6 @@ class LangType(ABC):
 
     def get_comparison_gte_by(self, other: LangType) -> CompType:
         return self._not_impl(">=")
-
-    def anded_by(self, other: LangType) -> CompType:
-        return self._not_impl(f'KEYWORD:{KEYWORDS["AND"]}')
-
-    def ored_by(self, other: LangType) -> CompType:
-        return self._not_impl(f'KEYWORD:{KEYWORDS["OR"]}')
 
     def added_from(self, other: LangType) -> OperType:
         return self._not_impl("+")
@@ -85,28 +78,64 @@ class LangType(ABC):
     def raised_to_power_from(self, other: LangType) -> OperType:
         return self._not_impl("^")
 
-    def get_comparison_eq_from(self, other: LangType) -> CompType:
-        return self._not_impl("==")
+    @final
+    def add(self, other: LangType) -> OperType:
+        return self._try_oper(self.added_by, self.added_from, other)
 
-    def get_comparison_ne_from(self, other: LangType) -> CompType:
-        return self._not_impl("!=")
+    @final
+    def multiply(self, other: LangType) -> OperType:
+        return self._try_oper(self.multiplied_by, self.multiplied_from, other)
 
-    def get_comparison_lt_from(self, other: LangType) -> CompType:
-        return self._not_impl("<")
+    @final
+    def subtract(self, other: LangType) -> OperType:
+        return self._try_oper(self.subtracted_by, self.subtracted_from, other)
 
-    def get_comparison_gt_from(self, other: LangType) -> CompType:
-        return self._not_impl(">")
+    @final
+    def divide(self, other: LangType) -> OperType:
+        return self._try_oper(self.divided_by, self.divided_from, other)
 
-    def get_comparison_lte_from(self, other: LangType) -> CompType:
-        return self._not_impl("<=")
+    @final
+    def raise_to_power(self, other: LangType) -> OperType:
+        return self._try_oper(self.raised_to_power_by, self.raised_to_power_from, other)
 
-    def get_comparison_gte_from(self, other: LangType) -> CompType:
-        return self._not_impl(">=")
+    @final
+    def get_comparison_eq(self, other: LangType) -> CompType:
+        return self._try_symmetric_logic_oper(
+            self.get_comparison_eq_by, other.get_comparison_eq_by, self, other
+        )
 
-    def anded_from(self, other: LangType) -> CompType:
-        return self._not_impl(f'KEYWORD:{KEYWORDS["AND"]}')
+    @final
+    def get_comparison_ne(self, other: LangType) -> CompType:
+        return self._comp_type_negation(self.get_comparison_eq(other))
 
-    def ored_from(self, other: LangType) -> CompType:
+    @final
+    def get_comparison_lt(self, other: LangType) -> CompType:
+        return self._try_symmetric_logic_oper(
+            self.get_comparison_lt_by, other.get_comparison_gt_by, self, other
+        )
+
+    @final
+    def get_comparison_gt(self, other: LangType) -> CompType:
+        return self._try_symmetric_logic_oper(
+            self.get_comparison_gt_by, other.get_comparison_lt_by, self, other
+        )
+
+    @final
+    def get_comparison_lte(self, other: LangType) -> CompType:
+        return self._try_symmetric_logic_oper(
+            self.get_comparison_lte_by, self.get_comparison_gte_by, self, other
+        )
+
+    @final
+    def get_comparison_gte(self, other: LangType) -> CompType:
+        return self._try_symmetric_logic_oper(
+            self.get_comparison_gte_by, other.get_comparison_lte_by, self, other
+        )
+
+    def anded(self, other: LangType) -> CompType:
+        return self._not_impl(f'KEYWORD:{KEYWORDS["OR"]}')
+
+    def ored(self, other: LangType) -> CompType:
         return self._not_impl(f'KEYWORD:{KEYWORDS["OR"]}')
 
     def notted(self) -> CompType:
@@ -117,98 +146,81 @@ class LangType(ABC):
     ) -> LangType:
         return self._not_impl("call")
 
-    def _not_impl(self, error_msg: str) -> NotImplementedOperationType:
+    @staticmethod
+    def _not_impl(error_msg: str) -> NotImplementedOperationType:
         return NotImplementedOperationType("Not implemented: " + error_msg)
+
+    @staticmethod
+    def _comp_type_negation(comp_res: CompType) -> CompType:
+        if isinstance(comp_res, LangBool):
+            return comp_res.notted()
+        return comp_res
+
+    @staticmethod
+    def _try_oper(
+        oper_by: OperFunction, oper_from: OperFunction, other: LangType,
+    ) -> OperType:
+        if not LangType.not_implemented(res := oper_by(other)):
+            return res
+
+        return oper_from(other)
+
+    @staticmethod
+    def _try_logic_oper(
+        oper_by: CompFunction, oper_from: CompFunction, other: LangType,
+    ) -> CompType:
+        if not LangType.not_implemented(res := oper_by(other)):
+            return res
+
+        return oper_from(other)
+
+    @staticmethod
+    def _try_symmetric_logic_oper(
+        oper_by: CompFunction,
+        oper_from: CompFunction,
+        first: LangType,
+        second: LangType,
+    ) -> CompType:
+        if not LangType.not_implemented(res := oper_by(second)):
+            return res
+
+        return oper_from(first)
+
+    # @staticmethod
+    # def _try_negation_symmetric_logic_oper(
+    #     oper_by: CompFunction,
+    #     oper_from: CompFunction,
+    #     first: LangType,
+    #     second: LangType,
+    # ) -> CompType:
+    #     if not LangType.not_implemented(res := oper_by(second)):
+    #         return res
+    #
+    #     return LangType._comp_type_negation(oper_from(first))
+
+    @staticmethod
+    def not_implemented(lang_type: LangType) -> bool:
+        return isinstance(lang_type, NotImplementedOperationType)
+
+    @staticmethod
+    def illegal_operation(lang_type: LangType) -> bool:
+        return isinstance(lang_type, IllegalOperationType)
+
+    @staticmethod
+    def valid(lang_type: LangType) -> bool:
+        return not LangType.illegal_operation(
+            lang_type
+        ) and not LangType.not_implemented(lang_type)
 
     @property
     def value(self) -> Any:
         return None
 
 
-def _try_oper(
-    oper_by: OperFunction, oper_from: OperFunction, other: LangType,
-) -> OperType:
-    if not not_implemented(res := oper_by(other)):
-        return res
-
-    return oper_from(other)
-
-
-def _try_logic_oper(
-    oper_by: CompFunction, oper_from: CompFunction, other: LangType,
-) -> CompType:
-    if not not_implemented(res := oper_by(other)):
-        return res
-
-    return oper_from(other)
-
-
-def add(first: LangType, second: LangType) -> OperType:
-    return _try_oper(first.added_by, first.added_from, second)
-
-
-def multiply(first: LangType, second: LangType) -> OperType:
-    return _try_oper(first.multiplied_by, first.multiplied_from, second)
-
-
-def subtract(first: LangType, second: LangType) -> OperType:
-    return _try_oper(first.subtracted_by, first.subtracted_from, second)
-
-
-def divide(first: LangType, second: LangType) -> OperType:
-    return _try_oper(first.divided_by, first.divided_from, second)
-
-
-def raise_to_power(first: LangType, second: LangType) -> OperType:
-    return _try_oper(first.raised_to_power_by, first.raised_to_power_from, second)
-
-
-def get_comparison_eq(first: LangType, second: LangType) -> CompType:
-    return _try_logic_oper(
-        first.get_comparison_eq_by, first.get_comparison_eq_from, second
-    )
-
-
-def get_comparison_ne(first: LangType, second: LangType) -> CompType:
-    return _try_logic_oper(
-        first.get_comparison_ne_by, first.get_comparison_ne_from, second
-    )
-
-
-def get_comparison_lt(first: LangType, second: LangType) -> CompType:
-    return _try_logic_oper(
-        first.get_comparison_lt_by, first.get_comparison_lt_from, second
-    )
-
-
-def get_comparison_gt(first: LangType, second: LangType) -> CompType:
-    return _try_logic_oper(
-        first.get_comparison_gt_by, first.get_comparison_gt_from, second
-    )
-
-
-def get_comparison_lte(first: LangType, second: LangType) -> CompType:
-    return _try_logic_oper(
-        first.get_comparison_lte_by, first.get_comparison_lte_from, second
-    )
-
-
-def get_comparison_gte(first: LangType, second: LangType) -> CompType:
-    return _try_logic_oper(
-        first.get_comparison_gte_by, first.get_comparison_gte_from, second
-    )
-
-
-def anded(first: LangType, second: LangType) -> CompType:
-    return _try_logic_oper(first.anded_by, first.anded_from, second)
-
-
-def ored(first: LangType, second: LangType) -> CompType:
-    return _try_logic_oper(first.ored_by, first.ored_from, second)
-
-
-def not_implemented(lang_type: LangType) -> bool:
-    return isinstance(lang_type, NotImplementedOperationType)
+def check_type(first: LangType, second: LangType) -> Optional[IllegalOperationType]:
+    if type(first) is not type(second):
+        return IllegalOperationType("Types are not the same")
+    return None
 
 
 class NotImplementedOperationType(LangType):
@@ -217,9 +229,15 @@ class NotImplementedOperationType(LangType):
         self.msg = msg
 
 
+class IllegalOperationType(LangType):
+    def __init__(self, msg: str) -> None:
+        super().__init__("IllegalOperationType")
+        self.msg = msg
+
+
 if TYPE_CHECKING:
     OperType = LangType
 
-    CompType = Union[LangBool, NotImplementedOperationType]
+    CompType = Union[LangBool, NotImplementedOperationType, IllegalOperationType]
     OperFunction = Callable[[LangType], OperType]
     CompFunction = Callable[[LangType], CompType]

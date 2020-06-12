@@ -105,7 +105,7 @@ class ParserHelper:
                     return self.parser.fail_with_invalid_syntax_error('Unexpected ")"')
                 self.parser.advance()
 
-            if self.parser.advance().type == TT_RBRACKET:
+            if self.parser.current_token.type == TT_RBRACKET:
                 if paren and paren[-1] == TT_LBRACKET:
                     paren.pop()
                 else:
